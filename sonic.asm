@@ -2673,7 +2673,7 @@ GM_Level:				; XREF: GameModeArray
 
                 writeVRAM Art_TitleCard, $1000, $B000
 
-             ;   fillVRAM $0, $FFFF, $0
+                fillVRAM $0, $FFFF, $0
 
 		move	#$2300,sr
 		moveq	#0,d0
@@ -2744,7 +2744,7 @@ LoadMonitorSRAM:
 		moveq	#0,d0
 		move.b	(v_act).w,d0
 		add.w	d0,d0
-		lea	(WaterHeight).l,a1 ; load water	height array
+		lea		(WaterHeight).l,a1 ; load water	height array
 		move.w	(a1,d0.w),d0
 		move.w	d0,(v_waterpos1).w ; set water heights
 		move.w	d0,(v_waterpos2).w

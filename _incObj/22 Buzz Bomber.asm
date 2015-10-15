@@ -21,7 +21,7 @@ parent:		= $3C
 Buzz_Main:	; Routine 0
 		addq.b	#2,obRoutine(a0)
 		move.l	#Map_Buzz,obMap(a0)
-		move.w	#$444,obGfx(a0)
+		move.w	#VRAMloc_Buzz/$20,obGfx(a0)
 		move.b	#4,obRender(a0)
 		move.w	#$180,obPriority(a0)
 		move.b	#8,obColType(a0)

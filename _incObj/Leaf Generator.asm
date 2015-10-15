@@ -94,7 +94,7 @@ Obj2C_Main:
 	andi.b	#1,d0
 	move.b	d0,obFrame(a1)
 	move.l	#Map_Leaf,obMap(a1)
-	move.w	#($7500/$20)+$8000,obGfx(a1)
+	move.w	#(VRAMloc_Leaves/$20)+$8000,obGfx(a1)
 	move.b	#$84,obRender(a1)
 	move.b	#8,obActWid(a1)
 	move.w	#$80,obPriority(a1)

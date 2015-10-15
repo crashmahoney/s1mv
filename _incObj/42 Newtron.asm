@@ -16,7 +16,7 @@ Newt_Index:	dc.w Newt_Main-Newt_Index
 Newt_Main:	; Routine 0
 		addq.b	#2,obRoutine(a0)
 		move.l	#Map_Newt,obMap(a0)
-		move.w	#$49B,obGfx(a0)
+		move.w	#VRAMloc_Newtron/$20,obGfx(a0)
 		move.b	#4,obRender(a0)
 		move.w	#$200,obPriority(a0)
 		move.b	#$14,obActWid(a0)

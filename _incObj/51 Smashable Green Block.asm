@@ -16,7 +16,7 @@ Smab_Index:	dc.w Smab_Main-Smab_Index
 
 Smab_Main:	; Routine 0
 		addq.b	#2,obRoutine(a0)
-                move.l	#Map_Smab,obMap(a0)            ; +++ zone agnostic objects code
+        move.l	#Map_Smab,obMap(a0)            ; +++ zone agnostic objects code
 		move.w	#$42B8,obGfx(a0)
 		move.b	#4,obRender(a0)
 		move.b	#$10,obActWid(a0)
@@ -44,7 +44,7 @@ Smab_Main:	; Routine 0
 		cmpi.b	#id_GHZ,(v_zone).w
 		bne.s	@notGHZ
 		move.l	#Map_PRock,obMap(a0)
-		move.w	#$43D0,obGfx(a0)
+		move.w	#$4000+(VRAMloc_PplRock/$20),obGfx(a0)
 		move.b	#$13,obActWid(a0)
 	@notGHZ:
 Smab_Solid:	; Routine 2

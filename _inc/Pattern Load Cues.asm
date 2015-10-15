@@ -55,6 +55,7 @@ plcm:	macro gfx,vram
 ; ---------------------------------------------------------------------------
 ; Pattern load cues - standard block 1
 ; ---------------------------------------------------------------------------
+
 PLC_Main:	dc.w ((PLC_Mainend-PLC_Main-2)/6)-1
 		plcm	Nem_Hud_BG, $AE00	; hud popup text backer
 		plcm	Nem_Lamp, $D800		; lamppost    +++ moved from #F400 to make room for spindash dust $D880
@@ -84,30 +85,47 @@ PLC_GameOver:	dc.w ((PLC_GameOverend-PLC_GameOver-2)/6)-1
 ; ---------------------------------------------------------------------------
 ; Pattern load cues - Green Hill
 ; ---------------------------------------------------------------------------
+VRAMloc_Swing 		=	$7400	; swinging platform
+VRAMloc_Bridge 		=	$75C0	; bridge
+VRAMloc_GHZplatform =	$7700	; new platform
+VRAMloc_Springboard	=	$7900
+VRAMloc_PplRock 	=	$7C00	; purple rock
+VRAMloc_Leaves 		=	$7F00	; floating leaves
+VRAMloc_Turtroll	=	$8000
+VRAMloc_Buzz		=	$8880
+VRAMloc_Chopper		=	$8F60
+VRAMloc_Newtron		=	$9360
+VRAMloc_Motobug		=	$9E00
+VRAMloc_Spikes		=	$A360
+VRAMloc_HSpring		=	$A460
+VRAMloc_VSpring		=	$A5C0
+VRAMloc_DSpring		=	$A720
+VRAMloc_GhzWall1 	=	$A1E0	; breakable wall
+VRAMloc_MonitorSpinDash =	$D400 ; +++ spin dash icon, overwrites goggles icon
+
+
 PLC_GHZ:	dc.w ((PLC_GHZ2-PLC_GHZ-2)/6)-1
 		plcm	Nem_GHZ_1st, 0		; GHZ main patterns
-		plcm	Nem_Springboard, $6600	; springboard
-		plcm	Nem_Turtroll, $8000	; turtroll enemy
-		plcm	Nem_Buzz, $8880		; buzz bomber enemy
-		plcm	Nem_Chopper, $8F60	; chopper enemy
-		plcm	Nem_Newtron, $9360	; newtron enemy
-		plcm	Nem_Motobug, $9E00	; motobug enemy
-		plcm	Nem_Spikes, $A360	; spikes
-		plcm	Nem_HSpring, $A460	; horizontal spring
-		plcm	Nem_VSpring, $A5C0	; vertical spring
-		plcm    Nem_DSpring, $A720	; diagonal spring
+		plcm	Nem_Springboard, VRAMloc_Springboard	; springboard
+		plcm	Nem_Turtroll, 	VRAMloc_Turtroll	; turtroll enemy
+		plcm	Nem_Buzz, 		VRAMloc_Buzz	; buzz bomber enemy
+		plcm	Nem_Chopper, 	VRAMloc_Chopper	; chopper enemy
+		plcm	Nem_Newtron, 	VRAMloc_Newtron	; newtron enemy
+		plcm	Nem_Motobug, 	VRAMloc_Motobug	; motobug enemy
+		plcm	Nem_Spikes, 	VRAMloc_Spikes	; spikes
+		plcm	Nem_HSpring, 	VRAMloc_HSpring	; horizontal spring
+		plcm	Nem_VSpring, 	VRAMloc_VSpring	; vertical spring
+		plcm    Nem_DSpring, 	VRAMloc_DSpring	; diagonal spring
 
 PLC_GHZ2:	dc.w ((PLC_GHZ2end-PLC_GHZ2-2)/6)-1
-		plcm	Nem_Swing, $7000	; swinging platform
-		plcm	Nem_Bridge, $71C0	; bridge
-;		plcm	Nem_SpikePole, $7300	; spiked pole
-		plcm	Nem_GHZplatform, $7300	; new platform
-		plcm	Nem_Leaves, $7500		; floating leaves
-;		plcm	Nem_Ball, $7540		; giant	ball
-		plcm	Nem_PplRock, $7A00	; purple rock
-		plcm	Nem_GhzWall1, $A1E0	; breakable wall
-		plcm	Nem_GhzWall2, $6980	; normal wall
-		plcm    Nem_MonitorSpinDash, $D400 ; +++ spin dash icon, overwrites goggles icon
+		plcm	Nem_Swing, 		VRAMloc_Swing	; swinging platform
+		plcm	Nem_Bridge, 	VRAMloc_Bridge	; bridge
+		plcm	Nem_GHZplatform, VRAMloc_GHZplatform	; new platform
+		plcm	Nem_Leaves, 	VRAMloc_Leaves		; floating leaves
+		plcm	Nem_PplRock, 	VRAMloc_PplRock	; purple rock
+		plcm	Nem_GhzWall1, 	VRAMloc_GhzWall1	; breakable wall
+;		plcm	Nem_GhzWall2, 	VRAMloc_GhzWall2	; normal wall
+		plcm    Nem_MonitorSpinDash, VRAMloc_MonitorSpinDash ; +++ spin dash icon, overwrites goggles icon
 	PLC_GHZ2end:
 ; ---------------------------------------------------------------------------
 ; Pattern load cues - Labyrinth

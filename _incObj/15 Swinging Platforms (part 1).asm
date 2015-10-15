@@ -21,7 +21,7 @@ origY:		= $38		; original y-axis position
 Swing_Main:	; Routine 0
 		addq.b	#2,obRoutine(a0)
 		move.l	#Map_Swing_GHZ,obMap(a0) ; GHZ and MZ specific code
-		move.w	#$0380,obGfx(a0)
+		move.w	#VRAMloc_Swing/$20,obGfx(a0)
 		move.b	#4,obRender(a0)
 		move.w	#$180,obPriority(a0)
 		move.b	#$18,obActWid(a0)

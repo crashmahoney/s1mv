@@ -17,7 +17,7 @@ Plat_Index:	dc.w Plat_Main-Plat_Index
 
 Plat_Main:	; Routine 0
 		addq.b	#2,obRoutine(a0)
-		move.w	#$4398,obGfx(a0)
+		move.w	#$4000+(VRAMloc_GHZplatform/$20),obGfx(a0)
 		move.l	#Map_Plat_GHZ,obMap(a0)
 		move.b	#$24,obActWid(a0)
 		cmpi.b	#id_SYZ,(v_zone).w ; check if level is SYZ

@@ -40,7 +40,7 @@ spring_pow:	= $30			; power of current spring
 Spring_Main:	; Routine 0
 		addq.b	#2,obRoutine(a0)
 		move.l	#Map_Spring,obMap(a0)
-		move.w	#$523,obGfx(a0)
+		move.w	#VRAMloc_HSpring/$20,obGfx(a0)
 		ori.b	#4,obRender(a0)
 		move.b	#$10,obActWid(a0)
 		move.w	#$200,obPriority(a0)
@@ -61,7 +61,7 @@ Spring_Init_Horizontal:
 		move.b	#8,obRoutine(a0) ; use "Spring_LR" routine
 		move.b	#1,obAnim(a0)
 		move.b	#3,obFrame(a0)
-		move.w	#$52E,obGfx(a0)
+		move.w	#VRAMloc_VSpring/$20,obGfx(a0)
 		move.b	#8,obActWid(a0)
                 bra.s   Spring_Init_Common
 
@@ -74,14 +74,14 @@ Spring_Init_DiagonallyUp:
 		move.b	#$14,obRoutine(a0) ; use "Spring_DiagUp" routine
 		move.b	#2,obAnim(a0)
 		move.b	#6,obFrame(a0)
-		move.w	#$539,obGfx(a0)
+		move.w	#VRAMloc_DSpring/$20,obGfx(a0)
                 bra.s   Spring_Init_Common
 
 Spring_Init_DiagonallyDown:
 		move.b	#$1C,obRoutine(a0) ; use "Spring_DiagDown" routine
 		move.b	#2,obAnim(a0)
 		move.b	#6,obFrame(a0)
-		move.w	#$539,obGfx(a0)
+		move.w	#VRAMloc_DSpring/$20,obGfx(a0)
 		bset	#1,obStatus(a0)    ; face down
 
 Spring_Init_Up:

@@ -39,7 +39,7 @@ PushB_Main:	; Routine 0
 		cmpi.b	#id_GHZ,(v_zone).w
 		bne.s	@notGHZ
 		move.l	#Map_PRock,obMap(a0)
-		move.w	#$43D0,obGfx(a0) ; GHZ specific code
+		move.w	#$4000+(VRAMloc_PplRock/$20),obGfx(a0)
  
 	@notGHZ:
 		cmpi.b	#id_SLZ,(v_zone).w

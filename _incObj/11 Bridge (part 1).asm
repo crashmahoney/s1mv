@@ -16,14 +16,14 @@ Bri_Index:	dc.w Bri_Main-Bri_Index, Bri_Action-Bri_Index
 Bri_Main:	; Routine 0
 		addq.b	#2,obRoutine(a0)
 		move.l	#Map_Bri,obMap(a0)
-		move.w	#$438E,obGfx(a0)
+		move.w	#$4000+(VRAMloc_Bridge/$20),obGfx(a0)
 		move.b	#4,obRender(a0)
 		move.w	#$180,obPriority(a0)
 		move.b	#$80,obActWid(a0)
 		move.w	obY(a0),d2
 		move.w	obX(a0),d3
 		move.b	0(a0),d4	; copy object number ($11) to d4
-		lea	obSubtype(a0),a2
+		lea		obSubtype(a0),a2
 		moveq	#0,d1
 		move.b	(a2),d1		; copy bridge length to d1
 		move.b	#0,(a2)+	; clear bridge length
@@ -63,7 +63,7 @@ Bri_Main:	; Routine 0
 		move.w	d2,$3C(a1)
 		move.w	d3,obX(a1)
 		move.l	#Map_Bri,obMap(a1)
-		move.w	#$438E,obGfx(a1)
+		move.w	#$4000+(VRAMloc_Bridge/$20),obGfx(a1)
 		move.b	#4,obRender(a1)
 		move.w	#$180,obPriority(a1)
 		move.b	#8,obActWid(a1)

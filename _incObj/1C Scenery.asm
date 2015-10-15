@@ -51,6 +51,6 @@ Scen_Values:	dc.l Map_Scen		; mappings address
 		dc.w $44D8
 		dc.b 0,	8, 2, 0
 		dc.l Map_Bri
-		dc.w $438E
+		dc.w $4000+(VRAMloc_Bridge/$20)
 		dc.b 1,	$10, 1,	0
 		even

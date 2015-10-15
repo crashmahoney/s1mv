@@ -31,7 +31,7 @@ word_26386:
 Springboard_Init:
 	addq.b	#2,obRoutine(a0)
 	move.l	#Map_Springboard,obMap(a0)
-	move.w	#$0330,obGfx(a0)
+	move.w	#VRAMloc_Springboard/$20,obGfx(a0)
 	ori.b	#4,obRender(a0)
 	move.b	#$1C,obActWid(a0)
 	move.w	#$200,obPriority(a0)

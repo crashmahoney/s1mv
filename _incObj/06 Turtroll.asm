@@ -17,7 +17,7 @@ Turtroll_Index:	dc.w Turtroll_Main-Turtroll_Index
 ; ===========================================================================
 Turtroll_Main:	; Routine 0
 		move.l	#Map_Turtroll,obMap(a0)
-		move.w	#$400,obGfx(a0)
+		move.w	#VRAMloc_Turtroll/$20,obGfx(a0)
 		move.b	#4,obRender(a0)
 		move.w	#$200,obPriority(a0)
 		move.b	#$8,obActWid(a0)

@@ -19,11 +19,7 @@ speed:		= $30		; Sonic's horizontal speed
 Smash_Main:	; Routine 0
 		addq.b	#2,obRoutine(a0)
 		move.l	#Map_Smash,obMap(a0)
-		move.w	#$450F,obGfx(a0)
-; 		move.b	#4,obRender(a0)
-; 		move.b	#$10,obActWid(a0)
-; 		move.w	#$200,obPriority(a0)
-; 		move.b	obSubtype(a0),obFrame(a0)
+		move.w	#$4000+(VRAMloc_GhzWall1/$20),obGfx(a0)
 		move.b	#4,obRender(a0)
 		move.b	#$10,obActWid(a0)
 		move.w	#$200,obPriority(a0)
