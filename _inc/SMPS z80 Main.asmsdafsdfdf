@@ -1,0 +1,3105 @@
+; ---------------------------------------------------------------------------
+; ===========================================================================
+; º                                                                         º
+; º	                        SONIC&K SOUND DRIVER                        º
+; º                                                                         º
+; ===========================================================================
+; Disassembled by MarkeyJester
+; Routines, pointers and stuff by Linncaki
+; Throroungly commented and improved (including optional bugfixes) by Flamewing
+; ===========================================================================
+; Constants
+; ===========================================================================
+
+SonicDriverVer                  =  3
+; Set this to 1 to fix some bugs in the driver.
+fix_sndbugs			=  0
+; Set the following to non-zero to use all S2 DAC samples, or to zero otherwise.
+; The S1 samples are a subset of this.
+use_s2_samples			=  1
+; Set the following to non-zero to use all S3D DAC samples, or to zero
+; otherwise. Most of the S3D samples are also present in S3/S&K, but
+; there are two samples specific to S3D.
+use_s3d_samples			=  1
+; Set the following to non-zero to use all S3 and S&K DAC samples,
+; or to zero otherwise.
+use_s3_samples			=  1
+
+MusID__First			= $01
+MusID_1UP			= $2A
+MusID_Emerald			= $2B
+MusID__End			= $33
+SndID__First			= MusID__End
+SndID_Ring			= SndID__First
+SndID_Spindash			= $0AB
+SndID__FirstContinuous	        = $0BC
+MusID_SKCredits			= $0DC
+SndID__End			= $0E0
+FadeID__First			= $0E1
+FadeID__End			= $0E6
+SndID_StopSega			= $0FE
+SndID_Sega			= $0FF
+; ---------------------------------------------------------------------------
+NoteRest            	= $080
+FirstCoordFlag      	= $0E0
+; ---------------------------------------------------------------------------
+zID_MusicPointers0 = 0
+zID_UniVoiceBank = 2
+zID_MusicPointers4 = 4
+zID_SFXPointers = 6
+zID_FreqFlutterPointers = 8
+zID_PSGTonePointers = $0A
+; ---------------------------------------------------------------------------
+z80_stack				=	$2000
+; equates: standard (for Genesis games) addresses in the memory map
+zYM2612_A0				=	$4000
+zYM2612_D0				=	$4001
+zYM2612_A1				=	$4002
+zYM2612_D1				=	$4003
+zBankRegister			=	$6000
+zPSG					=	$7F11
+zROMWindow				=	$8000
+
+; z80 RAM:
+	if fix_sndbugs=1
+zVariablesStart                 =	$1BF0
+zSpecFM3Freqs                   =	zVariablesStart
+zSpecFM3FreqsSFX                =	zSpecFM3Freqs + 8
+	else
+zVariablesStart                 =	$1C00
+	endif
+
+zPalFlag			=	$1C02
+zPalDblUpdCounter		=	$1C04
+zSoundQueue0			=	$1C05
+zSoundQueue1			=	$1C06
+zSoundQueue2			=	$1C07
+zTempoSpeedup			=	$1C08
+zNextSound			=	$1C09
+
+; The following 3 variables are used for M68K input
+zMusicNumber			=	$1C0A				; Play_Sound
+zSFXNumber0			=	$1C0B				; Play_Sound_2
+zSFXNumber1			=	$1C0C				; Play_Sound_2
+
+zFadeOutTimeout			=	$1C0D
+zFadeDelay			=	$1C0E
+zFadeDelayTimeout		=	$1C0F
+
+zPauseFlag			=	$1C10
+zHaltFlag			=	$1C11
+zFM3Settings			=	$1C12
+zTempoAccumulator		=	$1C13
+unk_1C15			=	$1C15				; Set twice, never read
+zFadeToPrevFlag			=	$1C16
+unk_1C17			=	$1C17				; Set once, never read
+unk_1C18			=	$1C18
+zUpdatingSFX			=	$1C19
+unk_1C21			=	$1C21
+zCurrentTempo			=	$1C24
+zContinousSFX			=	$1C25
+zContinousSFXFlag		=	$1C26
+zSpindashRev			=	$1C27
+zRingSpeaker			=	$1C28
+zFadeInTimeout			=	$1C29
+zVoiceTblPtrSave		=	$1C2A				; For 1-up
+zCurrentTempoSave		=	$1C2C				; For 1-up
+zSongBankSave			=	$1C2D				; For 1-up
+zTempoSpeedupSave		=	$1C2E				; For 1-up
+zSpeedupTimeout			=	$1C2F
+zDACIndex			=	$1C30				; bit 7 = 1 if playing, 0 if not; remaining 7 bits are index into DAC tables (1-based)
+zContSFXLoopCnt			=	$1C31				; Used as a loop counter for continuous SFX
+zSFXSaveIndex			=	$1C32
+zSongPosition			=	$1C33
+zTrackInitPos			=	$1C35
+zVoiceTblPtr			=	$1C37				; 2 bytes
+zSFXVoiceTblPtr			=	$1C39				; 2 bytes
+zSFXTempoDivider		=	$1C3B
+zSongBank			=	$1C3E				; Bits 15 to 22 of M68K bank address
+PlaySegaPCMFlag			=	$1C3F
+; Now starts song and SFX z80 RAM
+; Max number of music channels: 6 FM + 3 PSG or 1 DAC + 5 FM + 3 PSG
+zTracksStart			=	$1C40
+
+; Track data (each song track)
+; Playback control bits:
+; 	0 (01h)		Noise channel (PSG) or FM3 special mode (FM)
+; 	1 (02h)		Do not attack next note
+; 	2 (04h)		SFX is overriding this track
+; 	3 (08h)		'Alternate SMPS mode' flag
+; 	4 (10h)		'Track is resting' flag
+; 	5 (20h)		Unknown/unused
+; 	6 (40h)		'Sustain frequency' flag -- prevents frequency from changing again for the lifetime of the track
+; 	7 (80h)		Track is playing
+zTrackPlaybackControl	=  0
+; Track data (each song track)
+; Voice control bits:
+; 	0-1    		FM channel assignment bits (00 = FM1 or FM4, 01 = FM2 or FM5, 10 = FM3 or FM6/DAC, 11 = invalid)
+; 	2 (04h)		For FM/DAC channels, selects if reg/data writes are bound for part II (set) or part I (unset)
+; 	3 (08h)		Unknown/unused
+; 	4 (10h)		Unknown/unused
+; 	5-6    		PSG Channel assignment bits (00 = PSG1, 01 = PSG2, 10 = PSG3, 11 = Noise)
+; 	7 (80h)		PSG track if set, FM or DAC track otherwise
+zTrackVoiceControl	=  1
+zTrackTempoDivider	=  2
+zTrackDataPointerLow	=  3
+zTrackDataPointerHigh	=  4
+zTrackKeyOffset		=  5
+zTrackVolume		=  6
+zTrackModulationCtrl	=  7				; Modulation is on if nonzero. If only bit 7 is set, then it is normal modulation; otherwise, this-1 is index on frequency flutter pointer table
+zTrackVoiceIndex	=  8				; FM instrument/PSG voice
+zTrackStackPointer	=  9				; For call subroutine coordination flag
+zTrackAMSFMSPan		= $0A
+zTrackDurationTimeout	= $0B
+zTrackSavedDuration	= $0C				; Already multiplied by timing divisor
+; ---------------------------------
+; Alternate names for same offset:
+zTrackSavedDAC          = $0D				; For DAC channel
+; ---------------------------------
+zTrackFreqLow           = $0D				; For FM/PSG channels
+; ---------------------------------
+zTrackFreqHigh          = $0E				; For FM/PSG channels
+zTrackVoiceSongID       = $0F				; For using voices from a different song
+zTrackFreqDisplacement  = $10
+zTrackUnk11h            = $11
+zTrackVolFlutter        = $17				; Used for dynamic volume adjustments
+; ---------------------------------
+; Alternate names for same offsets:
+zTrackFMFlutter         = $18
+zTrackFMFlutterMask     = $19
+zTrackPSGNoise          = $1A
+; ---------------------------------
+zTrackHaveSSGEGFlag     = $18				; For FM channels, if track has SSG-EG data
+zTrackSSGEGPointerLow   = $19				; For FM channels, custom SSG-EG data pointer
+zTrackSSGEGPointerHigh  = $1A				; For FM channels, custom SSG-EG data pointer
+; ---------------------------------
+zTrackFeedbackAlgo      = $1B
+zTrackTLPtrLow          = $1C
+zTrackTLPtrHigh         = $1D
+zTrackNoteFillTimeout   = $1E
+zTrackNoteFillMaster    = $1F
+zTrackModulationPtrLow  = $20
+zTrackModulationPtrHigh = $21
+; ---------------------------------
+; Alternate names for same offset:
+zTrackModulationValLow  = $22
+; ---------------------------------
+zTrackFreqFlutterSens   = $22
+; ---------------------------------
+zTrackModulationValHigh = $23
+zTrackModulationWait    = $24
+; ---------------------------------
+; Alternate names for same offset:
+zTrackModulationSpeed   = $25
+; ---------------------------------
+zTrackFreqFlutterIndex  = $25
+; ---------------------------------
+zTrackModulationDelta   = $26
+zTrackModulationSteps   = $27
+zTrackLoopCounters      = $28				; May end u overwriting following data
+zTrackVoicesLow         = $2A				; Low byte of pointer to track's voices, used only if zUpdatingSFX is set
+zTrackVoicesHigh        = $2B				; High byte of pointer to track's voices, used only if zUpdatingSFX is set
+zTrackSz		= $30				; Size of all tracks
+
+; ----------------------------------------------------------------------------------------------------
+
+zSongFM6_DAC			=	zTracksStart+0*zTrackSz		; Music DAC or FM6 track
+zSongFM1			=	zTracksStart+1*zTrackSz
+zSongFM2			=	zTracksStart+2*zTrackSz
+zSongFM3			=	zTracksStart+3*zTrackSz
+zSongFM4			=	zTracksStart+4*zTrackSz
+zSongFM5			=	zTracksStart+5*zTrackSz
+zSongPSG1			=	zTracksStart+6*zTrackSz
+zSongPSG2			=	zTracksStart+7*zTrackSz
+zSongPSG3			=	zTracksStart+8*zTrackSz
+zTracksEnd			=	zTracksStart+9*zTrackSz
+; This is RAM for backup of songs (e.g., for 1-up jingle)
+zTracksSaveStart		=	zTracksEnd
+zSaveSongFM6_DAC		=	zTracksSaveStart+0*zTrackSz
+zSaveSongFM1			=	zTracksSaveStart+1*zTrackSz
+zSaveSongFM2			=	zTracksSaveStart+2*zTrackSz
+zSaveSongFM3			=	zTracksSaveStart+3*zTrackSz
+zSaveSongFM4			=	zTracksSaveStart+4*zTrackSz
+zSaveSongFM5			=	zTracksSaveStart+5*zTrackSz
+zSaveSongPSG1			=	zTracksSaveStart+6*zTrackSz
+zSaveSongPSG2			=	zTracksSaveStart+7*zTrackSz
+zSaveSongPSG3			=	zTracksSaveStart+8*zTrackSz
+zTracksSaveEnd			=	zTracksSaveStart+9*zTrackSz
+; This is RAM for SFX channels
+; Note this overlaps with the save RAM for 1-up sound, above
+; Max number of SFX channels: 4 FM + 3 PSG
+zTracksSFXStart			=	zTracksEnd
+zSFX_FM3			=	zTracksSFXStart+0*zTrackSz
+zSFX_FM4			=	zTracksSFXStart+1*zTrackSz
+zSFX_FM5			=	zTracksSFXStart+2*zTrackSz
+zSFX_FM6			=	zTracksSFXStart+3*zTrackSz
+zSFX_PSG1			=	zTracksSFXStart+4*zTrackSz
+zSFX_PSG2			=	zTracksSFXStart+5*zTrackSz
+zSFX_PSG3			=	zTracksSFXStart+6*zTrackSz
+zTracksSFXEnd			=	zTracksSFXStart+7*zTrackSz
+; ===========================================================================
+; Macros
+; ===========================================================================
+bankswitch1 macro
+		dc.b	$C3,$4C,$11
+		dc.b	$77,$0F,$77,$0F,$77,$0F,$77,$0F,$77,$0F,$77,$0F,$77,$0F,$77
+		dc.b	$AF,$77
+;                 ld	hl, zBankRegister
+; 		ld	(hl), a
+; 		rept 7
+; 			rrca
+; 			ld	(hl), a
+; 		endm
+; 		xor	a
+; 		ld	(hl), a
+    endm
+
+bankswitch2 macro
+		dc.b	$FE,$00
+		dc.b	$C2
+		dc.w	(((Z80DefaultBankSwitch&$1FFF)>>$08)|((Z80DefaultBankSwitch&$1FFF)<<$08))&$FFFF	
+		dc.b	$CD
+		dc.w	(((Z80BankSwitch0&$1FFF)>>$08)|((Z80BankSwitch0&$1FFF)<<$08))&$FFFF
+		dc.b	$18,$03
+Z80DefaultBankSwitch:
+		dc.b	$CD
+		dc.w	(((Z80BankSwitch&$1FFF)>>$08)|((Z80BankSwitch&$1FFF)<<$08))&$FFFF
+		dc.b	$00,$00,$00,$00,$00
+; 		ld	hl, zBankRegister
+; 		ld	(hl), a
+; 		rept 7
+; 			rra
+; 			ld	(hl), a
+; 		endm
+; 		xor	a
+; 		ld	(hl), a
+    endm
+
+bankswitch3 macro
+; 		ld	b, 8
+; -
+; 		ld	(zBankRegister), a
+; 		rrca
+; 		djnz	-
+; 		xor	a
+; 		ld	(zBankRegister), a
+    endm
+
+bankswitchToMusic macro
+; 		ld	hl, zBankRegister
+; 		ld	a, (zSongBank)
+; 		ld	(hl), a
+; 		rept 7
+; 			rra
+; 			ld	(hl), a
+; 		endm
+; 		xor	a
+; 		ld	(hl), a
+    endm
+
+
+zp macro addr
+                dc.b   addr&$FF,(addr&$7FFF)>>8
+           endm
+
+		align	$8000
+DriverData:
+; ---------------------------------------------------------------------------
+; ===========================================================================
+; Entry Point
+; ===========================================================================
+
+; EntryPoint:
+		dc.b	$F3                             ; di                                            ; Disable interrupts
+                dc.b    $F3                             ; di                                            ; Disable interrupts
+                dc.b    $ED,$56                                                                         ; set interrupt mode 1
+                dc.b    $C3                             ; jp	zInitAudioDriver
+                           zp zInitAudioDriver
+; ---------------------------------------------------------------------------
+; =============== S U B	R O U T	I N E =======================================
+;
+; Gets the correct pointer to pointer table for the data type in question
+; (music, sfx, voices, etc.).
+;
+; Input:  c    ID for data type.
+; Output: hl   Master pointer table for	index
+;         af'  Trashed
+;         b    Trashed
+
+; sub_8
+                align  8
+GetPointerTable:      ;	rsttarget
+		dc.b	$2A                             ; ld	hl, (ptrMasterIndex)			; Read pointer to (pointer to pointer table) table
+                            zp ptrMasterIndex
+                dc.b	$06,$00                         ; ld	b, 0                                    ; b = 0
+                dc.b    $09                             ; add	hl, bc                                  ; Add offset into pointer table
+                dc.b    $08                             ; ex	af, af'                                 ; Back up af
+                dc.b    $7E                             ; ld	a, (hl)                                 ; Read low byte of pointer into a
+		dc.b	$23                             ; inc	hl
+                dc.b    $66                             ; ld	h, (hl)                                 ; Read high byte of pointer into h
+                dc.b    $6F                             ; ld	l, a                                    ; Put low byte of pointer into l
+                dc.b    $08                             ; ex	af, af'                                 ; Restore af
+                dc.b    $C9                             ; ret
+; End of function GetPointerTable
+
+; ---------------------------------------------------------------------------
+;word_15
+
+ptrMasterIndex:
+                   zp DriverPointers
+;		dc.w	((($1300&$1FFF)>>$08)|(($1300&$1FFF)<<$08))&$FFFF       ; dw		DriverPointers
+
+; =============== S U B	R O U T	I N E =======================================
+;
+; Reads	an offset into a pointer table and returns dereferenced pointer.
+;
+;
+; Input:  a    Index into pointer table
+;	      hl   Pointer to pointer table
+; Output: hl   Selected	pointer	in pointer table
+;         bc   Trashed
+
+; sub_18
+		dc.b	$00                             ; align	8
+PointerTableOffset:     ;rsttarget
+                dc.b	$4F                             ; ld	c, a
+                dc.b	$06,$00                         ; ld	b, 0
+                dc.b	$09                             ; add	hl, bc
+                dc.b	$09                             ; add	hl, bc
+                dc.b	$00                             ; nop
+                dc.b	$00                             ; nop
+                dc.b	$00                             ; nop
+; End of function PointerTableOffset
+
+; =============== S U B	R O U T	I N E =======================================
+;
+; Dereferences a pointer.
+;
+; Input:  hl	Pointer
+; output: hl	Equal to what that was being pointed to by hl
+
+; loc_20
+                                                        ; align	8
+ReadPointer:	;rsttarget
+		dc.b	$7E                             ; ld	a, (hl)
+                dc.b	$23                             ; inc	hl
+                dc.b	$66                             ; ld	h, (hl)
+                dc.b	$6F                             ; ld	l, a
+                dc.b	$C9                             ; ret
+; End of function PointerTableOffset
+
+; ---------------------------------------------------------------------------
+                dc.b    $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+		dc.b	$00,$00,$00,$00,$00,$00,$00,$00                  ; nop?
+; ---------------------------------------------------------------------------
+;	align	8
+; =============== S U B	R O U T	I N E =======================================
+;
+; This subroutine is called every V-Int. After it is processed, the z80
+; returns to the digital audio loop to comtinue playing DAC samples.
+;
+; If the SEGA PCM is being played, it disables interrupts -- this means that
+; this procedure will NOT be called while the SEGA PCM is playing.
+;
+;zsub_38
+zVInt:	;rsttarget
+                dc.b	$F3                             ; di                                            ; Disable interrupts
+                dc.b	$F5                             ; push	af                                      ; Save af
+                dc.b	$FD,$E5                         ; push	iy                                      ; Save iy
+                dc.b	$D9                             ; exx                                           ; Save bc,de,hl
+
+ @loop:                                             ; -
+                dc.b    $ED,$5F                         ; ld	a, r                                    ; Get memory refresh register
+                dc.b    $32                             ; ld	(unk_1C17), a				; Save it
+                            zp unk_1C17
+  		dc.b	$CD;                	        ; call	zUpdateEverything			; Update all tracks
+                            zp zUpdateEverything
+                dc.b    $3A             		; ld	a, (zPalFlag)				; Get PAL flag
+                           zp zPalFlag
+                dc.b    $B7		                ; or	a					; Is it set?
+                dc.b    $28,$12                         ; jr	z, ++					; Branch if not (NTSC)
+                dc.b    $3A                             ; ld	a, (zPalDblUpdCounter)			; Get PAL double-update timeout counter
+                           zp zPalDblUpdCounter
+                dc.b    $B7		                ; or	a					; Is it zero?
+                dc.b    $20,$08		                ; jr	nz, +					; Branch if not
+		dc.b	$3E,$06		                ; ld	a, 5					; Set it back to 5...
+                dc.b    $32                             ; ld	(zPalDblUpdCounter), a			; ... and save it
+                           zp zPalDblUpdCounter
+                dc.b    $C3     		        ; jp	-					; Go again
+                           zp @loop
+                                                   ; +
+                dc.b    $3D   		                ; dec	a					; Decrease PAL double-update timeout counter
+                dc.b    $32                             ; ld	(zPalDblUpdCounter), a			; Store it
+                           zp zPalDblUpdCounter
+
+                dc.b    $AF  ;?????? why is this here???????           XOR	A
+                dc.b    $32,$21,$1C  ;?????? why is this here???????   LD	(nn),A
+
+                                                   ; +
+		dc.b	$3A;,$30,$1C		        ; ld	a, (zDACIndex)				; Get index of playing DAC sample
+                           zp zDACIndex
+                dc.b    $E6,$7F		                ; and	7Fh					; Strip 'DAC playing' bit
+                dc.b    $4F           		        ; ld	c, a					; c = a
+                dc.b    $06,$00         		; ld	b, 0					; Sign extend c to bc
+                dc.b    $21,$DC,$00   	        	; ld	hl, DAC_Banks				; Make hl point to DAC bank table
+                           ;zp DAC_Banks
+                dc.b    $09           		        ; add	hl, bc					; Offset into entry for current sample
+                dc.b    $7E            		        ; ld	a, (hl)					; Get bank index
+                bankswitch1      		        ; bankswitch1					; Switch to current DAC sample's bank
+		dc.b	$D9     		        ; exx						; Restore bc,de,hl
+                dc.b    $FD,$E1      		        ; pop	iy					; Restore iy
+                dc.b    $F1          		        ; pop	af					; Restore af
+                dc.b    $06,$01      		        ; ld	b, 1					; b = 1
+                dc.b    $C9        		        ; ret
+; ---------------------------------------------------------------------------
+;loc_85
+zInitAudioDriver:
+                dc.b    $31                             ; ld	sp, z80_stack			        ; set the stack pointer to 0x2000 (end of z80 RAM)
+			   zp z80_stack
+                        ; The following instruction block keeps the z80 in a tight loop.
+                dc.b    $0E,$00		                ; ld	c, 0					; c = 0
+                                                   ; -
+                dc.b    $06,$00		                ; ld	b, 0					; b = 0
+		dc.b	$10,$FE      		        ; djnz	$					; Loop in this instruction, decrementing b each iteration, until b = 0
+                dc.b    $0D        		        ; dec	c					; c--
+                dc.b    $28,$F9 		        ; jr	z, -					; Loop if c = 0
+
+                dc.b    $CD,$29,$09 		        ; call	zMusicFade				; Stop all music
+                           ;zp zMusicFade
+                dc.b    $3E,$80,$3E,$06 		; ld	a, zmake68kBank(DacBank2)		; Set song bank to second DAC bank (default value)
+                dc.b    $32                             ; ld	(zSongBank), a				; Store it
+                           zp zSongBank
+                dc.b    $AF  		                ; xor	a					; a = 0
+		dc.b	$32                       	; ld	(zSpindashRev), a			; Reset spindash rev
+                           zp zSpindashRev
+                dc.b    $32     		        ; ld	(zDACIndex), a				; Clear current DAC sample index
+                           zp zDACIndex
+                dc.b    $32             		; ld	(PlaySegaPCMFlag), a			; Clear the Sega sound flag
+                           zp PlaySegaPCMFlag
+                dc.b    $32   		                ; ld	(zRingSpeaker), a			; Make rings play on left speaker
+                           zp zRingSpeaker
+                dc.b    $3E,$05        		        ; ld	a, 5					; Set PAL double-update counter to 5
+                dc.b    $32       		        ; ld	(zPalDblUpdCounter), a			; (that is, do not double-update for 5 frames)
+		           zp zPalDblUpdCounter
+                dc.b	$FB                		; ei						; Enable interrupts
+                dc.b    $C3,$62,$10        		; jp	zPlayDigitalAudio			; Start digital audio loop
+                           ;zp zPlayDigitalAudio
+
+; =============== S U B	R O U T	I N E =======================================
+;
+; Writes a reg/data pair to part I or II
+;
+; Input:  a    Value for register
+;         c    Value for data
+;         ix   Pointer to track RAM
+
+;sub_AF
+zWriteFMIorII:
+                dc.b    $DD,$CB,zTrackVoiceControl,$7E  ; bit	7, (ix+zTrackVoiceControl)		; Is this a PSG track?
+                dc.b    $C0      		        ; ret	nz					; Is so, quit
+                dc.b    $DD,$CB,zTrackPlaybackControl,$56 ; bit	2, (ix+zTrackPlaybackControl)	        ; Is SFX overriding this track?
+                dc.b    $C0                    		; ret	nz					; Return if yes
+                dc.b    $DD,$86,zTrackVoiceControl      ; add	a, (ix+zTrackVoiceControl)		; Add the channel bits to the register address
+		dc.b	$DD,$CB,zTrackVoiceControl,$56  ; bit	2, (ix+zTrackVoiceControl)		; Is this the DAC channel or FM4 or FM5 or FM6?
+                dc.b    $20,$09                  	; jr	nz, zWriteFMII_reduced			; If yes, write reg/data pair to part II;
+
+; End of function zWriteFMIorII
+
+
+; =============== S U B	R O U T	I N E =======================================
+;
+; Writes a reg/data pair to part I
+;
+; Input:  a    Value for register
+;         c    Value for data
+
+;sub_C2
+zWriteFMI:
+                dc.b    $32        		        ; ld	(zYM2612_A0), a				; Select YM2612 register
+                           zp zYM2612_A0
+                dc.b    $00        		        ; nop						; Wait
+                dc.b    $79            		        ; ld	a, c					; a = data to send
+                dc.b    $32      		        ; ld	(zYM2612_D0), a				; Send data to register
+		           zp zYM2612_D0
+                dc.b	$C9              		; ret
+
+; End of function zWriteFMI
+
+; ---------------------------------------------------------------------------
+; START	OF FUNCTION CHUNK FOR zWriteFMIorII
+
+;loc_CB
+zWriteFMII_reduced:
+
+                dc.b     $D6,$04         		; sub	4					; Strip 'bound to part II regs' bit
+; END OF FUNCTION CHUNK	FOR zWriteFMIorII
+
+; =============== S U B	R O U T	I N E =======================================
+;
+; Writes a reg/data pair to part II
+;
+; Input:  a    Value for register
+;         c    Value for data
+
+;sub_CD
+zWriteFMII:
+
+                dc.b     $32   	                       ; ld	(zYM2612_A1), a				; Select YM2612 register
+                             zp zYM2612_A1
+                dc.b     $00     		       ; nop						; Wait
+                dc.b     $79        		       ; ld	a, c					; a = data to send
+                dc.b     $32   		               ; ld	(zYM2612_D1), a				; Send data to register
+                             zp zYM2612_D1
+                dc.b     $C9               	       ; ret
+
+; End of function zWriteFMII
+
+; ---------------------------------------------------------------------------
+; ===========================================================================
+; DAC BANKS
+; ===========================================================================
+; Note: this table has a dummy first entry for the case when there is no DAC
+; sample being played -- the code still results in a valid bank switch, and
+; does not need to worry about special cases.
+Dac_Sample_Selector:
+		dc.b	((DacBank0>>$F)),((DacBank0>>$F)),((DacBank0>>$F)),((DacBank0>>$F))
+		dc.b	((DacBank0>>$F)),((DacBank0>>$F)),((DacBank0>>$F)),((DacBank0>>$F))
+		dc.b	((DacBank0>>$F)),((DacBank0>>$F)),((DacBank0>>$F)),((DacBank0>>$F))
+		dc.b	((DacBank0>>$F)),((DacBank0>>$F)),((DacBank0>>$F)),((DacBank0>>$F))
+		dc.b	((DacBank0>>$F)),((DacBank0>>$F)),((DacBank0>>$F)),((DacBank0>>$F))
+		dc.b	((DacBank0>>$F)),((DacBank0>>$F)),((DacBank0>>$F)),((DacBank0>>$F))
+		dc.b	((DacBank0>>$F)),((DacBank0>>$F)),((DacBank0>>$F)),((DacBank1>>$F))
+		dc.b	((DacBank1>>$F)),((DacBank1>>$F)),((DacBank1>>$F)),((DacBank1>>$F))
+		dc.b	((DacBank1>>$F)),((DacBank1>>$F)),((DacBank1>>$F)),((DacBank1>>$F))
+		dc.b	((DacBank1>>$F)),((DacBank1>>$F)),((DacBank1>>$F)),((DacBank1>>$F))
+		dc.b	((DacBank1>>$F)),((DacBank1>>$F)),((DacBank1>>$F)),((DacBank2>>$F))
+		dc.b	((DacBank2>>$F)),((DacBank2>>$F)),((DacBank2>>$F)),((DacBank2>>$F))
+		dc.b	((DacBank2>>$F)),((DacBank2>>$F)),((DacBank2>>$F)),((DacBank2>>$F))
+		dc.b	((DacBank2>>$F)),((DacBank2>>$F)),((DacBank2>>$F)),((DacBank2>>$F))
+		dc.b	((DacBank2>>$F)),((DacBank2>>$F)),((DacBank2>>$F)),((DacBank2>>$F))
+		dc.b	((DacBank2>>$F)),((DacBank2>>$F)),((DacBank2>>$F)),((DacBank2>>$F))
+		dc.b	((DacBank2>>$F)),((DacBank2>>$F)),((DacBank2>>$F)),((DacBank2>>$F))
+		dc.b	((DacBank2>>$F))
+; =============== S U B	R O U T	I N E =======================================
+;
+;sub_11B
+zUpdateEverything:
+		dc.b	$CD,$E8,$07		        ; call	zPauseUnpause				; Pause/unpause according to M68K input
+                           ;zp zPauseUnpause
+                dc.b    $CD,$A2,$01     	        ; call	zUpdateSFXTracks			; Do SFX tracks
+                           ;zp zUpdateSFXTracks
+
+;loc_121
+zUpdateMusic:
+                dc.b    $CD,$B1,$09     		; call	TempoWait				; Delay song tracks as appropriate for main tempo mod
+                           ;zp TempoWait
+                dc.b    $CD,$62,$08   		        ; call	zDoMusicFadeOut				; Check if music should be faded out and fade if needed
+                           ;zp zDoMusicFadeOut
+                dc.b    $CD,$C6,$08    		        ; call	zDoMusicFadeIn				; Check if music should be faded in and fade if needed
+                           ;zp zDoMusicFadeIn
+		dc.b	$3A      		        ; ld	a, (zFadeToPrevFlag)			; Get fade-to-prev flag
+                           zp zFadeToPrevFlag
+                dc.b    $FE,MusID_1UP-1         	; cp	MusID_1UP-1				; Is it still 1-Up?
+                dc.b    $20,$18         		; jr	nz, zlocCheckFadeIn			; Branch if not
+                           ;zp zlocCheckFadeIn
+                dc.b    $3A             		; ld	a, (zMusicNumber)			; Get next music to play
+                           zp zMusicNumber
+                dc.b    $FE,MusID_1UP          		; cp	MusID_1UP				; Is it another 1-Up?
+                dc.b    $28,$04      		        ; jr	z, +					; Branch if yes
+                dc.b    $FE,MusID__End-1           	; cp	MusID__End-1				; Is it music (except credits song)?
+		dc.b	$38,$04     		        ; jr	c, ++					; Branch if not
+                                                   ;+
+                dc.b    $AF               		; xor	a					; a = 0
+                dc.b    $32              		; ld	(zMusicNumber), a			; Clear queue entry
+                           zp zMusicNumber
+                                                   ;+
+                dc.b    $AF               		; xor	a					; a = 0
+                dc.b    $32               		; ld	(zSFXNumber0), a			; Clear first queued SFX
+                           zp zSFXNumber0
+                dc.b    $32              		; ld	(zSFXNumber1), a			; Clear second queued SFX
+                           zp zSFXNumber1
+                dc.b    $18,$1F         		; jr	+
+
+;loc_149
+zlocCheckFadeIn:
+                dc.b    $3A   		                ; ld	a, (zFadeToPrevFlag)			; Get fade-to-previous flag
+                           zp zFadeToPrevFlag
+		dc.b	$FE,$FF           		; cp	0FFh					; Is it 0FFh?
+                dc.b    $28,$18                 	; jr	z, +					; Branch if yes
+                dc.b    $21        		        ; ld	hl, zMusicNumber			; Point hl to M68K input
+                           zp zMusicNumber
+                dc.b    $5E        		        ; ld	e, (hl)					; e = next song to play
+                dc.b    $23         		        ; inc	hl					; Advance pointer
+                dc.b    $56             		; ld	d, (hl)					; d = next SFX to play
+                dc.b    $23         		        ; inc	hl					; Advance pointer
+                dc.b    $7E       		        ; ld	a, (hl)					; a = next SFX to play
+                dc.b    $B2          		        ; or	d					; Combine bits of a and d
+                dc.b    $B3                 		; or	e					; Is anything in the play queue?
+		dc.b	$28,$0C                         ; jr	z, +					; Branch if not
+                dc.b    $CD,$C7,$09          		; call	zFillSoundQueue				; Transfer M68K input
+                           ;zp zFillSoundQueue
+                dc.b    $CD,$DF,$04       		; call	zCycleSoundQueue			; Cycle queue and play first entry
+                           ;zp zCycleSoundQueue
+                dc.b    $CD,$DF,$04       		; call	zCycleSoundQueue			; Cycle queue and play second entry
+                           ;zp zCycleSoundQueue
+                dc.b    $CD,$DF,$04       		; call	zCycleSoundQueue			; Cycle queue and play third entry
+                           ;zp zCycleSoundQueue
+                                                   ;+
+Z80_0x016E:
+		dc.b	$3A       		        ; ld	a, (zSongBank)				; Get bank ID for music
+                           zp zSongBank
+                bankswitch2                                                		                ; Bank switch to it
+		dc.b	$AF                   		; xor	a					; a = 0
+                dc.b    $32             	        ; ld	(zUpdatingSFX), a			; Updating music
+                           zp zUpdatingSFX
+                dc.b    $3A              		; ld	a, (zFadeToPrevFlag)			; Get fade-to-previous flag
+                           zp zFadeToPrevFlag
+                dc.b    $FE,$FF             		; cp	0FFh					; Is it 0FFh?
+                dc.b    $CC,$05,$0A          		; call	z, zFadeInToPrevious		        ; Fade to previous if yes
+                           ;zp zFadeInToPrevious
+		dc.b	$DD,$21          		; ld	ix, zTracksStart			; ix = track RAM
+                               zp zTracksStart
+                dc.b    $DD,$CB,zTrackPlaybackControl,$7E ; bit	7, (ix+zTrackPlaybackControl)	        ; Is FM6/DAC track playing?
+                dc.b    $C4,$7A,$0B                	; call	nz, zUpdateDACTrack			; Branch if yes
+                           ;np zUpdateDACTrack
+                dc.b    $06,(zTracksEnd-zSongFM1)/zTrackSz; ld	b, (zTracksEnd-zSongFM1)/zTrackSz	; Number of tracks
+                dc.b    $DD,$21,$70,$1C         	; ld	ix, zSongFM1				; ix = FM1 track RAM
+		dc.b	$18,$1A            		; jr	+					; Play all tracks
+
+; =============== S U B	R O U T	I N E =======================================
+;
+;sub_19E
+zUpdateSFXTracks:
+                dc.b    $3E,$01            		; ld	a, 1					; a = 1
+                dc.b    $32               		; ld	(zUpdatingSFX), a			; Updating SFX
+                           zp zUpdatingSFX
+		dc.b	$3E,	((SndBank>>$0F))   	; ld	a, zmake68kBank(SndBank)		; Get SFX bank ID
+                                          		; bankswitch2	vvvvvvv??????			; Bank switch to SFX
+		dc.b	$CD                                                               ; !!!!!
+		dc.w	(((Z80BankSwitch&$1FFF)>>$08)|((Z80BankSwitch&$1FFF)<<$08))&$FFFF ; !!!!!   this part is macro'd in proper disassembly
+		dc.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00                           ; !!!!!
+		dc.b	$DD,$21                         ; ld	ix, zTracksSFXStart			; ix = start of SFX track RAM
+                               zp zTracksSFXStart
+                dc.b    $06,(zTracksSFXEnd-zTracksSFXStart)/zTrackSz; ld	b, (zTracksSFXEnd-zTracksSFXStart)/zTrackSz	; Number of channels
+                                                    ;/
+                dc.b    $C5              		; push	bc					; Save bc
+                dc.b    $DD,$CB,zTrackPlaybackControl,$7E ; bit	7, (ix+zTrackPlaybackControl)	        ; Is track playing?
+		dc.b	$C4,$E6,$01      		; call	nz, zUpdateFMorPSGTrack		        ; Call routine if yes
+                           ;zp zUpdateFMorPSGTrack
+                dc.b    $11,zTrackSz,$00 		; ld	de, zTrackSz				; Spacing between tracks
+                dc.b    $DD,$19          		; add	ix, de					; Advance to next track
+                dc.b    $C1        		        ; pop	bc					; Restore bc
+                dc.b    $10,$F0      		        ; djnz	-                                       ; Loop for all tracks
+                					
+                dc.b    $3A         		        ; ld	a, (zTempoSpeedup)			; Get tempo speed-up value
+                           zp zTempoSpeedup
+                dc.b    $B7               		; or	a					; Is music sped up?
+		dc.b	$C8             		; ret	z					; Return if not
+                dc.b    $3A              		; ld	a, (zSpeedupTimeout)			; Get extra tempo timeout
+                           zp zSpeedupTimeout
+                dc.b    $B7              		;or	a					; Has it expired?
+                dc.b    $C2               		; jp	nz, +					; Branch if not
+                           zp @decreasespeeduptimer
+                dc.b    $3A         		        ; ld	a, (zTempoSpeedup)			; Get master tempo speed-up value
+                           zp zTempoSpeedup
+                dc.b    $32       		        ; ld	(zSpeedupTimeout), a			; Reset extra tempo timeout to it
+                           zp zSpeedupTimeout
+                dc.b    $C3            		        ; jp	zUpdateMusic				; Update music again
+                           zp zUpdateMusic
+; ----------------------------------------------------------------------------------------------------------------------------------------------------
+@decreasespeeduptimer:                                                   ;+
+		dc.b	$3D               		; dec	a					; Decrement timeout...
+                dc.b    $32              		; ld	(zSpeedupTimeout), a			; ... then store new value
+                           zp zSpeedupTimeout
+                dc.b    $C9              		; ret
+; End of function zUpdateSFXTracks
+
+
+; =============== S U B	R O U T	I N E =======================================
+; Updates FM or PSG track.
+;
+;sub_1E9
+zUpdateFMorPSGTrack:
+                dc.b    $DD,$CB,zTrackVoiceControl,$7E  ; bit	7, (ix+zTrackVoiceControl)		; Is this a PSG channel?
+                dc.b    $C2,$9C,$0F                     ; jp	nz, zUpdatePSGTrack			; Branch if yes
+                           ; zp zUpdatePSGTrack
+                dc.b    $CD         	                ; call	zTrackRunTimer				; Run note timer
+                            zp zTrackRunTimer
+		dc.b	$20,$17              		; jr	nz, +					; Branch if note hasn't expired yet
+                dc.b    $CD              		; call	zGetNextNote				; Get next note for FM track
+                            zp zGetNextNote
+                dc.b    $DD,$CB,zTrackPlaybackControl,$66 ; bit	4, (ix+zTrackPlaybackControl)	        ; Is track resting?
+                dc.b    $C0                   		; ret	nz					; Return if yes
+                dc.b    $CD                     	; call	zPrepareModulation			; Initialize modulation
+                            zp zPrepareModulation
+                dc.b    $CD,$6C,$04         	        ; call	zUpdateFreq				; Add frequency displacement to frequency
+                           ; zp zUpdateFreq
+		dc.b	$CD              		; call	zDoModulation				; Apply modulation
+                            zp zDoModulation
+                dc.b    $CD              		; call	zFMSendFreq				; Send frequancy to YM2612
+                           zp zFMSendFreq
+                dc.b    $C3          		        ; jp	zFMNoteOn				; Note on on all operators
+                            zp zFMNoteOn
+; ---------------------------------------------------------------------------
+                                                   ; +
+                dc.b    $DD,$CB,zTrackPlaybackControl,$66 ; bit	4, (ix+zTrackPlaybackControl)	        ; Is track resting?
+                dc.b    $C0                   		; ret	nz					; Return if yes
+                dc.b    $CD        		        ; call	zDoFMFlutter				; Do FM flutter for track
+                            zp zDoFMFlutter
+                dc.b    $DD,$7E,zTrackNoteFillTimeout   ; ld	a, (ix+zTrackNoteFillTimeout)	        ; Get note fill timeout
+                dc.b    $B7              		; or	a					; Has timeout expired?
+                dc.b    $28,$06           		; jr	z, +					; Branch if yes
+                dc.b    $DD,$35,zTrackNoteFillTimeout   ; dec	(ix+zTrackNoteFillTimeout)		; Update note fill timeout
+                dc.b    $CA,$58,$03       		; jp	z, zKeyOffIfActive			; Send key off if needed
+                           ; zp zKeyOffIfActive    
+                                                   ; +
+                dc.b    $CD,$6C,$04       		; call	zUpdateFreq				; Add frequency displacement to frequency
+		dc.b	$DD,$CB,zTrackPlaybackControl,$76 ; bit	6, (ix+zTrackPlaybackControl)	        ; Is 'sustain frequency' bit set?
+                dc.b	$C0               		; ret	nz					; Return if yes
+                dc.b	$CD,$C6,$03       		; call	zDoModulation				; Apply modulation then fall through
+; End of function zUpdateFMorPSGTrack
+
+
+; =============== S U B	R O U T	I N E =======================================
+; Uploads track's frequency to YM2612.
+;
+; Input:   ix    Pointer to track RAM
+;          hl    Frequency to upload
+;          de    For FM3 in special mode, pointer to extra FM3 frequency data (never correctly set)
+; Output:  a     Trashed
+;          bc    Trashed
+;          hl    Trashed
+;          de    Increased by 8
+;
+;sub_22B
+zFMSendFreq:
+                dc.b    $DD,$CB,zTrackPlaybackControl,$56 ; bit	2, (ix+zTrackPlaybackControl)	        ; Is SFX overriding this track?
+                dc.b    $C0                   		; ret	nz					; Return if yes
+                dc.b    $DD,$CB,zTrackPlaybackControl,$46 ; bit	0, (ix+zTrackPlaybackControl)	        ; Is track in special mode (FM3 only)?
+		dc.b	$C2,$41,$02          		; jp	nz, +					; Branch if yes
+                                                   ; -
+                dc.b    $3E,$A4                    	; ld	a, 0A4h					; Command to update frequency MSB
+                dc.b    $4C             		; ld	c, h					; High byte of frequency
+                dc.b    $CD              		; call	zWriteFMIorII				; Send it to YM2612
+                            zp zWriteFMIorII
+                dc.b    $3E,$A0           		; ld	a, 0A0h					; Command to update frequency LSB
+                dc.b    $4D               		; ld	c, l					; Low byte of frequency
+                dc.b    $CD      		        ; call	zWriteFMIorII				; Send it to YM2612
+                            zp zWriteFMIorII
+		dc.b	$C9            		        ; ret
+
+; ---------------------------------------------------------------------------
+                                                   ; +
+                dc.b    $DD,$7E,zTrackVoiceControl      ; ld	a, (ix+zTrackVoiceControl)		; a = voice control byte
+                dc.b    $FE,$02       	        	; cp	2					; Is this FM3?
+                dc.b    $20,$EC           		; jr	nz, -					; Branch if not
+                dc.b    $06,(zSpecialFreqCommands_End-zSpecialFreqCommands); ld	b, zSpecialFreqCommands_End-zSpecialFreqCommands	; Number of entries
+                dc.b    $21              		; ld	hl, zSpecialFreqCommands		; Lookup table
+                            zp zSpecialFreqCommands
+		; DANGER! de is unset here, and could be pointing anywhere! Luckily,
+		; only reads are performed from it.
+                                                   ; -
+                dc.b    $C5     		        ; push	bc					; Save bc
+                dc.b    $7E         		        ; ld	a, (hl)					; a = register selector
+                dc.b    $23              		; inc	hl					; Advance pointer
+		dc.b	$E5            	         	; push	hl					; Save hl
+                dc.b    $EB         		        ; ex	de, hl					; Exchange de and hl
+                dc.b    $4E             		; ld	c, (hl)					; Get byte from whatever the hell de was pointing to
+                dc.b    $23            		        ; inc	hl					; Advance pointer
+                dc.b    $46              		; ld	b, (hl)					; Get byte from whatever the hell de was pointing to
+                dc.b    $23              		; inc	hl					; Advance pointer
+                dc.b    $EB                		; ex	de, hl					; Exchange de and hl
+                dc.b    $DD,$6E,zTrackFreqLow       	; ld	l, (ix+zTrackFreqLow)			; l = low byte of track frequency
+                dc.b    $DD,$66,zTrackFreqHigh 		; ld	h, (ix+zTrackFreqHigh)			; h = high byte of track frequency
+                dc.b    $09              		; add	hl, bc					; hl = full frequency for operator
+                dc.b    $F5                		; push	af					; Save af
+                dc.b    $4C               		; ld	c, h					; High byte of frequency
+		dc.b	$CD              		; call	zWriteFMI				; Sent it to YM2612
+                            zp zWriteFMI
+                dc.b    $F1                  		; pop	af					; Restore af
+                dc.b    $D6,$04             		; sub	4					; Move on to frequency LSB
+                dc.b    $4D              		; ld	c, l					; Low byte of frequency
+		dc.b	$CD              		; call	zWriteFMI				; Sent it to YM2612
+                            zp zWriteFMI
+                dc.b    $E1               		; pop	hl					; Restore hl
+                dc.b    $C1                		; pop	bc					; Restore bc
+                dc.b    $10,$DF           		; djnz	-					; Loop for all operators
+                dc.b    $C9                 		; ret
+; End of function zFMSendFreq
+
+; ---------------------------------------------------------------------------
+;loc_272
+zSpecialFreqCommands:
+                dc.b    $AD                             ; Operator 4 frequency MSB
+		dc.b	$AE                             ; Operator 3 frequency MSB
+                dc.b    $AC                             ; Operator 2 frequency MSB
+                dc.b    $A6                             ; Operator 1 frequency MSB
+zSpecialFreqCommands_End
+
+; =============== S U B	R O U T	I N E =======================================
+;                
+znullsub_A:
+                dc.b    $C9
+; End of function nullsub_A
+
+
+; =============== S U B	R O U T	I N E =======================================
+; Gets next note from the track's data stream. If any coordination flags are
+; found, they are handled and then the function keeps looping until a note is
+; found.
+;
+; Input:   ix    Pointer to track's RAM
+; Output:  de    Pointer to current position on track data
+;          hl    Note frequency
+;          All others possibly trashed due to coordination flags
+;
+;sub_277
+zGetNextNote:
+                dc.b    $DD,$5E,zTrackDataPointerLow   	; ld	e, (ix+zTrackDataPointerLow)	; e = low byte of track data pointer
+                dc.b    $DD,$56,zTrackDataPointerHigh   ; ld	d, (ix+zTrackDataPointerHigh)	; d = high byte of track data pointer
+                dc.b    $DD,$CB,zTrackPlaybackControl,$8E ; res	1, (ix+zTrackPlaybackControl)	; Clear 'do not attack next note' flag
+                dc.b	$DD,$CB,zTrackPlaybackControl,$A6 ; res	4, (ix+zTrackPlaybackControl)	; Clear 'track is at rest' flag
+
+
+;loc_285
+zGetNextNote_cont:
+                dc.b    $1A                   		; ld	a, (de)				; Get next byte from track
+                dc.b    $13                             ; inc	de                              ; Advance pointer
+                dc.b    $FE,FirstCoordFlag     		; cp	FirstCoordFlag			; Is it a coordination flag?
+                dc.b    $D2,$CF,$0B           		; jp	nc, zHandleFMorPSGCoordFlag	; Branch if yes
+                          ; zp zHandleFMorPSGCoordFlag
+                dc.b    $08                  		; ex	af, af'				; Save af
+                dc.b    $CD              		; call	zKeyOffIfActive			; Kill note
+                           zp zKeyOffIfActive
+                dc.b    $08                 		; ex	af, af'				; Restore af
+		dc.b	$DD,$CB,zTrackPlaybackControl,$5E; bit	3, (ix+zTrackPlaybackControl)	; Is alternate SMPS mode flag set?
+                dc.b    $C2             		; jp	nz, zAlternateSMPS		; Branch if yes
+                            zp zAlternateSMPS
+                dc.b    $B7               		; or	a				; Is this a duration?
+
+                dc.b    $F2              		; jp	p, zStoreDuration		; Branch if yes
+                            zp zStoreDuration
+                dc.b    $D6,$81             		; sub	81h				; Make the note into a 0-based index
+                dc.b    $F2,$A3,$02        		; jp	p, +				; Branch if it is a note and not a rest
+                dc.b    $CD,$44,$10           		; call	zKillTrack			; Put track at rest
+                           ; zp zKillTrack
+		dc.b	$18,$2E               		; jr	zGetNoteDuration
+; ---------------------------------------------------------------------------
+                                                   ; +
+                dc.b    $DD,$86,zTrackKeyOffset         ; add	a, (ix+zTrackKeyOffset)		; Add in key displacement
+                dc.b    $21,$88,$0A           		; ld	hl, zPSGFrequencies		; PSG frequency lookup table
+                           ; zp zPSGFrequencies
+                dc.b    $F5                  		; push	af				; Save af
+                dc.b    $DF               		; rst	PointerTableOffset		; hl = frequency value for note
+                dc.b    $F1                   		; pop	af				; Restore af
+                dc.b    $DD,$CB,zTrackVoiceControl,$7E  ; bit	7, (ix+zTrackVoiceControl)	; Is this a PSG track?
+		dc.b	$20,$19              		; jr	nz, zGotNoteFreq		; Branch if yes
+                dc.b	$D5                   		; push	de				; Save de
+                dc.b	$16,$08             		; ld	d, 8				; Each octave above the first adds this to frequency high bits
+                dc.b	$1E,$0C               		; ld	e, 0Ch				; 12 notes per octave
+                dc.b	$08                   		; ex	af, af'				; Exchange af with af'
+                dc.b	$AF                 		; xor	a				; Clear a (which will clear a')
+
+                                                   ; -
+                dc.b	$08             		; ex	af, af'				; Exchange af with af'
+                dc.b	$93                   		; sub	e				; Subtract 1 octave from the note
+                dc.b	$38,$05               		; jr	c, +				; If this is less than zero, we are done
+                dc.b	$08                 		; ex	af, af'				; Exchange af with af'
+                dc.b	$82                		; add	a, d				; One octave up
+                dc.b	$18,$F8            		; jr	-				; Loop
+; ---------------------------------------------------------------------------
+		dc.b	$08                  		; ex	af, af'				; Exchange af with af' (dead code)
+; ---------------------------------------------------------------------------
+                                                   ; +
+                dc.b    $83             		; add	a, e				; Add 1 octave back (so note index is positive)
+                dc.b    $21,$30,$0B          		; ld	hl, zFMFrequencies		; FM first octave frequency lookup table
+                           ; zp zFMFrequencies
+                dc.b    $DF                  		; rst	PointerTableOffset		; hl = frequency of the note on the first octave
+                dc.b    $08                  		; ex	af, af'				; Exchange af with af'
+                dc.b    $B4                   		; or	h				; a = high bits of frequency (including octave bits, which were in a)
+                dc.b    $67                 		; ld	h, a				; h = high bits of frequency (including octave bits)
+                dc.b    $D1              		; pop	de				; Restore de
+
+;loc_2CE
+zGotNoteFreq:
+                dc.b    $DD,$75,zTrackFreqLow          	; ld	(ix+zTrackFreqLow), l		; Store low byte of note frequency
+                dc.b    $DD,$74,zTrackFreqHigh          ; ld	(ix+zTrackFreqHigh), h		; Store high byte of note frequency
+
+;loc_2D4
+zGetNoteDuration:
+		dc.b	$1A                   		; ld	a, (de)				; Get duration from the track
+                dc.b	$B7                   		; or	a				; Is it an actual duration?
+                dc.b	$F2              		; jp	p, zGotNoteDuration		; Branch if yes
+                            zp zGotNoteDuration
+                dc.b	$DD,$7E,zTrackSavedDuration     ; ld	a, (ix+zTrackSavedDuration)		; Get saved duration
+                dc.b	$DD,$77,zTrackDurationTimeout   ; ld	(ix+zTrackDurationTimeout), a	; Set it as next timeout duration
+                dc.b	$18,$2D               		; jr	zFinishTrackUpdate
+
+; ---------------------------------------------------------------------------
+		; Unused/dead code:
+                dc.b	$1A
+                dc.b	$13
+		dc.b	$DD,$77,$11
+                dc.b	$18,$1E
+; ---------------------------------------------------------------------------
+;loc_2E8
+zAlternateSMPS:
+		; Setting bit 3 on zTrackPlaybackControl puts the song in a weird mode.
+		;
+		; This weird mode has literal frequencies and durations on the track.
+		; Each byte on the track is either a coordination flag (0E0h to 0FFh) or
+		; the high byte of a frequency. For the latter case, the following byte
+		; is then the low byte of this same frequency.
+		; If the frequency is nonzero, the (sign extended) key displacement is
+		; simply *added* to this frequency.
+		; After the frequency, there is then a byte that is unused.
+		; Finally, there is a raw duration byte following.
+		;
+		; To put the track in this mode, coord. flag 0FDh can be used; if the
+		; parameter byte is 1, the mode is toggled on. To turn the mode off,
+		; coord. flag 0FDh can be used with a parameter != 1.
+                dc.b	$67              		; ld	h, a				; h = byte from track
+                dc.b	$1A                  		; ld	a, (de)				; a = next byte from track
+                dc.b	$13                  		; inc	de				; Advance pointer
+                dc.b	$6F                    		; ld	l, a				; l = last byte read from track
+                dc.b	$B4                  		; or	h				; Is hl nonzero?
+                dc.b	$28,$0C               		; jr	z, ++				; Branch if not
+                dc.b	$DD,$7E,zTrackKeyOffset 	; ld	a, (ix+zTrackKeyOffset)		; a = key displacement
+                dc.b	$06,$00             		; ld	b, 0				; b = 0
+		dc.b	$B7                 		; or	a				; Is a negative?
+                dc.b	$F2          		        ; jp	p, +				; Branch if not
+                            zp @notnegative
+                dc.b    $05                   		; dec	b				; Set b to -1
+       @notnegative:                               ; +
+                dc.b    $4F               		; ld	c, a				; bc = sign extension of key displacement
+                dc.b    $09                     	; add	hl, bc				; hl += key displacement
+                                                   ; +
+                dc.b    $DD,$75,zTrackFreqLow           ; ld	(ix+zTrackFreqLow), l		; Store low byte of note frequency
+                dc.b    $DD,$74,zTrackFreqHigh          ; ld	(ix+zTrackFreqHigh), h		; Store high byte of note frequency
+                dc.b    $1A                 		; ld	a, (de)				; Get another byte from the track
+                dc.b    $13                 		; inc	de				; Advance to next byte in track
+		dc.b	$DD,$77,zTrackUnk11h        	; ld	(ix+zTrackUnk11h), a		; Store unknown byte to otherwise unused location
+loc_306:
+                dc.b    $1A                  		; ld	a, (de)				; Get raw duration from track
+;loc_307
+zGotNoteDuration:
+                dc.b    $13                		; inc	de				; Advance to next byte in track
+
+;loc_308
+zStoreDuration:
+                dc.b    $CD         		        ; call	zComputeNoteDuration		; Multiply note by tempo divider
+                            zp zComputeNoteDuration
+                dc.b    $DD,$77,zTrackSavedDuration     ; ld	(ix+zTrackSavedDuration), a	; Store it for next note
+
+;loc_30E
+zFinishTrackUpdate:
+                dc.b    $DD,$73,zTrackDataPointerLow    ; ld	(ix+zTrackDataPointerLow), e	; Save low byte of current location in song
+                dc.b    $DD,$72,zTrackDataPointerHigh   ; ld	(ix+zTrackDataPointerHigh), d	; Save high byte of current location in song
+                dc.b    $DD,$7E,zTrackSavedDuration     ; ld	a, (ix+zTrackSavedDuration)	; Get current saved duration
+                dc.b    $DD,$77,zTrackDurationTimeout   ; ld	(ix+zTrackDurationTimeout), a	; Set it as duration timeout
+                dc.b    $DD,$CB,zTrackPlaybackControl,$4E ; bit	1, (ix+zTrackPlaybackControl)	; Is 'do not attack next note' flag set?
+                dc.b    $C0                 		; ret	nz				; Branch of yes
+                dc.b    $AF                 		; xor	a				; Clear a
+                dc.b    $DD,$77,zTrackModulationSpeed   ; ld	(ix+zTrackModulationSpeed), a	; Clear modulation speed
+		dc.b	$DD,$77,zTrackModulationValLow  ; ld	(ix+zTrackModulationValLow), a	; Clear low byte of accumulated modulation
+                dc.b    $DD,$77,zTrackVolFlutter        ; ld	(ix+zTrackVolFlutter), a	; Reset flutter
+                dc.b    $DD,$7E,zTrackNoteFillMaster    ; ld	a, (ix+zTrackNoteFillMaster)	; Get master note fill
+                dc.b    $DD,$77,zTrackNoteFillTimeout   ; ld	(ix+zTrackNoteFillTimeout), a	; Set note fill timeout
+                dc.b    $C9                		; ret
+; End of function zGetNextNote
+
+
+; =============== S U B	R O U T	I N E =======================================
+; This routine multiplies the note duration by the tempo divider. This can
+; easily overflow, as the result is stored in a byte.
+;
+; Input:   a    Note duration
+; Output:  a    Final note duration
+;          b    zero
+;          c    Damaged
+;sub_330
+zComputeNoteDuration:
+                dc.b    $DD,$46,zTrackTempoDivider      ; ld	b, (ix+zTrackTempoDivider)	; Get tempo divider for this track
+		dc.b	$05                 		; dec	b				; Make it into a loop conuter
+                dc.b    $C8                   		; ret	z				; Return if it was 1
+                dc.b    $4F                  		; ld	c, a				; c = a
+                                                   ; -
+                dc.b    $81               		; add	a, c				; a += c
+                dc.b    $10,$FD           		; djnz	-				; Loop
+                dc.b    $C9               		; ret
+; End of function zComputeNoteDuration
+
+
+; =============== S U B	R O U T	I N E =======================================
+; Reduces note duration timeout for current track.
+;
+; Input:   ix   Track data
+; Output:  a    New duration
+;sub_33A
+zTrackRunTimer:
+                dc.b    $DD,$7E,zTrackDurationTimeout   ; ld	a, (ix+zTrackDurationTimeout)	; Get track duration timeout
+                dc.b    $3D                 		; dec	a				; Decrement it...
+                dc.b    $DD,$77,zTrackDurationTimeout   ; ld	(ix+zTrackDurationTimeout), a	; ... and save new value
+                dc.b    $C9                 		; ret
+; End of function zTrackRunTimer
+
+; ---------------------------------------------------------------------------
+; START	OF FUNCTION CHUNK FOR zUpdateFMorPSGTrack
+;loc_342
+zFMNoteOn:
+		dc.b	$DD,$7E,zTrackFreqLow           ; ld	a, (ix+zTrackFreqLow)		; Get low byte of note frequency
+                dc.b    $DD,$B6,zTrackFreqHigh          ; or	(ix+zTrackFreqHigh)		; Is the note frequency zero?
+                dc.b    $C8                 		; ret	z				; Return if yes
+                dc.b    $DD,$7E,zTrackPlaybackControl   ; ld	a, (ix+zTrackPlaybackControl)	; Get playback control byte for track
+                dc.b    $E6,$06              		; and	6				; Is either bit 1 ("do not attack next note") or 2 ("SFX overriding this track") set?
+                dc.b    $C0                     	; ret	nz				; Return if yes
+                dc.b    $DD,$7E,zTrackVoiceControl      ; ld	a, (ix+zTrackVoiceControl)	; Get voice control byte from track
+		dc.b	$F6,$F0             		; or	0F0h				; We want only the FM channel assignment bits
+                dc.b    $4F                 		; ld	c, a				; Key on for all operators
+                dc.b    $3E,$28            		; ld	a, 28h				; Select key on/of register
+                dc.b    $CD              		; call	zWriteFMI			; Send command to YM2612
+                            zp zWriteFMI
+                dc.b    $C9              		; ret
+; END OF FUNCTION CHUNK	FOR zUpdateFMorPSGTrack
+
+; =============== S U B	R O U T	I N E =======================================
+; Writes reg/data pair to register 28h (key on/off) if track active
+;
+; Input:   ix   Track data
+; Output:  a    Damaged
+;          c    Damaged
+;sub_35B
+zKeyOffIfActive:
+                dc.b    $DD,$7E,zTrackPlaybackControl   ; ld	a, (ix+zTrackPlaybackControl)	; Get playback control byte for track
+                dc.b    $E6,$06              		; and	6				; Is either bit 1 ("do not attack next note") or 2 ("SFX overriding this track") set?
+                dc.b    $C0                 		; ret	nz				; Return if yes
+; End of function zKeyOffIfActive
+
+; =============== S U B	R O U T	I N E =======================================
+; Writes reg/data pair to register 28h (key on/off)
+;
+; Input:   ix   Track data
+; Output:  a    Damaged
+;          c    Damaged
+;loc_361
+zKeyOff:
+                dc.b    $DD,$4E,zTrackVoiceControl      ; ld	c, (ix+zTrackVoiceControl)	; Get voice control byte for track (this will turn off all operators as high nibble = 0)
+		dc.b	$CB,$79             		; bit	7, c				; Is this a PSG track?
+                dc.b    $C0                		; ret	nz				; Return if yes
+; End of function zKeyOff
+
+; =============== S U B	R O U T	I N E =======================================
+; Writes reg/data pair to register 28h (key on/off)
+;
+; Input:   c    Data to write
+; Output:  a    Damaged
+;loc_367
+zKeyOnOff:
+                dc.b    $3E,$28             		; ld	a, 28h				; Write to KEY ON/OFF port
+                dc.b    $CD             		; call	zWriteFMI			; Send it
+                            zp zWriteFMI
+                dc.b    $C9                		; ret
+; End of function zKeyOnOff
+
+; =============== S U B	R O U T	I N E =======================================
+; Performs flutter in FM channels.
+;
+; Input:   ix    Pointer to track RAM
+; Output:  a     Trashed
+;          bc    Trashed
+;          de    Trashed
+;          hl    Trashed
+;
+;sub_36D
+zDoFMFlutter:
+                dc.b    $DD,$7E,zTrackFMFlutter        	; ld	a, (ix+zTrackFMFlutter)		; Get FM flutter value
+                dc.b    $B7                  		; or	a				; Is it zero?
+                dc.b    $C8                  		; ret	z				; Return if yes
+                dc.b    $F8                 		; ret	m				; Return if it is actually the custom SSG-EG flag
+		dc.b	$3D               		; dec	a				; Make a into an index
+                dc.b    $0E,zID_PSGTonePointers         ; ld	c, zID_PSGTonePointers		; Value for PSG tone pointer table
+                dc.b    $CF               		; rst	GetPointerTable			; hl = pointer to PSG flutter table
+                dc.b    $DF              		; rst	PointerTableOffset		; hl = pointer to PSG flutter for track
+                dc.b    $CD,$12,$10       		; call	zDoFlutter			; a = new flutter value
+                           ; zp zDoFlutter
+                dc.b    $DD,$66,zTrackTLPtrHigh        	; ld	h, (ix+zTrackTLPtrHigh)		; h = high byte ot TL data pointer
+                dc.b    $DD,$6E,zTrackTLPtrLow         	; ld	l, (ix+zTrackTLPtrLow)		; l = low byte ot TL data pointer
+                dc.b    $11,$AE,$04         		; ld	de, zFMInstrumentTLTable	; de = pointer to FM TL register table
+                           ; zp zFMInstrumentTLTable
+		dc.b    $06,$04              		; ld	b, zFMInstrumentTLTable_End-zFMInstrumentTLTable	; Number of entries
+                           ; zp (zFMInstrumentTLTable_End-zFMInstrumentTLTable)
+                dc.b    $DD,$4E,zTrackFMFlutterMask     ; ld	c, (ix+zTrackFMFlutterMask)	; c = flutter bitmask
+                                                   ; -
+                dc.b    $F5             		; push	af				; Save af
+                dc.b    $CB,$29         		; sra	c				; Divide c by 2
+                dc.b    $C5             		; push	bc				; Save bc
+                dc.b    $30,$08         		; jr	nc, +				; Branch if c bit shifted was zero
+                dc.b    $86             		; add	a, (hl)				; Add TL value to flutter value
+                dc.b    $E6,$7F         		; and	7Fh				; Strip sign bit
+                dc.b    $4F           		        ; ld	c, a				; c = TL + flutter
+		dc.b	$1A                     	; ld	a, (de)				; a = YM2612 register
+                dc.b    $CD                     	; call	zWriteFMIorII			; Send TL data to YM2612
+                            zp zWriteFMIorII
+                                                   ; +
+                dc.b    $C1             		; pop	bc				; Restore bc
+                dc.b    $13             		; inc	de				; Advance to next YM2612 register
+                dc.b    $23             		; inc	hl				; Advance to next TL value
+                dc.b    $F1             		; pop	af				; Restore af
+                dc.b    $10,$EC         		; djnz	-				; Loop for all registers
+                dc.b    $C9            		        ; ret
+; End of function zDoFMFlutter
+
+; =============== S U B	R O U T	I N E =======================================
+; Initializes normal modulation.
+;
+; Input:   ix    Pointer to track's RAM
+; Output:  de    If modulation control has bit 7 set and track is to attack next note, pointer to modulation steps in track RAM
+;          hl    If modulation control has bit 7 set and track is to attack next note, pointer to modulation steps in track data
+;
+;sub_39E
+zPrepareModulation:
+                dc.b    $DD,$CB,zTrackModulationCtrl,$7E ; bit	7, (ix+zTrackModulationCtrl)	; Is modulation on?
+                dc.b    $C8                  		; ret	z				; Return if not
+		dc.b	$DD,$CB,zTrackPlaybackControl,$4E ; bit	1, (ix+zTrackPlaybackControl)	; Is 'do not attack next note' bit set?
+                dc.b    $C0               		; ret	nz				; Return if yes
+                dc.b    $DD,$5E,zTrackModulationPtrLow  ; ld	e, (ix+zTrackModulationPtrLow)	; e = low byte of pointer to modulation data
+                dc.b    $DD,$56,zTrackModulationPtrHigh ; ld	d, (ix+zTrackModulationPtrHigh)	; d = high byte of pointer to modulation data
+                dc.b    $DD,$E5              		; push	ix				; Save ix
+                dc.b    $E1                 		; pop	hl				; hl = pointer to track data
+                dc.b    $06,$00            		; ld	b, 0				; b = 0
+		dc.b	$0E,zTrackModulationWait        ; ld	c, zTrackModulationWait		; c = offset in track RAM for modulation data
+                dc.b    $09                 		; add	hl, bc				; hl = pointer to modulation data in track RAM
+                dc.b    $EB                		; ex	de, hl				; Exchange de and hl
+                dc.b    $ED,$A0               		; ldi					; *de++ = *hl++
+                dc.b    $ED,$A0		                ; ldi					; *de++ = *hl++
+                dc.b    $ED,$A0             		; ldi					; *de++ = *hl++
+                dc.b    $7E                		; ld	a, (hl)				; a = number of modulation steps
+                dc.b    $CB,$3F            		; srl	a				; Divide by 2
+                dc.b    $12                 		; ld	(de), a				; Store in track RAM
+                dc.b    $AF                		; xor	a				; a = 0
+		dc.b	$DD,$77,zTrackModulationValLow  ; ld	(ix+zTrackModulationValLow), a	; Clear low byte of accumulated modulation
+                dc.b    $DD,$77,zTrackModulationValHigh ; ld	(ix+zTrackModulationValHigh), a	; Clear high byte of accumulated modulation
+                dc.b    $C9               		; ret
+; End of function zPrepareModulation
+
+
+; =============== S U B	R O U T	I N E =======================================
+; Applies modulation.
+;
+; Input:   ix    Pointer to track's RAM
+;          hl    Note frequency
+; Output:
+;    If modulation control is 80h (normal modulation):
+;          hl    Final note frequency
+;          de    Pointer to modulation data in track RAM
+;          iy    Pointer to modulation data in track RAM
+;          bc    Unmodulated note frequency
+;
+;    If modulation control is nonzero and not 80h (frequency flutter):
+;
+;
+;sub_3C9
+zDoModulation:
+                dc.b    $DD,$7E,zTrackModulationCtrl    ; ld	a, (ix+zTrackModulationCtrl)	; Get modulation control byte
+                dc.b    $B7         		        ; or	a				; Is modulation active?
+                dc.b    $C8                     	; ret	z				; Return if not
+                dc.b    $FE,$80                		; cp	80h				; Is modulation control 80h?
+                dc.b    $20,$48                         ; jr	nz, zDoFrequencyFlutter		; Branch if not
+		dc.b	$DD,$35,zTrackModulationWait    ; dec	(ix+zTrackModulationWait)	; Decrement modulation wait
+                dc.b    $C0                 		; ret	nz				; Return if nonzero
+                dc.b    $DD,$34,zTrackModulationWait    ; inc	(ix+zTrackModulationWait)	; Increase it back to 1 for next frame
+                dc.b    $E5                		; push	hl				; Save hl
+                dc.b    $DD,$6E,zTrackModulationValLow  ; ld	l, (ix+zTrackModulationValLow)	; l = low byte of accumulated modulation
+                dc.b    $DD,$66,zTrackModulationValHigh	; ld	h, (ix+zTrackModulationValHigh)	; h = high byte of accumulated modulation
+                dc.b    $DD,$5E,zTrackModulationPtrLow  ; ld	e, (ix+zTrackModulationPtrLow)	; e = low byte of modulation data pointer
+		dc.b	$DD,$56,zTrackModulationPtrHigh ; ld	d, (ix+zTrackModulationPtrHigh)	; d = high byte of modulation data pointer
+                dc.b    $D5             		; push	de				; Save de
+                dc.b    $FD,$E1            		; pop	iy				; iy = pointer to modulation data
+                dc.b    $DD,$35,zTrackModulationSpeed  	; dec	(ix+zTrackModulationSpeed)	; Decrement modulation speed
+                dc.b    $20,$17           		; jr	nz, +				; Branch if nonzero
+                dc.b    $FD,$7E,$01      		; ld	a, (iy+1)			; Get original modulation speed
+                dc.b    $DD,$77,zTrackModulationSpeed   ; ld	(ix+zTrackModulationSpeed), a	; Reset modulation speed timeout
+                dc.b    $DD,$7E,zTrackModulationDelta   ; ld	a, (ix+zTrackModulationDelta)	; Get modulation delta per step
+                dc.b    $4F              		; ld	c, a				; c = modulation delta per step
+                dc.b    $E6,$80         		; and	80h				; Get only sign bit
+                dc.b    $07              		; rlca					; Shift it into bit 0
+                dc.b    $ED,$44            		; neg					; Negate (so it is either 0 or -1)
+                dc.b    $47               		; ld	b, a				; bc = sign extension of delta
+                dc.b    $09                		; add	hl, bc				; hl += bc
+                dc.b    $DD,$75,zTrackModulationValLow  ; ld	(ix+zTrackModulationValLow), l	; Store low byte of accumulated modulation
+		dc.b	$DD,$74,zTrackModulationValHigh ; ld	(ix+zTrackModulationValHigh), h	; Store high byte of accumulated modulation
+                                                   ; +
+                dc.b    $C1          		        ; pop	bc				; bc = note frequency
+                dc.b    $09                 		; add	hl, bc				; hl = modulated note frequency
+                dc.b    $DD,$35,zTrackModulationSteps   ; dec	(ix+zTrackModulationSteps)	; Reduce number of modulation steps
+                dc.b    $C0                		; ret	nz				; Return if nonzero
+                dc.b    $FD,$7E,$03        		; ld	a, (iy+3)			; Get number of steps from track data
+                dc.b    $DD,$77,zTrackModulationSteps   ; ld	(ix+zTrackModulationSteps), a	; Reset modulation steps in track RAM
+		dc.b	$DD,$7E,zTrackModulationDelta  	; ld	a, (ix+zTrackModulationDelta)	; Load modulation delta
+                dc.b    $ED,$44              		; neg					; Change its sign
+                dc.b    $DD,$77,zTrackModulationDelta   ; ld	(ix+zTrackModulationDelta), a	; Store it back
+                dc.b    $C9              		; ret
+; ---------------------------------------------------------------------------
+;loc_41A
+zDoFrequencyFlutter:
+                dc.b    $3D               		; dec	a				; Convert into pointer table index
+                dc.b    $EB              		; ex	de, hl				; Exchange de and hl; de = note frequency
+                dc.b    $0E,zID_FreqFlutterPointers     ; ld	c, zID_FreqFlutterPointers	; Value for frequency flutter pointer table
+                dc.b    $CF           		        ; rst	GetPointerTable			; hl = pointer to frequency flutter pointer table
+                dc.b    $DF             		; rst	PointerTableOffset		; hl = pointer to PSG flutter for track
+                dc.b    $18,$03             		; jr	zDoFrequencyFlutter_cont
+; ---------------------------------------------------------------------------
+
+zFreqFlutterSetIndex:
+		dc.b	$DD,$77,zTrackFreqFlutterIndex 	; ld	(ix+zTrackFreqFlutterIndex), a	; Set new frequency flutter index
+
+;loc_425
+zDoFrequencyFlutter_cont:
+                dc.b    $E5               		; push	hl				; Save hl
+                dc.b    $DD,$4E,zTrackFreqFlutterIndex  ; ld	c, (ix+zTrackFreqFlutterIndex)	; c = frequency flutter index
+                dc.b    $06,$00            		; ld	b, 0				; b = 0
+                dc.b    $09                 		; add	hl, bc				; hl += bc
+                dc.b    $7E               		; ld	a, (hl)				; a = new frequency flutter value
+                dc.b    $E1                 		; pop	hl				; Restore hl
+                dc.b    $CB,$7F             		; bit	7, a				; Is frequency flutter negative?
+                dc.b    $CA,$5D,$04     		; jp	z, zlocPositiveFlutterMod	; Branch if not
+		dc.b	$FE,$82         		; cp	82h				; Is it 82h?
+                dc.b    $28,$12        		        ; jr	z, zlocChangeFlutterIndex	; Branch if yes
+                dc.b    $FE,$80            		; cp	80h				; Is it 80h?
+                dc.b    $28,$12           		; jr	z, zlocResetFlutterMod		; Branch if yes
+                dc.b    $FE,$84            		; cp	84h				; Is it 84h?
+                dc.b    $28,$11            		; jr	z, zlocFlutterIncMultiplier	; Branch if yes
+                dc.b    $26,$FF          		; ld	h, 0FFh				; h = 0FFh
+                dc.b    $30,$1F          		; jr	nc, zlocApplyFlutterMod		; Branch if more than 84h
+		dc.b	$DD,$CB,zTrackPlaybackControl,$F6; set	6, (ix+zTrackPlaybackControl)	; Set 'sustain frequency' bit
+                dc.b    $E1               		; pop	hl				; Tamper with return location so as to not return to caller
+                dc.b    $C9                		; ret
+; ---------------------------------------------------------------------------
+;loc_449
+zlocChangeFlutterIndex:
+                dc.b    $03            		        ; inc	bc				; Increment bc
+; 	if fix_sndbugs
+; 		; Fix based on similar code from Ristar's sound driver.
+; 		push	hl							; Save hl
+; 		add	hl, bc							; hl += bc
+; 		ld	a, (hl)							; a = new frequency flutter index
+; 		pop	hl								; Restore hl
+; 	else
+; 		; DANGER! Uses bc as a pointer, getting bytes from code region.
+; 		; This happens for several frequency flutters, so you should avoid them
+; 		; unless you enable the driver bug fixes.
+; 
+                dc.b    $0A                 		; ld	a, (bc)				; Use it as a pointer??? Getting bytes from code region?
+;	endif
+                dc.b    $18,$D5         		; jr	zFreqFlutterSetIndex		; Set position to nonsensical value
+; ---------------------------------------------------------------------------
+;loc_44D
+zlocResetFlutterMod:
+                dc.b    $AF               		; xor	a				; a = 0
+                dc.b    $18,$D2            		; jr	zFreqFlutterSetIndex		; Reset position for frequency flutter
+; ---------------------------------------------------------------------------
+;loc_450
+zlocFlutterIncMultiplier:
+                dc.b    $03                		; inc	bc				; Increment bc
+; 	if fix_sndbugs
+; 		; Fix based on similar code from Ristar's sound driver.
+; 		push	hl							; Save hl
+; 		add	hl, bc							; hl += bc
+; 		ld	a, (hl)							; a = what to add to flutter sensibility value
+; 		pop	hl								; Restore hl
+; 	else
+; 		; DANGER! Uses bc as a pointer, getting bytes from code region.
+; 		; Luckily, this does not happen for any of the existing frequency
+; 		; flutter.
+; 
+                dc.b    $0A              		; ld	a, (bc)				; Use it as a pointer??? Getting bytes from code region?
+;	endif
+		dc.b	$DD,$86,zTrackFreqFlutterSens   ; add	a, (ix+zTrackFreqFlutterSens)	; Add flutter sensibility to a...
+                dc.b    $DD,$77,zTrackFreqFlutterSens   ; ld	(ix+zTrackFreqFlutterSens), a	; ... then store new value
+                dc.b    $DD,$34,zTrackFreqFlutterIndex  ; inc	(ix+zTrackFreqFlutterIndex)	; Advance flutter modulation...
+                dc.b    $DD,$34,zTrackFreqFlutterIndex  ; inc	(ix+zTrackFreqFlutterIndex)	; ... twice.
+                dc.b    $18,$C5             		; jr	zDoFrequencyFlutter_cont
+; ---------------------------------------------------------------------------
+;loc_460
+zlocPositiveFlutterMod:
+                dc.b    $26,$00              		; ld	h, 0				; h = 0
+
+;loc_462
+zlocApplyFlutterMod:
+                dc.b    $6F                		; ld	l, a				; hl = sign extension of modulation value
+		dc.b	$DD,$46,zTrackFreqFlutterSens   ; ld	b, (ix+zTrackFreqFlutterSens)	; Fetch flutter sensibility
+                dc.b    $04              		; inc	b				; Increment it (minimum 1)
+                dc.b    $EB              		; ex	de, hl				; Swap hl and de; hl = note frequency
+                                                ; -
+                dc.b    $19            		        ; add	hl, de				; hl += de
+                dc.b    $10,$FD              		; djnz	-				; Make hl = note frequency + b * de
+                dc.b    $DD,$34,zTrackFreqFlutterIndex  ; inc	(ix+zTrackFreqFlutterIndex)	; Advance frequency flutter
+                dc.b    $C9                 		; ret
+; End of function zDoModulation
+
+; =============== S U B	R O U T	I N E =======================================
+; Adds the current frequency displacement (signed) to note frequency.
+;
+; Input:   ix    Track RAM
+; Output:  hl    Shifted frequency
+;          a     Damaged
+;          bc    Damaged
+;
+;sub_46F
+zUpdateFreq:
+                dc.b    $DD,$66,zTrackFreqHigh       	; ld	h, (ix+zTrackFreqHigh)		; h = high byte of note frequency
+		dc.b	$DD,$6E,zTrackFreqLow   	; ld	l, (ix+zTrackFreqLow)		; l = low byte of note frequency
+                dc.b    $06,$00             		; ld	b, 0				; b = 0
+                dc.b    $DD,$7E,zTrackFreqDisplacement  ; ld	a, (ix+zTrackFreqDisplacement)	; a = frequency displacement
+                dc.b    $B7               		; or	a				; Is a negative?
+                dc.b    $F2,$7D,$04          		; jp	p, +				; Branch if not
+                dc.b    $06,$FF          		; ld	b, 0FFh				; b = -1
+                                                 ; +
+                dc.b    $4F             		; ld	c, a				; bc = sign extension of frequency displacement
+                dc.b    $09                  		; add	hl, bc				; Add to frequency
+                dc.b    $C9             		; ret
+; End of function zUpdateFreq
+
+; =============== S U B	R O U T	I N E =======================================
+; Gets offset for requested FM instrument.
+;
+;sub_483
+zGetFMInstrumentPointer:
+		dc.b	$2A,$37,$1C,$3A,$19,$1C,$B7,$28,$06,$DD,$6E,$2A,$DD,$66,$2B,$AF
+		dc.b	$B0,$C8,$11,$19,$00,$19,$10,$FD,$C9,$B0,$30,$38,$34,$3C,$50,$58
+		dc.b	$54,$5C,$60,$68,$64,$6C,$70,$78,$74,$7C,$80,$88,$84,$8C,$40,$48
+		dc.b	$44,$4C,$90,$98,$94,$9C,$11,$99,$04,$DD,$4E,$0A,$3E,$B4,$CD,$B5
+		dc.b	$00,$CD,$D7,$04,$DD,$77,$1B,$06,$14,$CD,$D7,$04,$10,$FB,$DD,$75
+		dc.b	$1C,$DD,$74,$1D,$C3,$9C,$0C,$1A,$13,$4E,$23,$CD,$B5,$00,$C9,$3A
+		dc.b	$05,$1C,$32,$09,$1C,$3A,$06,$1C,$32,$05,$1C,$3A,$07,$1C,$32,$06
+		dc.b	$1C,$AF,$32,$07,$1C,$3A,$09,$1C,$FE,$FF,$CA,$FB,$09,$FE,$33,$DA
+		dc.b	$4A,$05,$FE,$E0,$DA,$99,$06,$FE,$E1,$DA,$29,$09,$FE,$E6,$D2,$29
+		dc.b	$09,$D6,$E1,$21,$1C,$05,$DF,$AF,$32,$18,$1C,$E9,$45,$08,$29,$09
+		dc.b	$A1,$09,$26,$05,$45,$08,$DD,$21,$F0,$1D,$06,$07,$3E,$01,$32,$19
+		dc.b	$1C,$C5,$DD,$CB,$00,$7E,$C4,$45,$05,$11,$30,$00,$DD,$19,$C1,$10
+		dc.b	$F0,$CD,$80,$06,$C9,$E5,$E5,$C3,$61,$0C,$D6,$01,$F8,$F5,$FE,$29
+		dc.b	$C2,$CD,$05,$3A,$29,$1C,$B7,$CA,$72,$05,$AF,$32,$0A,$1C,$32,$0B
+		dc.b	$1C,$32,$0C,$1C,$32,$05,$1C,$32,$06,$1C,$32,$07,$1C,$32,$09,$1C
+		dc.b	$F1,$C9,$3A,$16,$1C,$FE,$29,$CA,$D0,$05,$AF,$32,$0A,$1C,$32,$0B
+		dc.b	$1C,$32,$0C,$1C,$32,$05,$1C,$32,$06,$1C,$32,$07,$1C,$3A,$3E,$1C
+		dc.b	$32,$2D,$1C,$3A,$08,$1C,$32,$2E,$1C,$AF,$32,$08,$1C,$21,$40,$1C
+		dc.b	$11,$F0,$1D,$01,$B0,$01,$ED,$B0,$21,$F0,$1D,$11,$30,$00,$06,$09
+		dc.b	$7E,$E6,$7F,$CB,$D6,$77,$19,$10,$F7,$3E,$29,$32,$16,$1C,$3A,$24
+		dc.b	$1C,$32,$2C,$1C,$2A,$37,$1C,$22,$2A,$1C,$C3,$D0,$05,$CD,$29,$09
+		dc.b	$F1,$F5
+Z80_0x05D2:
+		dc.b	$21,$48,$0B
+		dc.b	$85,$6F,$8C,$95,$67,$22,$DE,$05,$3A,$48,$0B
+		dc.b	$32,$3E,$1C
+Z80_0x05E3:
+		dc.b	$CD
+		dc.w	(((Z80BankSwitch&$1FFF)>>$08)|((Z80BankSwitch&$1FFF)<<$08))&$FFFF
+		dc.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+		dc.b	$3E,$B6,$32,$02,$40,$00,$3E,$C0,$32,$03,$40
+		dc.b	$F1,$0E,$04,$CF,$DF,$E5,$E5,$E7,$22,$37,$1C,$E1,$FD,$E1,$FD,$7E
+		dc.b	$05,$32,$13,$1C,$32,$24,$1C,$11,$06,$00,$19,$22,$33,$1C,$21,$85
+		dc.b	$06,$22,$35,$1C,$11,$40,$1C,$FD,$46,$02,$FD,$7E,$04,$C5,$2A,$35
+		dc.b	$1C,$ED,$A0,$ED,$A0,$12,$13,$22,$35,$1C,$2A,$33,$1C,$ED,$A0,$ED
+		dc.b	$A0,$ED,$A0,$ED,$A0,$22,$33,$1C,$CD,$AE,$07,$C1,$10,$DF,$FD,$7E
+		dc.b	$03,$B7,$CA,$80,$06,$47,$21,$93,$06,$22,$35,$1C,$11,$60,$1D,$FD
+		dc.b	$7E,$04,$C5,$2A,$35,$1C,$ED,$A0,$ED,$A0,$12,$13,$22,$35,$1C,$2A
+		dc.b	$33,$1C,$01,$06,$00,$ED,$B0,$22,$33,$1C,$CD,$B5,$07,$C1,$10,$E2
+		dc.b	$AF,$32,$09,$1C,$C9,$80,$06,$80,$00,$80,$01,$80,$02,$80,$04,$80
+		dc.b	$05,$80,$06,$80,$80,$80,$A0,$80,$C0,$D6,$33,$B7,$C2,$A7,$06,$3A
+		dc.b	$28,$1C,$EE,$01,$32,$28,$1C,$08
+Z80_0x06A8:
+		dc.b	$3E,	((SndBank>>$0F))
+		dc.b	$CD
+		dc.w	(((Z80BankSwitch&$1FFF)>>$08)|((Z80BankSwitch&$1FFF)<<$08))&$FFFF		
+		dc.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+Z80_0x06B7:
+		dc.b	$AF,$0E,$06,$32,$19,$1C,$08,$FE,$78
+		dc.b	$CA,$F5,$06,$FE,$89,$DA,$EF,$06,$F5,$47,$3A,$25,$1C,$90,$C2,$E4
+		dc.b	$06,$3E,$80,$32,$26,$1C,$CF,$F1,$4F,$DF,$23,$23,$23,$7E,$32,$31
+		dc.b	$1C,$C3,$80,$06,$AF,$32,$26,$1C,$F1,$32,$25,$1C,$C3,$F5,$06,$F5
+		dc.b	$AF,$32,$27,$1C,$F1,$CF,$DF,$E5,$E7,$22,$39,$1C,$AF,$32,$15,$1C
+		dc.b	$E1,$E5,$FD,$E1,$FD,$7E,$02,$32,$3B,$1C,$11,$04,$00,$19,$FD,$46
+		dc.b	$03,$78,$32,$31,$1C,$C5,$E5,$23,$4E,$CD,$78,$07,$CB,$D6,$DD,$E5
+		dc.b	$3A,$19,$1C,$B7,$28,$03,$E1,$FD,$E5,$D1,$E1,$ED,$A0,$1A,$FE,$02
+		dc.b	$CC,$5E,$09,$ED,$A0,$3A,$3B,$1C,$12,$13,$ED,$A0,$ED,$A0,$ED,$A0
+		dc.b	$ED,$A0,$CD,$AE,$07,$DD,$CB,$00,$7E,$28,$0C,$DD,$7E,$01,$FD,$BE
+		dc.b	$01,$20,$04,$FD,$CB,$00,$D6,$E5,$2A,$39,$1C,$3A,$19,$1C,$B7,$28
+		dc.b	$04,$FD,$E5,$DD,$E1,$DD,$75,$2A,$DD,$74,$2B,$CD,$58,$03,$CD,$6B
+		dc.b	$09,$E1,$C1,$10,$A0,$C3,$80,$06,$CB,$79,$20,$08,$79,$CB,$57,$28
+		dc.b	$1A,$3D,$18,$17,$3E,$1F,$CD,$4D,$10,$3E,$FF,$32,$11,$7F,$79,$CB
+		dc.b	$3F,$CB,$3F,$CB,$3F,$CB,$3F,$CB,$3F,$C6,$02,$D6,$02,$32,$32,$1C
+		dc.b	$F5,$21,$C8,$07,$DF,$E5,$DD,$E1,$F1,$21,$D8,$07,$DF,$C9,$08,$AF
+		dc.b	$12,$13,$12,$13,$08,$EB,$36,$30,$23,$36,$C0,$23,$36,$01,$06,$24
+		dc.b	$23,$36,$00,$10,$FB,$23,$EB,$C9,$F0,$1D,$20,$1E,$50,$1E,$80,$1E
+		dc.b	$B0,$1E,$E0,$1E,$10,$1F,$10,$1F,$D0,$1C,$00,$1D,$30,$1D,$40,$1C
+		dc.b	$60,$1D,$90,$1D,$C0,$1D,$C0,$1D,$21,$10,$1C,$7E,$B7,$C8,$FA,$F9
+		dc.b	$07,$D1,$3D,$C0,$36,$02,$C3,$72,$09,$AF,$77,$3A,$0D,$1C,$B7,$C2
+		dc.b	$29,$09,$DD,$21,$70,$1C,$06,$06,$3A,$11,$1C,$B7,$20,$06,$DD,$CB
+		dc.b	$00,$7E,$28,$08,$DD,$4E,$0A,$3E,$B4,$CD,$B5,$00,$11,$30,$00,$DD
+		dc.b	$19,$10,$E5,$DD,$21,$40,$1F,$06,$07,$DD,$CB,$00,$7E,$28,$0E,$DD
+		dc.b	$CB,$01,$7E,$20,$08,$DD,$4E,$0A,$3E,$B4,$CD,$B5,$00,$11,$30,$00
+		dc.b	$DD,$19,$10,$E5,$C9,$3E,$28,$32,$0D,$1C,$3E,$06,$32,$0F,$1C,$32
+		dc.b	$0E,$1C,$AF,$32,$40,$1C,$32,$C0,$1D,$32,$60,$1D,$32,$90,$1D,$C3
+		dc.b	$A1,$09,$21,$0D,$1C,$7E,$B7,$C8,$FC,$52,$08,$CB,$BE,$3A,$0F,$1C
+		dc.b	$3D,$28,$04,$32,$0F,$1C,$C9,$3A,$0E,$1C,$32,$0F,$1C,$3A,$0D,$1C
+		dc.b	$3D,$32,$0D,$1C,$CA,$29,$09,$3A,$3E,$1C
+Z80_0x088A:
+		dc.b	$21,$00,$60
+		dc.b	$77,$1F,$77,$1F,$77,$1F,$77,$AF,$16,$01,$72,$77,$77,$77,$77
+Z80_0x089C:
+		dc.b	$DD,$21,$40,$1C
+		dc.b	$06,$06,$DD,$34,$06,$F2,$AD,$08,$DD,$35,$06,$18,$11,$DD,$CB,$00
+		dc.b	$7E,$28,$0B,$DD,$CB,$00,$56,$20,$05,$C5,$CD,$9C,$0C,$C1,$11,$30
+		dc.b	$00,$DD,$19,$10,$DD,$C9,$3A,$29,$1C,$B7,$C8,$3A,$3E,$1C
+Z80_0x08CE:
+		dc.b	$CD
+		dc.w	(((Z80BankSwitch&$1FFF)>>$08)|((Z80BankSwitch&$1FFF)<<$08))&$FFFF
+		dc.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+Z80_0x08E0:
+		dc.b	$3A,$0E,$1C,$3D,$32,$0E,$1C,$C0,$3A,$0F,$1C,$32,$0E,$1C,$06,$05
+		dc.b	$DD,$21,$70,$1C,$11,$30,$00,$DD,$7E,$06,$3D,$DD,$77,$06,$C5,$CD
+		dc.b	$9C,$0C,$C1,$DD,$19,$10,$F0,$3A,$29,$1C,$3D,$32,$29,$1C,$C0,$06
+		dc.b	$03,$DD,$21,$60,$1D,$11,$30,$00,$DD,$CB,$00,$96,$DD,$19,$10,$F8
+		dc.b	$DD,$21,$40,$1C,$DD,$CB,$00,$96,$C9,$21,$0D,$1C,$11,$0E,$1C,$01
+		dc.b	$C6,$03,$36,$00,$ED,$B0,$AF,$32,$08,$1C,$DD,$21,$85,$06,$06,$06
+		dc.b	$C5,$CD,$DB,$09,$CD,$6B,$09,$DD,$23,$DD,$23,$C1,$10,$F2,$06,$07
+		dc.b	$AF,$32,$0D,$1C,$CD,$A1,$09,$0E,$00,$3E,$2B,$CD,$C8,$00,$AF,$32
+		dc.b	$12,$1C,$4F,$3E,$27,$CD,$C8,$00,$C3,$80,$06,$3E,$90,$0E,$00,$C3
+		dc.b	$EF,$09,$CD,$A1,$09,$C5,$F5,$06,$03,$3E,$B4,$0E,$00,$F5,$CD,$C8
+		dc.b	$00,$F1,$3C,$10,$F8,$06,$02,$3E,$B4,$F5,$CD,$D3,$00,$F1,$3C,$10
+		dc.b	$F8,$0E,$00,$06,$06,$3E,$28,$F5,$CD,$C8,$00,$0C,$F1,$10,$F8,$F1
+		dc.b	$C1,$C5,$06,$04,$3E,$9F,$32,$11,$7F,$C6,$20,$10,$F9,$C1,$C3,$80
+		dc.b	$06,$3A,$24,$1C,$21,$13,$1C,$86,$77,$D0,$21,$4B,$1C,$11,$30,$00
+		dc.b	$06,$09,$34,$19,$10,$FC,$C9,$21,$0A,$1C,$11,$05,$1C,$ED,$A0,$ED
+		dc.b	$A0,$ED,$A0,$AF,$2B,$77,$2B,$77,$2B,$77,$C9,$CD,$EB,$09,$3E,$40
+		dc.b	$0E,$7F,$CD,$EF,$09,$DD,$4E,$01,$C3,$64,$03,$3E,$80,$0E,$FF,$06
+		dc.b	$04,$F5,$CD,$B5,$00,$F1,$C6,$04,$10,$F7,$C9,$CD,$29,$09,$3E,$01
+		dc.b	$32,$3F,$1C,$E1,$C9,$AF,$32,$16,$1C,$3A,$2C,$1C,$32,$24,$1C,$3A
+		dc.b	$2E,$1C,$32,$08,$1C,$2A,$2A,$1C,$22,$37,$1C
+Z80_0x0A1B:
+		dc.b	$3A,$2D,$1C,$32,$3E,$1C
+		dc.b	$CD
+		dc.w	(((Z80BankSwitch&$1FFF)>>$08)|((Z80BankSwitch&$1FFF)<<$08))&$FFFF
+		dc.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+Z80_0x0A33:
+		dc.b	$21,$F0,$1D,$11,$40,$1C,$01,$B0,$01,$ED,$B0,$3A,$40
+		dc.b	$1C,$F6,$84,$32,$40,$1C,$DD,$21,$70,$1C,$06,$08,$DD,$7E,$00,$F6
+		dc.b	$84,$DD,$77,$00,$DD,$CB,$01,$7E,$C2,$73,$0A,$DD,$CB,$00,$96,$DD
+		dc.b	$7E,$06,$C6,$40,$DD,$77,$06,$DD,$7E,$08,$C5,$47,$CD,$80,$04,$CD
+		dc.b	$B6,$04,$C1,$11,$30,$00,$DD,$19,$10,$D2,$3E,$40,$32,$29,$1C,$3E
+		dc.b	$02,$32,$0F,$1C,$32,$0E,$1C,$C9,$FF,$03,$FF,$03,$FF,$03,$FF,$03
+		dc.b	$FF,$03,$FF,$03,$FF,$03,$FF,$03,$FF,$03,$F7,$03,$BE,$03,$88,$03
+		dc.b	$56,$03,$26,$03,$F9,$02,$CE,$02,$A5,$02,$80,$02,$5C,$02,$3A,$02
+		dc.b	$1A,$02,$FB,$01,$DF,$01,$C4,$01,$AB,$01,$93,$01,$7D,$01,$67,$01
+		dc.b	$53,$01,$40,$01,$2E,$01,$1D,$01,$0D,$01,$FE,$00,$EF,$00,$E2,$00
+		dc.b	$D6,$00,$C9,$00,$BE,$00,$B4,$00,$A9,$00,$A0,$00,$97,$00,$8F,$00
+		dc.b	$87,$00,$7F,$00,$78,$00,$71,$00,$6B,$00,$65,$00,$5F,$00,$5A,$00
+		dc.b	$55,$00,$50,$00,$4B,$00,$47,$00,$43,$00,$40,$00,$3C,$00,$39,$00
+		dc.b	$36,$00,$33,$00,$30,$00,$2D,$00,$2B,$00,$28,$00,$26,$00,$24,$00
+		dc.b	$22,$00,$20,$00,$1F,$00,$1D,$00,$1B,$00,$1A,$00,$18,$00,$17,$00
+		dc.b	$16,$00,$15,$00,$13,$00,$12,$00,$11,$00,$10,$00,$00,$00,$00,$00
+		dc.b	$84,$02,$AB,$02,$D3,$02,$FE,$02,$2D,$03,$5C,$03,$8F,$03,$C5,$03
+		dc.b	$FF,$03,$3C,$04,$7C,$04,$C0,$04
+BankSelector:
+		dc.b	((Bank1>>$0F)),((Bank1>>$0F)),((Bank1>>$0F)),((Bank1>>$0F))
+		dc.b	((Bank1>>$0F)),((Bank1>>$0F)),((Bank1>>$0F)),((Bank1>>$0F))
+		dc.b	((Bank1>>$0F)),((Bank1>>$0F)),((Bank2>>$0F)),((Bank2>>$0F))
+		dc.b	((Bank2>>$0F)),((Bank2>>$0F)),((Bank2>>$0F)),((Bank2>>$0F))
+		dc.b	((Bank2>>$0F)),((Bank2>>$0F)),((Bank2>>$0F)),((Bank2>>$0F))
+		dc.b	((Bank2>>$0F)),((Bank2>>$0F)),((Bank2>>$0F)),((Bank2>>$0F))
+		dc.b	((Bank2>>$0F)),((Bank1>>$0F)),((Bank2>>$0F)),((Bank2>>$0F))
+		dc.b	((Bank3>>$0F)),((Bank3>>$0F)),((Bank3>>$0F)),((Bank3>>$0F))
+		dc.b	((Bank3>>$0F)),((Bank3>>$0F)),((Bank3>>$0F)),((Bank3>>$0F))
+		dc.b	((Bank3>>$0F)),((Bank3>>$0F)),((Bank3>>$0F)),((Bank3>>$0F))
+		dc.b	((Bank2>>$0F)),((Bank3>>$0F)),((Bank3>>$0F)),((Bank3>>$0F))	
+		dc.b	((Bank3>>$0F)),((Bank0>>$0F)),((Bank2>>$0F)),((Bank0>>$0F))
+		dc.b	((Bank3>>$0F)),((Bank3>>$0F))
+		dc.b	$CD,$37,$03,$C0,$DD,$5E
+		dc.b	$03,$DD,$56,$04,$1A,$13,$FE,$E0,$D2,$C5,$0B,$B7,$FA,$93,$0B,$1B
+		dc.b	$DD,$7E,$0D,$DD,$77,$0D,$FE,$80,$CA,$B5,$0B,$CB,$BF,$D5,$08,$CD
+		dc.b	$58,$03,$CD,$5E,$09,$08,$DD,$21,$40,$1C,$DD,$CB,$00,$56,$C2,$B4
+		dc.b	$0B,$32,$30,$1C,$D1,$1A,$13,$B7,$F2,$05,$03,$1B,$DD,$7E,$0C,$DD
+		dc.b	$77,$0B,$C3,$0B,$03,$21,$CB,$0B,$C3,$D2,$0B,$13,$C3,$84,$0B,$21
+		dc.b	$DB,$0B,$E5,$D6,$E0,$21,$DF,$0B,$DF,$1A,$E9,$13,$C3,$82,$02,$33
+		dc.b	$0C,$59,$0C,$5D,$0C,$61,$0C,$67,$0C,$83,$0C,$85,$0C,$BD,$0C,$C3
+		dc.b	$0C,$47,$0C,$2F,$0C,$CD,$0C,$E3,$0C,$FD,$0C,$03,$0D,$10,$0D,$4F
+		dc.b	$0D,$5D,$0D,$69,$0D,$11,$0E,$65,$0D,$30,$0E,$39,$0E,$3F,$0E,$56
+		dc.b	$0E,$70,$0E,$83,$0E,$89,$0E,$90,$0E,$B2,$0E,$C0,$0E,$07,$0F,$0E
+		dc.b	$0F,$12,$0F,$1A,$0F,$55,$0F,$63,$0F,$72,$0F,$8D,$0F,$96,$0F,$32
+		dc.b	$30,$1C,$C9,$0E,$3F,$DD,$7E,$0A,$A1,$D5,$EB,$B6,$DD,$77,$0A,$4F
+		dc.b	$3E,$B4,$CD,$B5,$00,$D1,$C9,$21,$27,$1C,$7E,$DD,$86,$05,$DD,$77
+		dc.b	$05,$FE,$10,$CA,$57,$0C,$34,$1B,$C9,$DD,$77,$10,$C9,$32,$16,$1C
+		dc.b	$C9,$CD,$DB,$09,$C3,$69,$0D,$DD,$CB,$01,$7E,$28,$0D,$CB,$3F,$CB
+		dc.b	$3F,$CB,$3F,$EE,$0F,$E6,$0F,$C3,$F9,$0C,$EE,$7F,$E6,$7F,$DD,$77
+		dc.b	$06,$18,$19,$13,$1A,$DD,$CB,$01,$7E,$C0,$DD,$86,$06,$F2,$99,$0C
+		dc.b	$EA,$97,$0C,$AF,$C3,$99,$0C,$3E,$7F,$DD,$77,$06,$D5,$11,$AE,$04
+		dc.b	$DD,$6E,$1C,$DD,$66,$1D,$06,$04,$7E,$B7,$F2,$B0,$0C,$DD,$86,$06
+		dc.b	$E6,$7F,$4F,$1A,$CD,$B5,$00,$13,$23,$10,$ED,$D1,$C9,$DD,$CB,$00
+		dc.b	$CE,$1B,$C9,$CD,$2D,$03,$DD,$77,$1E,$DD,$77,$1F,$C9,$13,$C6,$28
+		dc.b	$4F,$06,$00,$DD,$E5,$E1,$09,$7E,$3D,$CA,$DE,$0C,$13,$C9,$AF,$77
+		dc.b	$C3,$39,$0E,$DD,$CB,$01,$7E,$C8,$DD,$CB,$00,$A6,$DD,$35,$17,$DD
+		dc.b	$86,$06,$FE,$0F,$DA,$F9,$0C,$3E,$0F,$DD,$77,$06,$C9,$D6,$40,$DD
+		dc.b	$77,$05,$C9,$CD,$0A,$0D,$CD,$C8,$00,$C9,$EB,$7E,$23,$4E,$EB,$C9
+		dc.b	$DD,$CB,$01,$7E,$20,$30,$CD,$EB,$09,$1A,$DD,$77,$08,$B7,$F2,$3C
+		dc.b	$0D,$13,$1A,$DD,$77,$0F,$D5,$DD,$7E,$0F,$D6,$81,$0E,$04,$CF,$DF
+		dc.b	$E7,$DD,$7E,$08,$E6,$7F,$47,$CD,$8F,$04,$18,$05,$D5,$47,$CD,$80
+		dc.b	$04,$CD,$B6,$04,$D1,$C9,$B7,$F2,$35,$0E,$13,$C3,$35,$0E,$C9,$DD
+		dc.b	$73,$20,$DD,$72,$21,$DD,$36,$07,$80,$13,$13,$13,$C9,$13,$DD,$CB
+		dc.b	$01,$7E,$20,$01,$1A,$DD,$77,$07,$C9,$DD,$CB,$00,$BE,$3E,$1F,$32
+		dc.b	$15,$1C,$CD,$58,$03,$DD,$4E,$01,$DD,$E5,$CD,$78,$07,$3A,$19,$1C
+		dc.b	$B7,$28,$77,$AF,$32,$18,$1C,$E5,$2A,$37,$1C,$DD,$E1,$DD,$CB,$00
+		dc.b	$96,$DD,$CB,$01,$7E,$20,$68,$DD,$CB,$00,$7E,$28,$5D,$3E,$02,$DD
+		dc.b	$BE,$01,$20,$0D,$3E,$4F,$DD,$CB,$00,$46,$20,$02,$E6,$0F,$CD,$E9
+		dc.b	$0E,$DD,$7E,$08,$B7,$F2,$BD,$0D,$CD,$26,$0D,$18,$3A,$47,$E5
+Z80_0x0DBF:
+		dc.b	$3A,$3E,$1C
+		dc.b	$CD
+		dc.w	(((Z80BankSwitch&$1FFF)>>$08)|((Z80BankSwitch&$1FFF)<<$08))&$FFFF		
+		dc.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+Z80_0x0DD4:
+		dc.b	$E1,$CD,$8F,$04,$CD,$B6,$04
+Z80_0x0DDB:
+		dc.b	$3E,((SndBank>>$0F))
+		dc.b	$CD
+		dc.w	(((Z80BankSwitch&$1FFF)>>$08)|((Z80BankSwitch&$1FFF)<<$08))&$FFFF		
+		dc.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+		dc.b	$DD,$7E,$18,$B7,$F2,$FA
+		dc.b	$0D,$DD,$5E,$19,$DD,$56,$1A,$CD,$7C,$0F,$DD,$E1,$E1,$E1,$C9,$DD
+		dc.b	$CB,$00,$46,$28,$F5,$DD,$7E,$1A,$B7,$F2,$0F,$0E,$32,$11,$7F,$18
+		dc.b	$E9,$DD,$CB,$01,$56,$C0,$3E,$DF,$32,$11,$7F,$1A,$DD,$77,$1A,$DD
+		dc.b	$CB,$00,$C6,$B7,$20,$06,$DD,$CB,$00,$86,$3E,$FF,$32,$11,$7F,$C9
+		dc.b	$DD,$CB,$01,$7E,$C8,$DD,$77,$08,$C9,$EB,$5E,$23,$56,$1B,$C9,$13
+		dc.b	$C6,$28,$4F,$06,$00,$DD,$E5,$E1,$09,$7E,$B7,$20,$02,$1A,$77,$13
+		dc.b	$35,$C2,$39,$0E,$13,$C9,$4F,$13,$1A,$47,$C5,$DD,$E5,$E1,$DD,$35
+		dc.b	$09,$DD,$4E,$09,$DD,$35,$09,$06,$00,$09,$72,$2B,$73,$D1,$1B,$C9
+		dc.b	$DD,$E5,$E1,$DD,$4E,$09,$06,$00,$09,$5E,$23,$56,$DD,$34,$09,$DD
+		dc.b	$34,$09,$C9,$DD,$CB,$07,$BE,$1B,$C9,$DD,$86,$05,$DD,$77,$05,$C9
+		dc.b	$3A,$26,$1C,$FE,$80,$CA,$A1,$0E,$AF,$32,$25,$1C,$32,$26,$1C,$13
+		dc.b	$C9,$3A,$31,$1C,$3D,$32,$31,$1C,$C2,$39,$0E,$AF,$32,$26,$1C,$C3
+		dc.b	$39,$0E,$FE,$01,$20,$05,$DD,$CB,$00,$DE,$C9,$DD,$CB,$00,$9E,$C9
+		dc.b	$DD,$7E,$01,$FE,$02,$20,$2C,$DD,$CB,$00,$C6,$EB,$CD,$73,$02,$06
+		dc.b	$04,$C5,$7E,$23,$E5,$21,$F7,$0E,$87,$4F,$06,$00,$09,$ED,$A0,$ED
+		dc.b	$A0,$E1,$C1,$10,$EC,$EB,$1B,$3E,$4F,$32,$12,$1C,$4F,$3E,$27,$CD
+		dc.b	$C8,$00,$C9,$13,$13,$13,$C9,$00,$00,$32,$01,$8E,$01,$E4,$01,$34
+		dc.b	$02,$7E,$02,$C2,$02,$F0,$02,$21,$1F,$0C,$DF,$13,$1A,$E9,$32,$24
+		dc.b	$1C,$C9,$DD,$E5,$CD,$F8,$04,$DD,$E1,$C9,$32,$11,$1C,$B7,$28,$1D
+		dc.b	$DD,$E5,$D5,$DD,$21,$40,$1C,$06,$09,$11,$30,$00,$DD,$CB,$00,$BE
+		dc.b	$CD,$5E,$03,$DD,$19,$10,$F5,$D1,$DD,$E1,$C3,$A1,$09,$DD,$E5,$D5
+		dc.b	$DD,$21,$40,$1C,$06,$09,$11,$30,$00,$DD,$CB,$00,$FE,$DD,$19,$10
+		dc.b	$F8,$D1,$DD,$E1,$C9,$EB,$5E,$23,$56,$23,$4E,$06,$00,$23,$EB,$ED
+		dc.b	$B0,$1B,$C9,$06,$09,$21,$42,$1C,$C5,$01,$30,$00,$77,$09,$C1,$10
+		dc.b	$F7,$C9,$DD,$36,$18,$80,$DD,$73,$19,$DD,$72,$1A,$21,$B2,$04,$06
+		dc.b	$04,$1A,$13,$4F,$7E,$23,$CD,$B5,$00,$10,$F6,$1B,$C9,$DD,$77,$18
+		dc.b	$13,$1A,$DD,$77,$19,$C9,$AF,$32,$27,$1C,$1B,$C9,$CD,$37,$03,$20
+		dc.b	$0D,$CD,$74,$02,$DD,$CB,$00,$66,$C0,$CD,$9B,$03,$18,$0C,$DD,$7E
+		dc.b	$1E,$B7,$28,$06,$DD,$35,$1E,$CA,$44,$10,$CD,$6C,$04,$CD,$C6,$03
+		dc.b	$DD,$CB,$00,$56,$C0,$DD,$4E,$01,$7D,$E6,$0F,$B1,$32,$11,$7F,$7D
+		dc.b	$E6,$F0,$B4,$0F,$0F,$0F,$0F,$32,$11,$7F,$DD,$7E,$08,$B7,$0E,$00
+		dc.b	$28,$09,$3D,$0E,$0A,$CF,$DF,$CD,$12,$10,$4F,$DD,$CB,$00,$66,$C0
+		dc.b	$DD,$7E,$06,$81,$CB,$67,$28,$02,$3E,$0F,$DD,$B6,$01,$C6,$10,$DD
+		dc.b	$CB,$00,$46,$20,$04,$32,$11,$7F,$C9,$C6,$20,$32,$11,$7F,$C9,$DD
+		dc.b	$77,$17,$E5,$DD,$4E,$17,$06,$00,$09,$7E,$E1,$CB,$7F,$28,$21,$FE
+		dc.b	$83,$28,$0C,$FE,$81,$28,$13,$FE,$80,$28,$0C,$03,$0A,$18,$E0,$DD
+		dc.b	$CB,$00,$E6,$E1,$C3,$44,$10,$AF,$18,$D5,$E1,$DD,$CB,$00,$E6,$C9
+		dc.b	$DD,$34,$17,$C9,$DD,$CB,$00,$E6,$DD,$CB,$00,$56,$C0,$3E,$1F,$DD
+		dc.b	$86,$01,$B7,$F0,$32,$11,$7F,$DD,$CB,$00,$46,$C8,$3E,$FF,$32,$11
+		dc.b	$7F,$C9,$F3,$3E,$2B,$0E,$00,$CD,$C8,$00,$FB,$3A,$3F,$1C,$B7,$C2
+		dc.b	$FE,$10,$3A,$30,$1C,$B7,$28,$F2,$3E,$2B,$0E,$80,$F3,$CD,$C8,$00
+		dc.b	$FB,$FD,$21,$EE,$10,$21,$30,$1C,$7E,$3D,$CB,$FE,$21,$00,$80,$DF
+		dc.b	$0E,$80,$7E,$32,$A3,$10,$32,$C0,$10,$23,$5E,$23,$56,$23,$7E,$23
+		dc.b	$66,$6F,$06,$0A,$FB,$10,$FE,$F3,$3E,$2A,$32,$00,$40,$7E,$07,$07
+		dc.b	$07,$07,$E6,$0F,$32,$BA,$10,$79,$FD,$86,$00,$32,$01,$40,$4F,$06
+		dc.b	$0A,$FB,$10,$FE,$F3,$3E,$2A,$32,$00,$40,$7E,$E6,$0F,$32,$D3,$10
+		dc.b	$79,$FD,$86,$00,$32,$01,$40,$FB,$4F,$3A,$30,$1C,$B7,$F2,$6A,$10
+		dc.b	$23,$1B,$7A,$B3,$C2,$A2,$10,$AF,$32,$30,$1C,$C3,$62,$10,$00,$01
+		dc.b	$02,$04,$08,$10,$20,$40,$80,$FF,$FE,$FC,$F8,$F0,$E0,$C0,$F3,$CD
+		dc.b	$C7,$09,$3E,$2B,$32,$00,$40,$00,$3E,$80,$32,$01,$40
+Z80_0x110D:
+		dc.b	$3E,((SegaPCMBank>>$0F))	
+		dc.b	$CD
+		dc.w	(((Z80BankSwitch&$1FFF)>>$08)|((Z80BankSwitch&$1FFF)<<$08))&$FFFF	
+		dc.b	$00,$00,$00,$00,$00,$00,$00,$00,$00
+		dc.b	$21
+		dc.w	(((SegaSnd&$FFFF)|$8000>>$08)|((SegaSnd&$FFFF)|$8000<<$08))&$FFFF
+		dc.b	$11,$2F,$5E
+		dc.b	$3E,$2A,$32,$00,$40,$00,$7E,$32,$01,$40,$3A,$0A,$1C,$FE,$FE
+		dc.b	$28,$0C,$00,$00,$06,$0C,$10,$FE,$23,$1B,$7A,$B3,$20,$E9,$AF,$32
+		dc.b	$3F,$1C,$21,$0D,$1C,$CD,$D3,$09,$C3,$62,$10,$FF
+Z80_0x114C:
+		dc.b	$21,$00,$60
+		dc.b	$77,$0F,$77,$0F,$77,$0F,$77,$0F,$77,$0F,$77,$0F,$77,$0F,$77
+		dc.b	$AF,$77
+		dc.b	$C3,$82,$00
+Z80BankSwitch0:
+Z80_0x1170:
+		dc.b	$21,$00,$60
+		dc.b	$77
+		dc.b	$1F
+		dc.b	$77
+		dc.b	$1F
+		dc.b	$77
+		dc.b	$1F
+		dc.b	$77
+		dc.b	$AF
+		dc.b	$16,$01
+		dc.b	$72
+		dc.b	$77
+		dc.b	$77
+		dc.b	$77
+		dc.b	$77
+		dc.b	$C9
+Z80BankSwitch:
+		dc.b	$21,	$00,	$60
+		dc.b	$77
+		dc.b	$1F
+		dc.b	$77
+		dc.b	$1F
+		dc.b	$77
+		dc.b	$1F
+		dc.b	$77
+		dc.b	$1F
+		dc.b	$77
+		dc.b	$1F
+		dc.b	$77
+		dc.b	$1F
+		dc.b	$77
+		dc.b	$1F
+		dc.b	$77
+		dc.b	$1F
+		dc.b	$77
+		dc.b	$C9
+DriverDataEnd:
+;-------------------------------------------------------------------------------
+ExtraPSGTones:  ; from Sonic 1 and 2, also acts as padding to get the driver pointers to $1300
+PSGTone_26:	dc.b      0,   2,   2,   2,   3,   3,   3,   4,   4,   4,   5,   5, $83
+PSGTone_2C:     dc.b	  3,   3,   3,   2,   2,   2,   2,   1,   1,   1,   0,   0,   0,   0, $81
+PSGTone_2B:     dc.b	  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,   1
+                dc.b	  1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   2,   2,   2,   2
+                dc.b	  2,   2,   2,   2,   3,   3,   3,   3,   3,   3,   3,   3,   4, $81
+PSGTone_2D:     dc.b	  0,   0,   0,   0,   0,   0,   1,   1,   1,   1,   1,   2,   2,   2,   2,   2
+                dc.b	  3,   3,   3,   4,   4,   4,   5,   5,   5,   6,   7, $81
+PSGTone_2E:     dc.b	  0,   0,   0,   0,   0,   1,   1,   1,   1,   1,   2,   2,   2,   2,   2,   2
+                dc.b	  3,   3,   3,   3,   3,   4,   4,   4,   4,   4,   5,   5,   5,   5,   5,   6
+                dc.b	  6,   6,   6,   6,   7,   7,   7, $81
+PSGTone_30:     dc.b	  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,   1,   1,   1,   1,   1
+                dc.b	  1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1
+                dc.b	  1,   1,   1,   1,   1,   1,   1,   1,   2,   2,   2,   2,   2,   2,   2,   2
+                dc.b	  2,   2,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   4, $81
+PSGTone_31:     dc.b	  4,   4,   4,   3,   3,   3,   2,   2,   2,   1,   1,   1,   1,   1,   1,   1
+                dc.b	  2,   2,   2,   2,   2,   3,   3,   3,   3,   3,   4, $81
+PSGTone_32:     dc.b	  4,   4,   3,   3,   2,   2,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1
+                dc.b	  1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   2,   2,   2,   2,   2,   2
+                dc.b	  2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   3,   3
+                dc.b	  3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3
+                dc.b	  3,   3,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4
+                dc.b	  4,   4,   4,   4,   4,   4,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5
+                dc.b	  5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   6,   6,   6,   6,   6,   6
+                dc.b	  6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   7, $81
+PSGTone_33:     dc.b	$0E, $0D, $0C, $0B, $0A,   9,   8,   7,   6,   5,   4,   3,   2,   1,   0, $81
+        align $100
+
+DriverPointers:
+		dc.w	(((MusicPointers&$1FFF)>>$08)|((MusicPointers&$1FFF)<<$08))&$FFFF
+		dc.w	(((UniversalVoiceBank&$1FFF)>>$08)|((UniversalVoiceBank&$1FFF)<<$08))&$FFFF
+		dc.w	(((MusicPointers&$1FFF)>>$08)|((MusicPointers&$1FFF)<<$08))&$FFFF
+		dc.w	(((SndPointers&$1FFF)>>$08)|((SndPointers&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGNoisePointers&$1FFF)>>$08)|((PSGNoisePointers&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTonePointers&$1FFF)>>$08)|((PSGTonePointers&$1FFF)<<$08))&$FFFF
+		dc.w	$3300
+ 
+;credit goes to Varion Icaria for finding this index
+PSGNoisePointers:
+		dc.w	(((PSGN_0&$1FFF)>>$08)|((PSGN_0&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGN_1&$1FFF)>>$08)|((PSGN_1&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGN_2&$1FFF)>>$08)|((PSGN_2&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGN_3&$1FFF)>>$08)|((PSGN_3&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGN_4&$1FFF)>>$08)|((PSGN_4&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGN_5&$1FFF)>>$08)|((PSGN_5&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGN_6&$1FFF)>>$08)|((PSGN_6&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGN_7&$1FFF)>>$08)|((PSGN_7&$1FFF)<<$08))&$FFFF
+
+PSGN_1:        dc.b    0
+PSGN_0:        dc.b    1,   2,   1,   0, $FF, $FE, $FD, $FC, $FD, $FE, $FF, $83
+PSGN_2:        dc.b    0,   0,   0,   0, $13, $26, $39, $4C, $5F, $72, $7F, $72, $83
+PSGN_3:        dc.b    1,   2,   3,   2,   1,   0, $FF, $FE, $FD, $FE, $FF,   0, $82,   0
+PSGN_4:        dc.b    0,   0,   1,   3,   1,   0, $FF, $FD, $FF,   0, $82,   2
+PSGN_5:        dc.b    0,   0,   0,   0,   0, $0A, $14, $1E, $14, $0A,   0, $F6, $EC, $E2, $EC, $F6, $82,   4
+PSGN_6:        dc.b    0,   0,   0,   0, $16, $2C, $42, $2C, $16,   0, $EA, $D4, $BE, $D4, $EA, $82,   3
+PSGN_7:        dc.b    1,   2,   3,   4,   3,   2,   1,   0, $FF, $FE, $FD, $FC, $FD, $FE, $FF,   0, $82,   1
+
+;credit goes to Varion Icaria for finding this index
+PSGTonePointers:
+		dc.w	(((PSGTone_00&$1FFF)>>$08)|((PSGTone_00&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_01&$1FFF)>>$08)|((PSGTone_01&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_02&$1FFF)>>$08)|((PSGTone_02&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_03&$1FFF)>>$08)|((PSGTone_03&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_04&$1FFF)>>$08)|((PSGTone_04&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_05&$1FFF)>>$08)|((PSGTone_05&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_06&$1FFF)>>$08)|((PSGTone_06&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_07&$1FFF)>>$08)|((PSGTone_07&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_08&$1FFF)>>$08)|((PSGTone_08&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_09&$1FFF)>>$08)|((PSGTone_09&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_0A&$1FFF)>>$08)|((PSGTone_0A&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_0B&$1FFF)>>$08)|((PSGTone_0B&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_0C&$1FFF)>>$08)|((PSGTone_0C&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_0D&$1FFF)>>$08)|((PSGTone_0D&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_0E&$1FFF)>>$08)|((PSGTone_0E&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_0F&$1FFF)>>$08)|((PSGTone_0F&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_10&$1FFF)>>$08)|((PSGTone_10&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_11&$1FFF)>>$08)|((PSGTone_11&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_12&$1FFF)>>$08)|((PSGTone_12&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_13&$1FFF)>>$08)|((PSGTone_13&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_14&$1FFF)>>$08)|((PSGTone_14&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_15&$1FFF)>>$08)|((PSGTone_15&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_16&$1FFF)>>$08)|((PSGTone_16&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_17&$1FFF)>>$08)|((PSGTone_17&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_18&$1FFF)>>$08)|((PSGTone_18&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_19&$1FFF)>>$08)|((PSGTone_19&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_1A&$1FFF)>>$08)|((PSGTone_1A&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_1B&$1FFF)>>$08)|((PSGTone_1B&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_1C&$1FFF)>>$08)|((PSGTone_1C&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_1D&$1FFF)>>$08)|((PSGTone_1D&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_1E&$1FFF)>>$08)|((PSGTone_1E&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_1F&$1FFF)>>$08)|((PSGTone_1F&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_20&$1FFF)>>$08)|((PSGTone_20&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_21&$1FFF)>>$08)|((PSGTone_21&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_22&$1FFF)>>$08)|((PSGTone_22&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_23&$1FFF)>>$08)|((PSGTone_23&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_24&$1FFF)>>$08)|((PSGTone_24&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_25&$1FFF)>>$08)|((PSGTone_25&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_26&$1FFF)>>$08)|((PSGTone_26&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_27&$1FFF)>>$08)|((PSGTone_27&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_28&$1FFF)>>$08)|((PSGTone_28&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_29&$1FFF)>>$08)|((PSGTone_29&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_2A&$1FFF)>>$08)|((PSGTone_2A&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_2B&$1FFF)>>$08)|((PSGTone_2B&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_2C&$1FFF)>>$08)|((PSGTone_2C&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_2D&$1FFF)>>$08)|((PSGTone_2D&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_2E&$1FFF)>>$08)|((PSGTone_2E&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_2F&$1FFF)>>$08)|((PSGTone_2F&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_30&$1FFF)>>$08)|((PSGTone_30&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_31&$1FFF)>>$08)|((PSGTone_31&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_32&$1FFF)>>$08)|((PSGTone_32&$1FFF)<<$08))&$FFFF
+		dc.w	(((PSGTone_33&$1FFF)>>$08)|((PSGTone_33&$1FFF)<<$08))&$FFFF
+
+PSGTone_00:		dc.b    2, $83
+PSGTone_01:
+PSGTone_0E:
+PSGTone_28:		dc.b    0,   2,   4,   6,   8, $10, $83
+PSGTone_02:		dc.b    2,   1,   0,   0,   1,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2
+                        dc.b    2,   3,   3,   3,   4,   4,   4,   5, $81
+PSGTone_2A:             ;dc.b	0,   0,   2,   3,   4,   4,   5,   5,   5,   6, $81
+PSGTone_03:		dc.b    0,   0,   2,   3,   4,   4,   5,   5,   5,   6,   6, $81
+PSGTone_04:		dc.b    3,   0,   1,   1,   1,   2,   3,   4,   4,   5, $81
+PSGTone_29:             ;dc.b	0,   0,   1,   1,   2,   2,   3,   3,   4,   4,   5,   5,   6,   6,   7,   7, $81
+PSGTone_05:		dc.b    0,   0,   1,   1,   2,   3,   4,   5,   5,   6,   8,   7,   7,   6, $81
+PSGTone_06:		dc.b    1, $0C,   3, $0F,   2,   7,   3, $0F, $80
+PSGTone_2F:             ;dc.b	0,   1,   2,   3,   4,   5,   6,   7,   8,   9, $0A, $0B, $0C, $0D, $0E, $0F, $83
+PSGTone_07:		dc.b    0,   0,   0,   2,   3,   3,   4,   5,   6,   7,   8,   9, $0A, $0B, $0E, $0F, $83
+PSGTone_08:		dc.b    3,   2,   1,   1,   0,   0,   1,   2,   3,   4, $81
+PSGTone_27:             ;dc.b	0,   0,   0,   1,   1,   1,   2,   2,   2,   3,   3,   3,   4,   4,   4,   5
+                        ;dc.b	5,   5,   6,   6,   6,   7, $81
+PSGTone_09:		dc.b    1,   0,   0,   0,   0,   1,   1,   1,   2,   2,   2,   3,   3,   3,   3,   4
+                        dc.b    4,   4,   5,   5, $81
+PSGTone_0A:		dc.b  $10, $20, $30, $40, $30, $20, $10,   0, $F0, $80
+PSGTone_0B:		dc.b    0,   0,   1,   1,   3,   3,   4,   5, $83
+PSGTone_0C:		dc.b    0, $81
+PSGTone_0D:		dc.b    2, $83
+PSGTone_0F:		dc.b    9,   9,   9,   8,   8,   8,   7,   7,   7,   6,   6,   6,   5,   5,   5,   4
+                        dc.b    4,   4,   3,   3,   3,   2,   2,   2,   1,   1,   1,   0,   0,   0, $81
+PSGTone_10:		dc.b    1,   1,   1,   0,   0,   0, $81
+PSGTone_11:		dc.b    3,   0,   1,   1,   1,   2,   3,   4,   4,   5, $81
+PSGTone_12:		dc.b    0,   0,   1,   1,   2,   3,   4,   5,   5,   6,   8,   7,   7,   6, $81
+PSGTone_13:		dc.b  $0A,   5,   0,   4,   8, $83
+PSGTone_14:		dc.b    0,   0,   0,   2,   3,   3,   4,   5,   6,   7,   8,   9, $0A, $0B, $0E, $0F
+                        dc.b  $83
+PSGTone_15:		dc.b    3,   2,   1,   1,   0,   0,   1,   2,   3,   4, $81
+PSGTone_16:		dc.b    1,   0,   0,   0,   0,   1,   1,   1,   2,   2,   2,   3,   3,   3,   3,   4
+                        dc.b    4,   4,   5,   5, $81
+PSGTone_17:		dc.b  $10, $20, $30, $40, $30, $20, $10,   0, $80
+PSGTone_18:		dc.b    0,   0,   1,   1,   3,   3,   4,   5, $83
+PSGTone_19:		dc.b    0,   2,   4,   6,   8, $16, $83
+PSGTone_1A:		dc.b    0,   0,   1,   1,   3,   3,   4,   5, $83
+PSGTone_1B:		dc.b    4,   4,   4,   4,   3,   3,   3,   3,   2,   2,   2,   2,   1,   1,   1,   1, $83
+PSGTone_1C:		dc.b    0,   0,   0,   0,   1,   1,   1,   1,   2,   2,   2,   2,   3,   3,   3,   3
+                        dc.b    4,   4,   4,   4,   5,   5,   5,   5,   6,   6,   6,   6,   7,   7,   7,   7
+                        dc.b    8,   8,   8,   8,   9,   9,   9,   9, $0A, $0A, $0A, $0A, $81
+PSGTone_1D:		dc.b    0, $0A, $83
+PSGTone_1E:		dc.b    0,   2,   4, $81
+PSGTone_1F:		dc.b  $30, $20, $10,   0,   0,   0,   0,   0,   8, $10, $20, $30, $81
+PSGTone_20:		dc.b    0,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   6,   6,   6,   8,   8
+                        dc.b  $0A, $83
+PSGTone_21:		dc.b    0,   2,   3,   4,   6,   7, $81
+PSGTone_22:		dc.b    2,   1,   0,   0,   0,   2,   4,   7, $81
+PSGTone_23:		dc.b  $0F,   1,   5, $83
+PSGTone_24:		dc.b    8,   6,   2,   3,   4,   5,   6,   7,   8,   9, $0A, $0B, $0C, $0D, $0E, $0F
+                        dc.b  $10, $83
+PSGTone_25:		dc.b    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,   1,   1,   1,   1,   1
+                dc.b    1,   1,   1,   1,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   3,   3
+                dc.b    3,   3,   3,   3,   3,   3,   3,   3,   4,   4,   4,   4,   4,   4,   4,   4
+                dc.b    4,   4,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   6,   6,   6,   6
+                dc.b    6,   6,   6,   6,   6,   6,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7
+                dc.b    8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   9,   9,   9,   9,   9,   9
+                dc.b    9,   9, $83
+
+
+MB_Ptr			equ	(Mini_Boss_Snd&$FFFF)|$8000						;	$C71A0
+FB_Ptr			equ	(Final_Boss_Snd&$FFFF)|$8000						;	$C7A61
+AIz1_Ptr		equ	(Angel_Island_1_Snd&$FFFF)|$8000					;	$C8000
+AIz2_Ptr		equ	(Angel_Island_2_Snd&$FFFF)|$8000					;	$C9B6D
+HCz1_Ptr		equ	(Hidrocity_1_Snd&$FFFF)|$8000					;	$CB0BC
+HCz2_Ptr		equ	(Hidrocity_2_Snd&$FFFF)|$8000					;	$CC0C6
+MGz1_Ptr		equ	(Marble_Garden_1_Snd&$FFFF)|$8000				;	$CD364
+MGz2_Ptr		equ	(Marble_Garden_2_Snd&$FFFF)|$8000				;	$CD97B
+CNz2_Ptr		equ	(Carnival_Night_2_Snd&$FFFF)|$8000				;	$CDDA9
+CNz1_Ptr		equ	(Carnival_Night_1_Snd&$FFFF)|$8000				;	$CE48F
+FBz1_Ptr		equ	(Flying_Battery_1_Snd&$FFFF)|$8000				;	$CEBF1
+FBz2_Ptr		equ	(Flying_Battery_2_Snd&$FFFF)|$8000				;	$CF189
+TDz_Ptr		equ	(The_Doomsday_Snd&$FFFF)|$8000					;	$CF6F0
+Iz2_Ptr		equ	(Icecap_2_Snd&$FFFF)|$8000						;	$D0000
+Iz1_Ptr		equ	(Icecap_1_Snd&$FFFF)|$8000						;	$D06AA
+LBz2_Ptr		equ	(Launch_Base_2_Snd&$FFFF)|$8000					;	$D0DC8
+LBz1_Ptr		equ	(Launch_Base_1_Snd&$FFFF)|$8000					;	$D1345
+MHz1_Ptr		equ	(Mushroom_Hill_1_Snd&$FFFF)|$8000				;	$D17A7
+MHz2_Ptr		equ	(Mushroom_Hill_2_Snd&$FFFF)|$8000				;	$D1DAF
+Sz1_Ptr		equ	(Sandopolis_1_Snd&$FFFF)|$8000					;	$D2331
+Sz2_Ptr		equ	(Sandopolis_2_Snd&$FFFF)|$8000					;	$D299B
+LRz1_Ptr		equ	(Lava_Reef_1_Snd&$FFFF)|$8000					;	$D2F8E
+LRz2_Ptr		equ	(Lava_Reef_2_Snd&$FFFF)|$8000					;	$D399C
+SCz_Ptr		equ	(Sky_Sanctuary_Snd&$FFFF)|$8000					;	$D4B29
+DEz1_Ptr		equ	(Death_Egg_1_Snd&$FFFF)|$8000					;	$D4F4F
+DEz2_Ptr		equ	(Death_Egg_2_Snd&$FFFF)|$8000					;	$D543A
+MB_SK_Ptr		equ	(Mini_Boss_SK_Snd&$FFFF)|$8000					;	$D584C
+Boss_Ptr		equ	(Boss_Snd&$FFFF)|$8000							;	$D5B7C
+GS_BS_Ptr		equ	(Glowing_Spheres_Bonus_Stage_snd&$FFFF)|$8000	;	$D6078
+SS_Ptr			equ	(Special_Stage_Snd&$FFFF)|$8000					;	$D65DB
+LR_Ptr			equ	(Level_Results_Snd&$FFFF)|$8000					;	$D6E73
+Menu_Ptr		equ	(Menu_Snd&$FFFF)|$8000							;	$D7027
+SM_BS_Ptr		equ	(Slot_Machine_Bonus_Stage_snd&$FFFF)|$8000		;	$D8000
+GBM_BS_Ptr		equ	(Gum_Ball_Machine_Bonus_Stage_snd&$FFFF)|$8000	;	$D8AE8
+KTE_Ptr		equ	(Knuckles_Theme_Snd&$FFFF)|$8000					;	$D97FD
+ALz_Ptr		equ	(Azure_Lake_Snd&$FFFF)|$8000						;	$D99F7
+BPz_Ptr		equ	(Balloon_Park_Snd&$FFFF)|$8000					;	$DA4FD
+DPz_Ptr		equ	(Desert_Palace_Snd&$FFFF)|$8000					;	$DB0EC
+CGz_Ptr		equ	(Chrome_Gadget_Snd&$FFFF)|$8000					;	$DC324
+EMz_Ptr		equ	(Endless_Mine_Snd&$FFFF)|$8000					;	$DDA47
+TS_Ptr			equ	(Title_Screen_Snd&$FFFF)|$8000					;	$DE18F
+Credits_Ptr	equ	(Credits_Snd&$FFFF)|$8000							;	$DE587
+TGOvr_Ptr		equ	(Time_Game_Over_Snd&$FFFF)|$8000					;	$DEA20
+Continue_Ptr	equ	(Continue_Snd&$FFFF)|$8000						;	$DEC7B
+_1_Up_Ptr		equ	(Extra_Life_Snd&$FFFF)|$8000						;	$DF095
+Emerald_Ptr	equ	(Emerald_Snd&$FFFF)|$8000							;	$DF298
+Invcblty_Ptr	equ	(Invencibility_Snd&$FFFF)|$8000					;	$DF364
+_2p_Menu_Ptr	equ	(Competition_Menu_Snd&$FFFF)|$8000				;	$DF5E4
+UT_Ptr			equ	(Underwater_Timming_Snd&$FFFF)|$8000			;	$DFABE
+PbS_Ptr		equ	(Presented_by_SEGA_Snd&$FFFF)|$8000				;	$DFBFE
+ 
+Sfx_33_Ptr		equ	(Sfx_33_Snd&$FFFF)|$8000							;	$FDE30
+Sfx_34_Ptr		equ	(Sfx_34_Snd&$FFFF)|$8000							;	$FDE30
+Sfx_35_Ptr		equ	(Sfx_35_Snd&$FFFF)|$8000							;	$FDE5E
+Sfx_36_Ptr		equ	(Sfx_36_Snd&$FFFF)|$8000							;	$FDE6F
+Sfx_37_Ptr		equ	(Sfx_37_Snd&$FFFF)|$8000							;	$FDEA1
+Sfx_38_Ptr		equ	(Sfx_38_Snd&$FFFF)|$8000							;	$FDEC5
+Sfx_39_Ptr		equ	(Sfx_39_Snd&$FFFF)|$8000							;	$FDEF4
+Sfx_3A_Ptr		equ	(Sfx_3A_Snd&$FFFF)|$8000							;	$FDF2A
+Sfx_3B_Ptr		equ	(Sfx_3B_Snd&$FFFF)|$8000							;	$FDF6B
+Sfx_3C_Ptr		equ	(Sfx_3C_Snd&$FFFF)|$8000							;	$FDF96
+Sfx_3D_Ptr		equ	(Sfx_3D_Snd&$FFFF)|$8000							;	$FDFE5
+Sfx_3E_Ptr		equ	(Sfx_3E_Snd&$FFFF)|$8000							;	$FE023
+Sfx_3F_Ptr		equ	(Sfx_3F_Snd&$FFFF)|$8000							;	$FE05D
+Sfx_40_Ptr		equ	(Sfx_40_Snd&$FFFF)|$8000							;	$FE088
+Sfx_41_Ptr		equ	(Sfx_41_Snd&$FFFF)|$8000							;	$FE0AB
+Sfx_42_Ptr		equ	(Sfx_42_Snd&$FFFF)|$8000							;	$FE0CE
+Sfx_43_Ptr		equ	(Sfx_43_Snd&$FFFF)|$8000							;	$FE0F1
+Sfx_44_Ptr		equ	(Sfx_44_Snd&$FFFF)|$8000							;	$FE109
+Sfx_45_Ptr		equ	(Sfx_45_Snd&$FFFF)|$8000							;	$FE122
+Sfx_46_Ptr		equ	(Sfx_46_Snd&$FFFF)|$8000							;	$FE14F
+Sfx_47_Ptr		equ	(Sfx_47_Snd&$FFFF)|$8000							;	$FE177
+Sfx_48_Ptr		equ	(Sfx_48_Snd&$FFFF)|$8000							;	$FE1A4
+Sfx_49_Ptr		equ	(Sfx_49_Snd&$FFFF)|$8000							;	$FE1C4
+Sfx_4A_Ptr		equ	(Sfx_4A_Snd&$FFFF)|$8000							;	$FE1DE
+Sfx_4B_Ptr		equ	(Sfx_4B_Snd&$FFFF)|$8000							;	$FE206
+Sfx_4C_Ptr		equ	(Sfx_4C_Snd&$FFFF)|$8000							;	$FE22E
+Sfx_4D_Ptr		equ	(Sfx_4D_Snd&$FFFF)|$8000							;	$FE278
+Sfx_4E_Ptr		equ	(Sfx_4E_Snd&$FFFF)|$8000							;	$FE2A2
+Sfx_4F_Ptr		equ	(Sfx_4F_Snd&$FFFF)|$8000							;	$FE2CF
+Sfx_50_Ptr		equ	(Sfx_50_Snd&$FFFF)|$8000							;	$FE313
+Sfx_51_Ptr		equ	(Sfx_51_Snd&$FFFF)|$8000							;	$FE322
+Sfx_52_Ptr		equ	(Sfx_52_Snd&$FFFF)|$8000							;	$FE35A
+Sfx_53_Ptr		equ	(Sfx_53_Snd&$FFFF)|$8000							;	$FE38B
+Sfx_54_Ptr		equ	(Sfx_54_Snd&$FFFF)|$8000							;	$FE3A8
+Sfx_55_Ptr		equ	(Sfx_55_Snd&$FFFF)|$8000							;	$FE3E8
+Sfx_56_Ptr		equ	(Sfx_56_Snd&$FFFF)|$8000							;	$FE42B
+Sfx_57_Ptr		equ	(Sfx_57_Snd&$FFFF)|$8000							;	$FE453
+Sfx_58_Ptr		equ	(Sfx_58_Snd&$FFFF)|$8000							;	$FE463
+Sfx_59_Ptr		equ	(Sfx_59_Snd&$FFFF)|$8000							;	$FE481
+Sfx_5A_Ptr		equ	(Sfx_5A_Snd&$FFFF)|$8000							;	$FE49A
+Sfx_5B_Ptr		equ	(Sfx_5B_Snd&$FFFF)|$8000							;	$FE4F6
+Sfx_5C_Ptr		equ	(Sfx_5C_Snd&$FFFF)|$8000							;	$FE523
+Sfx_5D_Ptr		equ	(Sfx_5D_Snd&$FFFF)|$8000							;	$FE530
+Sfx_5E_Ptr		equ	(Sfx_5E_Snd&$FFFF)|$8000							;	$FE558
+Sfx_5F_Ptr		equ	(Sfx_5F_Snd&$FFFF)|$8000							;	$FE581
+Sfx_60_Ptr		equ	(Sfx_60_Snd&$FFFF)|$8000							;	$FE5B2
+Sfx_61_Ptr		equ	(Sfx_61_Snd&$FFFF)|$8000							;	$FE5DA
+Sfx_62_Ptr		equ	(Sfx_62_Snd&$FFFF)|$8000							;	$FE61B
+Sfx_63_Ptr		equ	(Sfx_63_Snd&$FFFF)|$8000							;	$FE64C
+Sfx_64_Ptr		equ	(Sfx_64_Snd&$FFFF)|$8000							;	$FE662
+Sfx_65_Ptr		equ	(Sfx_65_Snd&$FFFF)|$8000							;	$FE68C
+Sfx_66_Ptr		equ	(Sfx_66_Snd&$FFFF)|$8000							;	$FE6AB
+Sfx_67_Ptr		equ	(Sfx_67_Snd&$FFFF)|$8000							;	$FE6E1
+Sfx_68_Ptr		equ	(Sfx_68_Snd&$FFFF)|$8000							;	$FE730
+Sfx_69_Ptr		equ	(Sfx_69_Snd&$FFFF)|$8000							;	$FE75C
+Sfx_6A_Ptr		equ	(Sfx_6A_Snd&$FFFF)|$8000							;	$FE7B0
+Sfx_6B_Ptr		equ	(Sfx_6B_Snd&$FFFF)|$8000							;	$FE7DD
+Sfx_6C_Ptr		equ	(Sfx_6C_Snd&$FFFF)|$8000							;	$FE811
+Sfx_6D_Ptr		equ	(Sfx_6D_Snd&$FFFF)|$8000							;	$FE823
+Sfx_6E_Ptr		equ	(Sfx_6E_Snd&$FFFF)|$8000							;	$FE833
+Sfx_6F_Ptr		equ	(Sfx_6F_Snd&$FFFF)|$8000							;	$FE852
+Sfx_70_Ptr		equ	(Sfx_70_Snd&$FFFF)|$8000							;	$FE886
+Sfx_71_Ptr		equ	(Sfx_71_Snd&$FFFF)|$8000							;	$FE896
+Sfx_72_Ptr		equ	(Sfx_72_Snd&$FFFF)|$8000							;	$FE8E0
+Sfx_73_Ptr		equ	(Sfx_73_Snd&$FFFF)|$8000							;	$FE8EA
+Sfx_74_Ptr		equ	(Sfx_74_Snd&$FFFF)|$8000							;	$FE917
+Sfx_75_Ptr		equ	(Sfx_75_Snd&$FFFF)|$8000							;	$FE94B
+Sfx_76_Ptr		equ	(Sfx_76_Snd&$FFFF)|$8000							;	$FE978
+Sfx_77_Ptr		equ	(Sfx_77_Snd&$FFFF)|$8000							;	$FE9A7
+Sfx_78_Ptr		equ	(Sfx_78_Snd&$FFFF)|$8000							;	$FE9D1
+Sfx_79_Ptr		equ	(Sfx_79_Snd&$FFFF)|$8000							;	$FEA1B
+Sfx_7A_Ptr		equ	(Sfx_7A_Snd&$FFFF)|$8000							;	$FEA48
+Sfx_7B_Ptr		equ	(Sfx_7B_Snd&$FFFF)|$8000							;	$FEA93
+Sfx_7C_Ptr		equ	(Sfx_7C_Snd&$FFFF)|$8000							;	$FEAC7
+Sfx_7D_Ptr		equ	(Sfx_7D_Snd&$FFFF)|$8000							;	$FEAF7
+Sfx_7E_Ptr		equ	(Sfx_7E_Snd&$FFFF)|$8000							;	$FEB28
+Sfx_7F_Ptr		equ	(Sfx_7F_Snd&$FFFF)|$8000							;	$FEB55
+Sfx_80_Ptr		equ	(Sfx_80_Snd&$FFFF)|$8000							;	$FEB6D
+Sfx_81_Ptr		equ	(Sfx_81_Snd&$FFFF)|$8000							;	$FEB8B
+Sfx_82_Ptr		equ	(Sfx_82_Snd&$FFFF)|$8000							;	$FEBBA
+Sfx_83_Ptr		equ	(Sfx_83_Snd&$FFFF)|$8000							;	$FEC05
+Sfx_84_Ptr		equ	(Sfx_84_Snd&$FFFF)|$8000							;	$FEC32
+Sfx_85_Ptr		equ	(Sfx_85_Snd&$FFFF)|$8000							;	$FEC7E
+Sfx_86_Ptr		equ	(Sfx_86_Snd&$FFFF)|$8000							;	$FECAB
+Sfx_87_Ptr		equ	(Sfx_87_Snd&$FFFF)|$8000							;	$FECD8
+Sfx_88_Ptr		equ	(Sfx_88_Snd&$FFFF)|$8000							;	$FED05
+Sfx_89_Ptr		equ	(Sfx_89_Snd&$FFFF)|$8000							;	$FED3B
+Sfx_8A_Ptr		equ	(Sfx_8A_Snd&$FFFF)|$8000							;	$FED68
+Sfx_8B_Ptr		equ	(Sfx_8B_Snd&$FFFF)|$8000							;	$FED75
+Sfx_8C_Ptr		equ	(Sfx_8C_Snd&$FFFF)|$8000							;	$FEDA9
+Sfx_8D_Ptr		equ	(Sfx_8D_Snd&$FFFF)|$8000							;	$FEDDF
+Sfx_8E_Ptr		equ	(Sfx_8E_Snd&$FFFF)|$8000							;	$FEE10
+Sfx_8F_Ptr		equ	(Sfx_8F_Snd&$FFFF)|$8000							;	$FEE2A
+Sfx_90_Ptr		equ	(Sfx_90_Snd&$FFFF)|$8000							;	$FEE5B
+Sfx_91_Ptr		equ	(Sfx_91_Snd&$FFFF)|$8000							;	$FEE91
+Sfx_92_Ptr		equ	(Sfx_92_Snd&$FFFF)|$8000							;	$FEEC3
+Sfx_93_Ptr		equ	(Sfx_93_Snd&$FFFF)|$8000							;	$FEEF9
+Sfx_94_Ptr		equ	(Sfx_94_Snd&$FFFF)|$8000							;	$FEF2D
+Sfx_95_Ptr		equ	(Sfx_95_Snd&$FFFF)|$8000							;	$FEF77
+Sfx_96_Ptr		equ	(Sfx_96_Snd&$FFFF)|$8000							;	$FEFA6
+Sfx_97_Ptr		equ	(Sfx_97_Snd&$FFFF)|$8000							;	$FEFD5
+Sfx_98_Ptr		equ	(Sfx_98_Snd&$FFFF)|$8000							;	$FF009
+Sfx_99_Ptr		equ	(Sfx_99_Snd&$FFFF)|$8000							;	$FF01C
+Sfx_9A_Ptr		equ	(Sfx_9A_Snd&$FFFF)|$8000							;	$FF068
+Sfx_9B_Ptr		equ	(Sfx_9B_Snd&$FFFF)|$8000							;	$FF090
+Sfx_9C_Ptr		equ	(Sfx_9C_Snd&$FFFF)|$8000							;	$FF0AF
+Sfx_9D_Ptr		equ	(Sfx_9D_Snd&$FFFF)|$8000							;	$FF114
+Sfx_9E_Ptr		equ	(Sfx_9E_Snd&$FFFF)|$8000							;	$FF14B
+Sfx_9F_Ptr		equ	(Sfx_9F_Snd&$FFFF)|$8000							;	$FF17F
+Sfx_A0_Ptr		equ	(Sfx_A0_Snd&$FFFF)|$8000							;	$FF1C0
+Sfx_A1_Ptr		equ	(Sfx_A1_Snd&$FFFF)|$8000							;	$FF1FC
+Sfx_A2_Ptr		equ	(Sfx_A2_Snd&$FFFF)|$8000							;	$FF214
+Sfx_A3_Ptr		equ	(Sfx_A3_Snd&$FFFF)|$8000							;	$FF23C
+Sfx_A4_Ptr		equ	(Sfx_A4_Snd&$FFFF)|$8000							;	$FF274
+Sfx_A5_Ptr		equ	(Sfx_A5_Snd&$FFFF)|$8000							;	$FF2A1
+Sfx_A6_Ptr		equ	(Sfx_A6_Snd&$FFFF)|$8000							;	$FF2CE
+Sfx_A7_Ptr		equ	(Sfx_A7_Snd&$FFFF)|$8000							;	$FF2FB
+Sfx_A8_Ptr		equ	(Sfx_A8_Snd&$FFFF)|$8000							;	$FF313
+Sfx_A9_Ptr		equ	(Sfx_A9_Snd&$FFFF)|$8000							;	$FF33B
+Sfx_AA_Ptr		equ	(Sfx_AA_Snd&$FFFF)|$8000							;	$FF365
+Sfx_AB_Ptr		equ	(Sfx_AB_Snd&$FFFF)|$8000							;	$FF38F
+Sfx_AC_Ptr		equ	(Sfx_AC_Snd&$FFFF)|$8000							;	$FF3EA
+Sfx_AD_Ptr		equ	(Sfx_AD_Snd&$FFFF)|$8000							;	$FF42A
+Sfx_AE_Ptr		equ	(Sfx_AE_Snd&$FFFF)|$8000							;	$FF49C
+Sfx_AF_Ptr		equ	(Sfx_AF_Snd&$FFFF)|$8000							;	$FF4AB
+Sfx_B0_Ptr		equ	(Sfx_B0_Snd&$FFFF)|$8000							;	$FF4DA
+Sfx_B1_Ptr		equ	(Sfx_B1_Snd&$FFFF)|$8000							;	$FF507
+Sfx_B2_Ptr		equ	(Sfx_B2_Snd&$FFFF)|$8000							;	$FF582
+Sfx_B3_Ptr		equ	(Sfx_B3_Snd&$FFFF)|$8000							;	$FF5D7
+Sfx_B4_Ptr		equ	(Sfx_B4_Snd&$FFFF)|$8000							;	$FF603
+Sfx_B5_Ptr		equ	(Sfx_B5_Snd&$FFFF)|$8000							;	$FF67D
+Sfx_B6_Ptr		equ	(Sfx_B6_Snd&$FFFF)|$8000							;	$FF6AA
+Sfx_B7_Ptr		equ	(Sfx_B7_Snd&$FFFF)|$8000							;	$FF6D2
+Sfx_B8_Ptr		equ	(Sfx_B8_Snd&$FFFF)|$8000							;	$FF713
+Sfx_B9_Ptr		equ	(Sfx_B9_Snd&$FFFF)|$8000							;	$FF745
+Sfx_BA_Ptr		equ	(Sfx_BA_Snd&$FFFF)|$8000							;	$FF76C
+Sfx_BB_Ptr		equ	(Sfx_BB_Snd&$FFFF)|$8000							;	$FF794
+Sfx_BC_Ptr		equ	(Sfx_BC_Snd&$FFFF)|$8000							;	$FF7BE
+Sfx_BD_Ptr		equ	(Sfx_BD_Snd&$FFFF)|$8000							;	$FF7CE
+Sfx_BE_Ptr		equ	(Sfx_BE_Snd&$FFFF)|$8000							;	$FF7F9
+Sfx_BF_Ptr		equ	(Sfx_BF_Snd&$FFFF)|$8000							;	$FF837
+Sfx_C0_Ptr		equ	(Sfx_C0_Snd&$FFFF)|$8000							;	$FF86A
+Sfx_C1_Ptr		equ	(Sfx_C1_Snd&$FFFF)|$8000							;	$FF89C
+Sfx_C2_Ptr		equ	(Sfx_C2_Snd&$FFFF)|$8000							;	$FF8D1
+Sfx_C3_Ptr		equ	(Sfx_C3_Snd&$FFFF)|$8000							;	$FF907
+Sfx_C4_Ptr		equ	(Sfx_C4_Snd&$FFFF)|$8000							;	$FF91E
+Sfx_C5_Ptr		equ	(Sfx_C5_Snd&$FFFF)|$8000							;	$FF94E
+Sfx_C6_Ptr		equ	(Sfx_C6_Snd&$FFFF)|$8000							;	$FF97E
+Sfx_C7_Ptr		equ	(Sfx_C7_Snd&$FFFF)|$8000							;	$FF9B7
+Sfx_C8_Ptr		equ	(Sfx_C8_Snd&$FFFF)|$8000							;	$FF9F2
+Sfx_C9_Ptr		equ	(Sfx_C9_Snd&$FFFF)|$8000							;	$FFA21
+Sfx_CA_Ptr		equ	(Sfx_CA_Snd&$FFFF)|$8000							;	$FFA2B
+Sfx_CB_Ptr		equ	(Sfx_CB_Snd&$FFFF)|$8000							;	$FFA66
+Sfx_CC_Ptr		equ	(Sfx_CC_Snd&$FFFF)|$8000							;	$FFA9C
+Sfx_CD_Ptr		equ	(Sfx_CD_Snd&$FFFF)|$8000							;	$FFAD7
+Sfx_CE_Ptr		equ	(Sfx_CE_Snd&$FFFF)|$8000							;	$FFB12
+Sfx_CF_Ptr		equ	(Sfx_CF_Snd&$FFFF)|$8000							;	$FFB45
+Sfx_D0_Ptr		equ	(Sfx_D0_Snd&$FFFF)|$8000							;	$FFB60
+Sfx_D1_Ptr		equ	(Sfx_D1_Snd&$FFFF)|$8000							;	$FFB6A
+Sfx_D2_Ptr		equ	(Sfx_D2_Snd&$FFFF)|$8000							;	$FFBA1
+Sfx_D3_Ptr		equ	(Sfx_D3_Snd&$FFFF)|$8000							;	$FFBBE
+Sfx_D4_Ptr		equ	(Sfx_D4_Snd&$FFFF)|$8000							;	$FFBF4
+Sfx_D5_Ptr		equ	(Sfx_D5_Snd&$FFFF)|$8000							;	$FFC2D
+Sfx_D6_Ptr		equ	(Sfx_D6_Snd&$FFFF)|$8000							;	$FFC64
+Sfx_D7_Ptr		equ	(Sfx_D7_Snd&$FFFF)|$8000							;	$FFC9D
+Sfx_D8_Ptr		equ	(Sfx_D8_Snd&$FFFF)|$8000							;	$FFCCE
+Sfx_D9_Ptr		equ	(Sfx_D9_Snd&$FFFF)|$8000							;	$FFCFF
+Sfx_DA_Ptr		equ	(Sfx_DA_Snd&$FFFF)|$8000							;	$FFD32
+Sfx_DB_Ptr		equ	(Sfx_DB_Snd&$FFFF)|$8000							;	$FFD62
+;Sfx_DC_Ptr		equ	(Sfx_DC_Snd&$FFFF)|$8000							;	$FFD94
+ 
+MusicPointers:	
+		dc.w	((AIz1_Ptr>>$08)|(AIz1_Ptr<<$08))&$FFFF
+		dc.w	((AIz2_Ptr>>$08)|(AIz2_Ptr<<$08))&$FFFF
+		dc.w	((HCz1_Ptr>>$08)|(HCz1_Ptr<<$08))&$FFFF
+		dc.w	((HCz2_Ptr>>$08)|(HCz2_Ptr<<$08))&$FFFF
+		dc.w	((MGz1_Ptr>>$08)|(MGz1_Ptr<<$08))&$FFFF
+		dc.w	((MGz2_Ptr>>$08)|(MGz2_Ptr<<$08))&$FFFF
+		dc.w	((CNz1_Ptr>>$08)|(CNz1_Ptr<<$08))&$FFFF
+		dc.w	((CNz2_Ptr>>$08)|(CNz2_Ptr<<$08))&$FFFF
+		dc.w	((FBz1_Ptr>>$08)|(FBz1_Ptr<<$08))&$FFFF
+		dc.w	((FBz2_Ptr>>$08)|(FBz2_Ptr<<$08))&$FFFF
+		dc.w	((Iz1_Ptr>>$08)|(Iz1_Ptr<<$08))&$FFFF
+		dc.w	((Iz2_Ptr>>$08)|(Iz2_Ptr<<$08))&$FFFF
+		dc.w	((LBz1_Ptr>>$08)|(LBz1_Ptr<<$08))&$FFFF
+		dc.w	((LBz2_Ptr>>$08)|(LBz2_Ptr<<$08))&$FFFF
+		dc.w	((MHz1_Ptr>>$08)|(MHz1_Ptr<<$08))&$FFFF
+		dc.w	((MHz2_Ptr>>$08)|(MHz2_Ptr<<$08))&$FFFF
+		dc.w	((Sz1_Ptr>>$08)|(Sz1_Ptr<<$08))&$FFFF
+		dc.w	((Sz2_Ptr>>$08)|(Sz2_Ptr<<$08))&$FFFF
+		dc.w	((LRz1_Ptr>>$08)|(LRz1_Ptr<<$08))&$FFFF
+		dc.w	((LRz2_Ptr>>$08)|(LRz2_Ptr<<$08))&$FFFF
+		dc.w	((SCz_Ptr>>$08)|(SCz_Ptr<<$08))&$FFFF
+		dc.w	((DEz1_Ptr>>$08)|(DEz1_Ptr<<$08))&$FFFF
+		dc.w	((DEz2_Ptr>>$08)|(DEz2_Ptr<<$08))&$FFFF
+		dc.w	((MB_SK_Ptr>>$08)|(MB_SK_Ptr<<$08))&$FFFF
+		dc.w	((Boss_Ptr>>$08)|(Boss_Ptr<<$08))&$FFFF
+		dc.w	((TDz_Ptr>>$08)|(TDz_Ptr<<$08))&$FFFF
+		dc.w	((GS_BS_Ptr>>$08)|(GS_BS_Ptr<<$08))&$FFFF
+		dc.w	((SS_Ptr>>$08)|(SS_Ptr<<$08))&$FFFF
+		dc.w	((SM_BS_Ptr>>$08)|(SM_BS_Ptr<<$08))&$FFFF
+		dc.w	((GBM_BS_Ptr>>$08)|(GBM_BS_Ptr<<$08))&$FFFF
+		dc.w	((KTE_Ptr>>$08)|(KTE_Ptr<<$08))&$FFFF
+		dc.w	((ALz_Ptr>>$08)|(ALz_Ptr<<$08))&$FFFF
+		dc.w	((BPz_Ptr>>$08)|(BPz_Ptr<<$08))&$FFFF
+		dc.w	((DPz_Ptr>>$08)|(DPz_Ptr<<$08))&$FFFF
+		dc.w	((CGz_Ptr>>$08)|(CGz_Ptr<<$08))&$FFFF
+		dc.w	((EMz_Ptr>>$08)|(EMz_Ptr<<$08))&$FFFF
+		dc.w	((TS_Ptr>>$08)|(TS_Ptr<<$08))&$FFFF
+		dc.w	((Credits_Ptr>>$08)|(Credits_Ptr<<$08))&$FFFF
+		dc.w	((TGOvr_Ptr>>$08)|(TGOvr_Ptr<<$08))&$FFFF
+		dc.w	((Continue_Ptr>>$08)|(Continue_Ptr<<$08))&$FFFF
+		dc.w	((LR_Ptr>>$08)|(LR_Ptr<<$08))&$FFFF
+		dc.w	((_1_Up_Ptr>>$08)|(_1_Up_Ptr<<$08))&$FFFF
+		dc.w	((Emerald_Ptr>>$08)|(Emerald_Ptr<<$08))&$FFFF
+		dc.w	((Invcblty_Ptr>>$08)|(Invcblty_Ptr<<$08))&$FFFF
+		dc.w	((_2p_Menu_Ptr>>$08)|(_2p_Menu_Ptr<<$08))&$FFFF
+		dc.w	((MB_Ptr>>$08)|(MB_Ptr<<$08))&$FFFF
+		dc.w	((Menu_Ptr>>$08)|(Menu_Ptr<<$08))&$FFFF
+		dc.w	((FB_Ptr>>$08)|(FB_Ptr<<$08))&$FFFF
+		dc.w	((UT_Ptr>>$08)|(UT_Ptr<<$08))&$FFFF
+		dc.w	((PbS_Ptr>>$08)|(PbS_Ptr<<$08))&$FFFF
+ 
+SndPointers:
+		dc.w	((Sfx_33_Ptr>>$08)|(Sfx_33_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_34_Ptr>>$08)|(Sfx_34_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_35_Ptr>>$08)|(Sfx_35_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_36_Ptr>>$08)|(Sfx_36_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_37_Ptr>>$08)|(Sfx_37_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_38_Ptr>>$08)|(Sfx_38_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_39_Ptr>>$08)|(Sfx_39_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_3A_Ptr>>$08)|(Sfx_3A_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_3B_Ptr>>$08)|(Sfx_3B_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_3C_Ptr>>$08)|(Sfx_3C_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_3D_Ptr>>$08)|(Sfx_3D_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_3E_Ptr>>$08)|(Sfx_3E_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_3F_Ptr>>$08)|(Sfx_3F_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_40_Ptr>>$08)|(Sfx_40_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_41_Ptr>>$08)|(Sfx_41_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_42_Ptr>>$08)|(Sfx_42_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_43_Ptr>>$08)|(Sfx_43_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_44_Ptr>>$08)|(Sfx_44_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_45_Ptr>>$08)|(Sfx_45_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_46_Ptr>>$08)|(Sfx_46_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_47_Ptr>>$08)|(Sfx_47_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_48_Ptr>>$08)|(Sfx_48_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_49_Ptr>>$08)|(Sfx_49_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_4A_Ptr>>$08)|(Sfx_4A_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_4B_Ptr>>$08)|(Sfx_4B_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_4C_Ptr>>$08)|(Sfx_4C_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_4D_Ptr>>$08)|(Sfx_4D_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_4E_Ptr>>$08)|(Sfx_4E_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_4F_Ptr>>$08)|(Sfx_4F_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_50_Ptr>>$08)|(Sfx_50_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_51_Ptr>>$08)|(Sfx_51_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_52_Ptr>>$08)|(Sfx_52_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_53_Ptr>>$08)|(Sfx_53_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_54_Ptr>>$08)|(Sfx_54_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_55_Ptr>>$08)|(Sfx_55_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_56_Ptr>>$08)|(Sfx_56_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_57_Ptr>>$08)|(Sfx_57_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_58_Ptr>>$08)|(Sfx_58_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_59_Ptr>>$08)|(Sfx_59_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_5A_Ptr>>$08)|(Sfx_5A_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_5B_Ptr>>$08)|(Sfx_5B_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_5C_Ptr>>$08)|(Sfx_5C_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_5D_Ptr>>$08)|(Sfx_5D_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_5E_Ptr>>$08)|(Sfx_5E_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_5F_Ptr>>$08)|(Sfx_5F_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_60_Ptr>>$08)|(Sfx_60_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_61_Ptr>>$08)|(Sfx_61_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_62_Ptr>>$08)|(Sfx_62_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_63_Ptr>>$08)|(Sfx_63_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_64_Ptr>>$08)|(Sfx_64_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_65_Ptr>>$08)|(Sfx_65_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_66_Ptr>>$08)|(Sfx_66_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_67_Ptr>>$08)|(Sfx_67_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_68_Ptr>>$08)|(Sfx_68_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_69_Ptr>>$08)|(Sfx_69_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_6A_Ptr>>$08)|(Sfx_6A_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_6B_Ptr>>$08)|(Sfx_6B_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_6C_Ptr>>$08)|(Sfx_6C_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_6D_Ptr>>$08)|(Sfx_6D_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_6E_Ptr>>$08)|(Sfx_6E_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_6F_Ptr>>$08)|(Sfx_6F_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_70_Ptr>>$08)|(Sfx_70_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_71_Ptr>>$08)|(Sfx_71_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_72_Ptr>>$08)|(Sfx_72_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_73_Ptr>>$08)|(Sfx_73_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_74_Ptr>>$08)|(Sfx_74_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_75_Ptr>>$08)|(Sfx_75_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_76_Ptr>>$08)|(Sfx_76_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_77_Ptr>>$08)|(Sfx_77_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_78_Ptr>>$08)|(Sfx_78_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_79_Ptr>>$08)|(Sfx_79_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_7A_Ptr>>$08)|(Sfx_7A_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_7B_Ptr>>$08)|(Sfx_7B_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_7C_Ptr>>$08)|(Sfx_7C_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_7D_Ptr>>$08)|(Sfx_7D_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_7E_Ptr>>$08)|(Sfx_7E_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_7F_Ptr>>$08)|(Sfx_7F_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_80_Ptr>>$08)|(Sfx_80_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_81_Ptr>>$08)|(Sfx_81_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_82_Ptr>>$08)|(Sfx_82_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_83_Ptr>>$08)|(Sfx_83_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_84_Ptr>>$08)|(Sfx_84_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_85_Ptr>>$08)|(Sfx_85_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_86_Ptr>>$08)|(Sfx_86_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_87_Ptr>>$08)|(Sfx_87_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_88_Ptr>>$08)|(Sfx_88_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_89_Ptr>>$08)|(Sfx_89_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_8A_Ptr>>$08)|(Sfx_8A_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_8B_Ptr>>$08)|(Sfx_8B_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_8C_Ptr>>$08)|(Sfx_8C_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_8D_Ptr>>$08)|(Sfx_8D_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_8E_Ptr>>$08)|(Sfx_8E_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_8F_Ptr>>$08)|(Sfx_8F_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_90_Ptr>>$08)|(Sfx_90_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_91_Ptr>>$08)|(Sfx_91_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_92_Ptr>>$08)|(Sfx_92_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_93_Ptr>>$08)|(Sfx_93_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_94_Ptr>>$08)|(Sfx_94_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_95_Ptr>>$08)|(Sfx_95_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_96_Ptr>>$08)|(Sfx_96_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_97_Ptr>>$08)|(Sfx_97_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_98_Ptr>>$08)|(Sfx_98_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_99_Ptr>>$08)|(Sfx_99_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_9A_Ptr>>$08)|(Sfx_9A_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_9B_Ptr>>$08)|(Sfx_9B_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_9C_Ptr>>$08)|(Sfx_9C_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_9D_Ptr>>$08)|(Sfx_9D_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_9E_Ptr>>$08)|(Sfx_9E_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_9F_Ptr>>$08)|(Sfx_9F_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_A0_Ptr>>$08)|(Sfx_A0_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_A1_Ptr>>$08)|(Sfx_A1_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_A2_Ptr>>$08)|(Sfx_A2_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_A3_Ptr>>$08)|(Sfx_A3_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_A4_Ptr>>$08)|(Sfx_A4_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_A5_Ptr>>$08)|(Sfx_A5_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_A6_Ptr>>$08)|(Sfx_A6_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_A7_Ptr>>$08)|(Sfx_A7_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_A8_Ptr>>$08)|(Sfx_A8_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_A9_Ptr>>$08)|(Sfx_A9_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_AA_Ptr>>$08)|(Sfx_AA_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_AB_Ptr>>$08)|(Sfx_AB_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_AC_Ptr>>$08)|(Sfx_AC_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_AD_Ptr>>$08)|(Sfx_AD_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_AE_Ptr>>$08)|(Sfx_AE_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_AF_Ptr>>$08)|(Sfx_AF_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_B0_Ptr>>$08)|(Sfx_B0_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_B1_Ptr>>$08)|(Sfx_B1_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_B2_Ptr>>$08)|(Sfx_B2_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_B3_Ptr>>$08)|(Sfx_B3_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_B4_Ptr>>$08)|(Sfx_B4_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_B5_Ptr>>$08)|(Sfx_B5_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_B6_Ptr>>$08)|(Sfx_B6_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_B7_Ptr>>$08)|(Sfx_B7_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_B8_Ptr>>$08)|(Sfx_B8_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_B9_Ptr>>$08)|(Sfx_B9_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_BA_Ptr>>$08)|(Sfx_BA_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_BB_Ptr>>$08)|(Sfx_BB_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_BC_Ptr>>$08)|(Sfx_BC_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_BD_Ptr>>$08)|(Sfx_BD_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_BE_Ptr>>$08)|(Sfx_BE_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_BF_Ptr>>$08)|(Sfx_BF_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_C0_Ptr>>$08)|(Sfx_C0_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_C1_Ptr>>$08)|(Sfx_C1_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_C2_Ptr>>$08)|(Sfx_C2_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_C3_Ptr>>$08)|(Sfx_C3_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_C4_Ptr>>$08)|(Sfx_C4_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_C5_Ptr>>$08)|(Sfx_C5_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_C6_Ptr>>$08)|(Sfx_C6_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_C7_Ptr>>$08)|(Sfx_C7_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_C8_Ptr>>$08)|(Sfx_C8_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_C9_Ptr>>$08)|(Sfx_C9_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_CA_Ptr>>$08)|(Sfx_CA_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_CB_Ptr>>$08)|(Sfx_CB_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_CC_Ptr>>$08)|(Sfx_CC_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_CD_Ptr>>$08)|(Sfx_CD_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_CE_Ptr>>$08)|(Sfx_CE_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_CF_Ptr>>$08)|(Sfx_CF_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_D0_Ptr>>$08)|(Sfx_D0_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_D1_Ptr>>$08)|(Sfx_D1_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_D2_Ptr>>$08)|(Sfx_D2_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_D3_Ptr>>$08)|(Sfx_D3_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_D4_Ptr>>$08)|(Sfx_D4_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_D5_Ptr>>$08)|(Sfx_D5_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_D6_Ptr>>$08)|(Sfx_D6_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_D7_Ptr>>$08)|(Sfx_D7_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_D8_Ptr>>$08)|(Sfx_D8_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_D9_Ptr>>$08)|(Sfx_D9_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_DA_Ptr>>$08)|(Sfx_DA_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_DB_Ptr>>$08)|(Sfx_DB_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_DB_Ptr>>$08)|(Sfx_DB_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_DB_Ptr>>$08)|(Sfx_DB_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_DB_Ptr>>$08)|(Sfx_DB_Ptr<<$08))&$FFFF
+		dc.w	((Sfx_DB_Ptr>>$08)|(Sfx_DB_Ptr<<$08))&$FFFF
+;		dc.w	((Sfx_DC_Ptr>>$08)|(Sfx_DC_Ptr<<$08))&$FFFF
+DriverPointersEnd:
+		dc.b	0,0,0,0,0,0,0,0,0,0,0,0
+
+UniversalVoiceBank:
+;		incbin	"S3sound/uvb.bin"
+	; Synth Bass 2    00
+		dc.b  $3C,   1,   0,   0,   0, $1F, $1F, $15, $1F, $11, $0D, $12,   5
+		dc.b         7,   4,   9,   2, $55, $3A, $25, $1A, $1A, $80,   7, $80				; 0
+	; Trumpet 1       01
+	    dc.b  $3D,   1,   1,   1,   1, $94, $19, $19, $19, $0F, $0D, $0D, $0D
+		dc.b         7,   4,   4,   4, $25, $1A, $1A, $1A, $15, $80, $80, $80				; 25
+	; Slap Bass 2     02
+	    dc.b    3,   0, $D7, $33,   2, $5F, $9F, $5F, $1F, $13, $0F, $0A, $0A
+		dc.b       $10, $0F,   2,   9, $35, $15, $25, $1A, $13, $16, $15, $80				; 50
+	; Synth Bass 1    03
+	    dc.b  $34, $70, $72, $31, $31, $1F, $1F, $1F, $1F, $10,   6,   6,   6
+		dc.b         1,   6,   6,   6, $35, $1A, $15, $1A, $10, $83, $18, $83				; 75
+	; Bell Synth 1    04
+	    dc.b  $3E, $77, $71, $32, $31, $1F, $1F, $1F, $1F, $0D,   6,   0,   0
+		dc.b         8,   6,   0,   0, $15, $0A, $0A, $0A, $1B, $80, $80, $80				; 100
+	; Bell Synth 2    05
+	    dc.b  $34, $33, $41, $7E, $74, $5B, $9F, $5F, $1F,   4,   7,   7,   8
+		dc.b         0,   0,   0,   0, $FF, $FF, $EF, $FF, $23, $80, $29, $87				; 125
+	; Synth Brass 1   06
+	    dc.b  $3A,   1,   7, $31, $71, $8E, $8E, $8D, $53, $0E, $0E, $0E,   3
+		dc.b         0,   0,   0,   7, $1F, $FF, $1F, $0F, $18, $28, $27, $80				; 150
+	; Synth like Bassoon   07
+	    dc.b  $3C, $32, $32, $71, $42, $1F, $18, $1F, $1E,   7, $1F,   7, $1F
+		dc.b         0,   0,   0,   0, $1F, $0F, $1F, $0F, $1E, $80, $0C, $80				; 175
+	; Bell Horn type thing 08
+	    dc.b  $3C, $71, $72, $3F, $34, $8D, $52, $9F, $1F,   9,   0,   0, $0D
+		dc.b         0,   0,   0,   0, $23,   8,   2, $F7, $15, $80, $1D, $87				; 200
+	; Synth Bass 3    09
+	    dc.b  $3D,   1,   1,   0,   0, $8E, $52, $14, $4C,   8,   8, $0E,   3
+		dc.b         0,   0,   0,   0, $1F, $1F, $1F, $1F, $1B, $80, $80, $9B				; 225
+	; Synth Trumpet   0A
+	    dc.b  $3A,   1,   1,   1,   2, $8D,   7,   7, $52,   9,   0,   0,   3
+		dc.b         1,   2,   2,   0, $52,   2,   2, $28, $18, $22, $18, $80				; 250
+	; Wood Block      0B
+	    dc.b  $3C, $36, $31, $76, $71, $94, $9F, $96, $9F, $12,   0, $14, $0F
+		dc.b         4, $0A,   4, $0D, $2F, $0F, $4F, $2F, $33, $80, $1A, $80				; 275
+	; Tubular Bell    0C
+	    dc.b  $34, $33, $41, $7E, $74, $5B, $9F, $5F, $1F,   4,   7,   7,   8
+		dc.b         0,   0,   0,   0, $FF, $FF, $EF, $FF, $23, $90, $29, $97				; 300
+	; Strike Bass     0D
+	    dc.b  $38, $63, $31, $31, $31, $10, $13, $1A, $1B, $0E,   0,   0,   0
+		dc.b         0,   0,   0,   0, $3F, $0F, $0F, $0F, $1A, $19, $1A, $80				; 325
+	; Elec Piano      0F
+	    dc.b  $3A, $31, $25, $73, $41, $5F, $1F, $1F, $9C,   8,   5,   4,   5
+		dc.b         3,   4,   2,   2, $2F, $2F, $1F, $2F, $29, $27, $1F, $80				; 350
+	; Bright Piano    10
+	    dc.b    4, $71, $41, $31, $31, $12, $12, $12, $12,   0,   0,   0,   0
+		dc.b         0,   0,   0,   0, $0F, $0F, $0F, $0F, $23, $80, $23, $80				; 375
+	; Church Bell     11
+	    dc.b  $14, $75, $72, $35, $32, $9F, $9F, $9F, $9F,   5,   5,   0, $0A
+		dc.b         5,   5,   7,   5, $2F, $FF, $0F, $2F, $1E, $80, $14, $80				; 400
+	; Synth Brass 2   12
+	    dc.b  $3D,   1,   0,   1,   2, $12, $1F, $1F, $14,   7,   2,   2, $0A
+		dc.b         5,   5,   5,   5, $2F, $2F, $2F, $AF, $1C, $80, $82, $80				; 425
+	; Bell Piano      13
+	    dc.b  $1C, $73, $72, $33, $32, $94, $99, $94, $99,   8, $0A,   8, $0A
+		dc.b         0,   5,   0,   5, $3F, $4F, $3F, $4F, $1E, $80, $19, $80				; 450
+	; Wet Wood Bass   14
+	    dc.b  $31, $33,   1,   0,   0, $9F, $1F, $1F, $1F, $0D, $0A, $0A, $0A
+		dc.b       $0A,   7,   7,   7, $FF, $AF, $AF, $AF, $1E, $1E, $1E, $80				; 475
+	; Silent Bass     15
+	    dc.b  $3A, $70, $76, $30, $71, $1F, $95, $1F, $1F, $0E, $0F,   5, $0C
+		dc.b         7,   6,   6,   7, $2F, $4F, $1F, $5F, $21, $12, $28, $80				; 500
+	; Picked Bass     16
+	    dc.b  $28, $71,   0, $30,   1, $1F, $1F, $1D, $1F, $13, $13,   6,   5
+		dc.b         3,   3,   2,   5, $4F, $4F, $2F, $3F, $0E, $14, $1E, $80				; 525
+	; Xylophone       17
+	    dc.b  $3E, $38,   1, $7A, $34, $59, $D9, $5F, $9C, $0F,   4, $0F, $0A
+		dc.b         2,   2,   5,   5, $AF, $AF, $66, $66, $28, $80, $A3, $80				; 550
+	; Sine Flute      18
+	    dc.b  $39, $32, $31, $72, $71, $1F, $1F, $1F, $1F,   0,   0,   0,   0
+		dc.b         0,   0,   0,   0, $0F, $0F, $0F, $0F, $1B, $32, $28, $80				; 575
+	; Pipe Organ      19
+	    dc.b    7, $34, $74, $32, $71, $1F, $1F, $1F, $1F, $0A, $0A,   5,   3
+		dc.b         0,   0,   0,   0, $3F, $3F, $2F, $2F, $8A, $8A, $80, $80				; 600
+	; Synth Brass 2   1A
+	    dc.b  $3A, $31, $37, $31, $31, $8D, $8D, $8E, $53, $0E, $0E, $0E,   3
+		dc.b         0,   0,   0,   0, $1F, $FF, $1F, $0F, $17, $28, $26, $80				; 625
+	; Harpischord     1B
+	    dc.b  $3B, $3A, $31, $71, $74, $DF, $1F, $1F, $DF,   0, $0A, $0A,   5
+		dc.b         0,   5,   5,   3, $0F, $5F, $1F, $5F, $32, $1E, $0F, $80				; 650
+	; $1C Metallic Bass
+	    dc.b    5,   4,   1,   2,   4, $8D, $1F, $15, $52,   6,   0,   0,   4
+		dc.b         2,   8,   0,   0, $1F, $0F, $0F, $2F, $16, $90, $84, $8C				; 675
+	; $1D Alternate Metallic Bass
+	    dc.b  $2C, $71, $74, $32, $32, $1F, $12, $1F, $12,   0, $0A,   0, $0A
+		dc.b         0,   0,   0,   0, $0F, $1F, $0F, $1F, $16, $80, $17, $80				; 700
+	; $1E Backdropped Metallic Bass
+	    dc.b  $3A,   1,   7,   1,   1, $8E, $8E, $8D, $53, $0E, $0E, $0E,   3
+		dc.b         0,   0,   0,   7, $1F, $FF, $1F, $0F, $18, $28, $27, $8F				; 725
+	; $1F Sine like Bell
+	    dc.b  $36, $7A, $32, $51, $11, $1F, $1F, $59, $1C, $0A, $0D,   6, $0A
+		dc.b         7,   0,   2,   2, $AF, $5F, $5F, $5F, $1E, $8B, $81, $80				; 750
+	; $20 Synth like Metallic with Small Bell
+	    dc.b  $3C, $71, $72, $3F, $34, $8D, $52, $9F, $1F,   9,   0,   0, $0D
+		dc.b         0,   0,   0,   0, $23,   8,   2, $F7, $15, $85, $1D, $8A				; 775
+	; $21 Nice Synth like lead
+	    dc.b  $3E, $77, $71, $32, $31, $1F, $1F, $1F, $1F, $0D,   6,   0,   0
+		dc.b         8,   6,   0,   0, $15, $0A, $0A, $0A, $1B, $8F, $8F, $8F				; 800
+	; $22 Rock Organ
+	    dc.b    7, $34, $74, $32, $71, $1F, $1F, $1F, $1F, $0A, $0A,   5,   3
+		dc.b         0,   0,   0,   0, $3F, $3F, $2F, $2F, $8A, $8A, $8A, $8A				; 825
+	; $23 Strike like Slap Bass
+	    dc.b  $20, $36, $35, $30, $31, $DF, $DF, $9F, $9F,   7,   6,   9,   6
+		dc.b         7,   6,   6,   8, $20, $10, $10, $F8, $19, $37, $13, $80				; 850
+UniversalVoiceBankEnd:
+		align	$8000
+
+DacBank0:
+		incbin	"S3sound/dac_0.bin"
+ 
+		align	$8000
+DacBank1:
+		incbin	"S3sound/dac_1.bin"
+		align	$8000
+ 
+DacBank2:
+		incbin	"S3sound/dac_2.bin"
+		align	$8000
+
+	include "Sound/_s1smps2asm_inc.asm"
+
+
+Bank0:
+		incbin	"S3sound/filler.bin"
+Mini_Boss_Snd:
+		incbin	"S3sound/miniboss.snd"
+Final_Boss_Snd:
+		incbin	"S3sound/f_boss.snd"
+		align	$8000
+ 
+Bank1:
+Angel_Island_1_Snd:
+		include	"sound/Mus81 - Splash Hill.asm"
+;		include	"S3sound/aiz1.asm"
+                even
+Angel_Island_2_Snd:
+		include	"sound/MusF0 - Unuseds3k.asm"
+;		include	"sound/Mus9D - AIZ2.asm"
+                even
+Hidrocity_1_Snd:
+		include	"sound/MusF6 - Sparkster.asm"
+;		include	"S3sound/hcz1.asm"
+                even
+Hidrocity_2_Snd:
+		include	"sound/aqua lake.asm"
+;		include	"S3sound/hcz2.asm"
+                even
+Marble_Garden_1_Snd:
+;		include	"S3sound/mgz1.asm"
+		include	"sound/underground.asm"
+                even
+Marble_Garden_2_Snd:
+		include	"sound/Mus84 - SLZ.asm"
+;		include	"S3sound/mgz2.asm"
+                even
+Carnival_Night_2_Snd:
+		include	"sound/Mus94 - GHZ.asm"
+;		include	"S3sound/cnz2.asm"
+                even
+Carnival_Night_1_Snd:
+		include	"sound/Mus9C - S3D Credits.asm"
+;		include	"S3sound/cnz1.asm"
+                even
+Flying_Battery_1_Snd:
+		include	"sound/Tyrian.asm"
+;		include	"S3sound/fbz1.asm"
+                even
+Flying_Battery_2_Snd:
+		include	"sound/MusF3 - MCZ.asm"
+;		include	"S3sound/fbz2.asm"
+                even
+The_Doomsday_Snd:
+		include	"S3sound/final boss.asm"
+		align	$8000
+
+Bank2:
+Icecap_2_Snd:
+		include	"sound/MusED - Crystal Egg.asm"
+                even
+Icecap_1_Snd:
+		include	"sound/Mus95 - Emerald Hill.asm"
+                even
+Launch_Base_2_Snd:
+		include	"sound/MusF5 - OOZ.asm"
+                even
+Launch_Base_1_Snd:
+		include	"sound/MusE5 - ARZ.asm"
+                even
+Mushroom_Hill_1_Snd:
+		include	"sound/EHZ_2p.asm"
+                even
+Mushroom_Hill_2_Snd:
+		include	"sound/ss.asm"
+                even
+Sandopolis_1_Snd:
+		include	"sound/Door Into Summer.asm"
+                even
+Sandopolis_2_Snd:
+		include	"sound/segg.asm"
+                even
+Lava_Reef_1_Snd:
+		include	"sound/gilgamesh.asm"
+                even
+Lava_Reef_2_Snd:
+		include	"sound/vbgilg.asm"
+                even
+Sky_Sanctuary_Snd:
+		include	"sound/SilverSurfer.asm"
+                even
+Death_Egg_1_Snd:
+		include	"sound/ssr.asm"
+                even
+Death_Egg_2_Snd:
+		include	"sound/goro.asm"
+                even
+Mini_Boss_SK_Snd:
+		include	"sound/Misty Rain.asm"
+                even
+Boss_Snd:
+		include	"S3sound/zone boss.asm"
+                even
+Glowing_Spheres_Bonus_Stage_snd:
+		include	"S3sound/pachinko.asm"
+                even
+Special_Stage_Snd:
+		include	"S3sound/special stage.asm"
+                even
+Level_Results_Snd:
+		include	"S3sound/level outro.asm"
+                even
+Menu_Snd:
+		include	"S3sound/menu.asm"
+		align	$8000
+
+Bank3:
+Slot_Machine_Bonus_Stage_snd:
+;		include	"sound/Carnival.asm"
+                even
+Gum_Ball_Machine_Bonus_Stage_snd:
+		include	"S3sound/gum ball machine.asm"
+                even
+Knuckles_Theme_Snd:
+		include	"S3sound/knuckles.asm"
+                even
+Azure_Lake_Snd:
+		include	"S3sound/azure lake.asm"
+                even
+Balloon_Park_Snd:
+		include	"S3sound/balloon park.asm"
+                even
+Desert_Palace_Snd:
+		include	"S3sound/desert palace.asm"
+                even
+Chrome_Gadget_Snd:
+		include	"S3sound/chrome gadget.asm"
+                even
+Endless_Mine_Snd:
+		include	"S3sound/endless mine.asm"
+                even
+Title_Screen_Snd:
+		include	"S3sound/title s3.asm"
+                even
+Credits_Snd:
+		include	"sound/Mus91 - Credits.asm"
+;		include	"S3sound/Sonic 3 credits.asm"
+                even
+Time_Game_Over_Snd:
+		include	"S3sound/game over.asm"
+                even
+Continue_Snd:
+		include	"S3sound/continue.asm"
+                even
+Extra_Life_Snd:
+;		include	"S3sound/1up.asm"
+		include	"sound/Mus8E - Sonic Got Through.asm"
+                even
+Emerald_Snd:
+		include	"S3sound/chaos emerald.asm"
+                even
+Invencibility_Snd:
+		include	"S3sound/invincible.asm"
+                even
+Competition_Menu_Snd:
+		include	"S3sound/competition menu.asm"
+                even
+Underwater_Timming_Snd:
+		include	"S3sound/countdown.asm"
+                even
+Presented_by_SEGA_Snd:
+		include	"S3sound/game complete.asm"
+		align	$8000
+
+SndBank:
+SegaPCMBank:
+SegaSnd:
+		incbin	"S3sound/sega.snd"
+Sfx_33_Snd:
+		include	"sound/Sfx/33.asm"
+		even
+Sfx_34_Snd:
+		include	"sound/Sfx/34.asm"
+		even
+Sfx_35_Snd:
+		include	"sound/Sfx/35.asm"
+		even
+Sfx_36_Snd:
+		include	"sound/Sfx/36.asm"
+		even
+Sfx_37_Snd:
+		include	"sound/Sfx/37.asm"
+		even
+Sfx_38_Snd:
+		include	"sound/Sfx/38.asm"
+		even
+Sfx_39_Snd:
+		include	"sound/Sfx/39.asm"
+		even
+Sfx_3A_Snd:
+		include	"sound/Sfx/3A.asm"
+		even
+Sfx_3B_Snd:
+		include	"sound/Sfx/3B.asm"
+		even
+Sfx_3C_Snd:
+		include	"sound/Sfx/3C.asm"
+		even
+Sfx_3D_Snd:
+		include	"sound/Sfx/3D.asm"
+		even
+Sfx_3E_Snd:
+		include	"sound/Sfx/3E.asm"
+		even
+Sfx_3F_Snd:
+		include	"sound/Sfx/3F.asm"
+		even
+Sfx_40_Snd:
+		include	"sound/Sfx/40.asm"
+		even
+Sfx_41_Snd:
+		include	"sound/Sfx/41.asm"
+		even
+Sfx_42_Snd:
+		include	"sound/Sfx/42.asm"
+		even
+Sfx_43_Snd:
+		include	"sound/Sfx/43.asm"
+		even
+Sfx_44_Snd:
+		include	"sound/Sfx/44.asm"
+		even
+Sfx_45_Snd:
+		include	"sound/Sfx/45.asm"
+		even
+Sfx_46_Snd:
+		include	"sound/Sfx/46.asm"
+		even
+Sfx_47_Snd:
+		include	"sound/Sfx/47.asm"
+		even
+Sfx_48_Snd:
+		include	"sound/Sfx/48.asm"
+		even
+Sfx_49_Snd:
+		include	"sound/Sfx/49.asm"
+		even
+Sfx_4A_Snd:
+		include	"sound/Sfx/4A.asm"
+		even
+Sfx_4B_Snd:
+		include	"sound/Sfx/4B.asm"
+		even
+Sfx_4C_Snd:
+		include	"sound/Sfx/4C.asm"
+		even
+Sfx_4D_Snd:
+		include	"sound/Sfx/4D.asm"
+		even
+Sfx_4E_Snd:
+		include	"sound/Sfx/4E.asm"
+		even
+Sfx_4F_Snd:
+		include	"sound/Sfx/4F.asm"
+		even
+Sfx_50_Snd:
+		include	"sound/Sfx/50.asm"
+		even
+Sfx_51_Snd:
+		include	"sound/Sfx/51.asm"
+		even
+Sfx_52_Snd:
+		include	"sound/Sfx/52.asm"
+		even
+Sfx_53_Snd:
+		include	"sound/Sfx/53.asm"
+		even
+Sfx_54_Snd:
+		include	"sound/Sfx/54.asm"
+		even
+Sfx_55_Snd:
+		include	"sound/Sfx/55.asm"
+		even
+Sfx_56_Snd:
+		include	"sound/Sfx/56.asm"
+		even
+Sfx_57_Snd:
+		include	"sound/Sfx/57.asm"
+		even
+Sfx_58_Snd:
+		include	"sound/Sfx/58.asm"
+		even
+Sfx_59_Snd:
+		include	"sound/Sfx/59.asm"
+		even
+Sfx_5A_Snd:
+		include	"sound/Sfx/5A.asm"
+		even
+Sfx_5B_Snd:
+		include	"sound/Sfx/5B.asm"
+		even
+Sfx_5C_Snd:
+		include	"sound/Sfx/5C.asm"
+		even
+Sfx_5D_Snd:
+		include	"sound/Sfx/5D.asm"
+		even
+Sfx_5E_Snd:
+		include	"sound/Sfx/5E.asm"
+		even
+Sfx_5F_Snd:
+		include	"sound/Sfx/5F.asm"
+		even
+Sfx_60_Snd:
+		include	"sound/Sfx/60.asm"
+		even
+Sfx_61_Snd:
+		include	"sound/Sfx/61.asm"
+		even
+Sfx_62_Snd:
+		include	"sound/Sfx/62.asm"
+		even
+Sfx_63_Snd:
+		include	"sound/Sfx/63.asm"
+		even
+Sfx_64_Snd:
+		include	"sound/Sfx/64.asm"
+		even
+Sfx_65_Snd:
+		include	"sound/Sfx/65.asm"
+		even
+Sfx_66_Snd:
+		include	"sound/Sfx/66.asm"
+		even
+Sfx_67_Snd:
+		include	"sound/Sfx/67.asm"
+		even
+Sfx_68_Snd:
+		include	"sound/Sfx/68.asm"
+		even
+Sfx_69_Snd:
+		include	"sound/Sfx/69.asm"
+		even
+Sfx_6A_Snd:
+		include	"sound/Sfx/6A.asm"
+		even
+Sfx_6B_Snd:
+		include	"sound/Sfx/6B.asm"
+		even
+Sfx_6C_Snd:
+		include	"sound/Sfx/6C.asm"
+		even
+Sfx_6D_Snd:
+		include	"sound/Sfx/6D.asm"
+		even
+Sfx_6E_Snd:
+		include	"sound/Sfx/6E.asm"
+		even
+Sfx_6F_Snd:
+		include	"sound/Sfx/6F.asm"
+		even
+Sfx_70_Snd:
+		include	"sound/Sfx/70.asm"
+		even
+Sfx_71_Snd:
+		include	"sound/Sfx/71.asm"
+		even
+Sfx_72_Snd:
+		include	"sound/Sfx/72.asm"
+		even
+Sfx_73_Snd:
+		include	"sound/Sfx/73.asm"
+		even
+Sfx_74_Snd:
+		include	"sound/Sfx/74.asm"
+		even
+Sfx_75_Snd:
+		include	"sound/Sfx/75.asm"
+		even
+Sfx_76_Snd:
+		include	"sound/Sfx/76.asm"
+		even
+Sfx_77_Snd:
+		include	"sound/Sfx/77.asm"
+		even
+Sfx_78_Snd:
+		include	"sound/Sfx/78.asm"
+		even
+Sfx_79_Snd:
+		include	"sound/Sfx/79.asm"
+		even
+Sfx_7A_Snd:
+		include	"sound/Sfx/7A.asm"
+		even
+Sfx_7B_Snd:
+		include	"sound/Sfx/7B.asm"
+		even
+Sfx_7C_Snd:
+		include	"sound/Sfx/7C.asm"
+		even
+Sfx_7D_Snd:
+		include	"sound/Sfx/7D.asm"
+		even
+Sfx_7E_Snd:
+		include	"sound/Sfx/7E.asm"
+		even
+Sfx_7F_Snd:
+		include	"sound/Sfx/7F.asm"
+		even
+Sfx_80_Snd:
+		include	"sound/Sfx/80.asm"
+		even
+Sfx_81_Snd:
+		include	"sound/Sfx/81.asm"
+		even
+Sfx_82_Snd:
+		include	"sound/Sfx/82.asm"
+		even
+Sfx_83_Snd:
+		include	"sound/Sfx/83.asm"
+		even
+Sfx_84_Snd:
+		include	"sound/Sfx/84.asm"
+		even
+Sfx_85_Snd:
+		include	"sound/Sfx/85.asm"
+		even
+Sfx_86_Snd:
+		include	"sound/Sfx/86.asm"
+		even
+Sfx_87_Snd:
+		include	"sound/Sfx/87.asm"
+		even
+Sfx_88_Snd:
+		include	"sound/Sfx/88.asm"
+		even
+Sfx_89_Snd:
+		include	"sound/Sfx/89.asm"
+		even
+Sfx_8A_Snd:
+		include	"sound/Sfx/8A.asm"
+		even
+Sfx_8B_Snd:
+		include	"sound/Sfx/8B.asm"
+		even
+Sfx_8C_Snd:
+		include	"sound/Sfx/8C.asm"
+		even
+Sfx_8D_Snd:
+		include	"sound/Sfx/8D.asm"
+		even
+Sfx_8E_Snd:
+		include	"sound/Sfx/8E.asm"
+		even
+Sfx_8F_Snd:
+		include	"sound/Sfx/8F.asm"
+		even
+Sfx_90_Snd:
+		include	"sound/Sfx/90.asm"
+		even
+Sfx_91_Snd:
+		include	"sound/Sfx/91.asm"
+		even
+Sfx_92_Snd:
+		include	"sound/Sfx/92.asm"
+		even
+Sfx_93_Snd:
+		include	"sound/Sfx/93.asm"
+		even
+Sfx_94_Snd:
+		include	"sound/Sfx/94.asm"
+		even
+Sfx_95_Snd:
+		include	"sound/Sfx/95.asm"
+		even
+Sfx_96_Snd:
+		include	"sound/Sfx/96.asm"
+		even
+Sfx_97_Snd:
+		include	"sound/Sfx/97.asm"
+		even
+Sfx_98_Snd:
+		include	"sound/Sfx/98.asm"
+		even
+Sfx_99_Snd:
+		include	"sound/Sfx/99.asm"
+		even
+Sfx_9A_Snd:
+		include	"sound/Sfx/9A.asm"
+		even
+Sfx_9B_Snd:
+		include	"sound/Sfx/9B.asm"
+		even
+Sfx_9C_Snd:
+		include	"sound/Sfx/9C.asm"
+		even
+Sfx_9D_Snd:
+		include	"sound/Sfx/9D.asm"
+		even
+Sfx_9E_Snd:
+		include	"sound/Sfx/9E.asm"
+		even
+Sfx_9F_Snd:
+		include	"sound/Sfx/9F.asm"
+		even
+Sfx_A0_Snd:
+		include	"sound/Sfx/A0.asm"
+		even
+Sfx_A1_Snd:
+		include	"sound/Sfx/A1.asm"
+		even
+Sfx_A2_Snd:
+		include	"sound/Sfx/A2.asm"
+		even
+Sfx_A3_Snd:
+		include	"sound/Sfx/A3.asm"
+		even
+Sfx_A4_Snd:
+		include	"sound/Sfx/A4.asm"
+		even
+Sfx_A5_Snd:
+		include	"sound/Sfx/A5.asm"
+		even
+Sfx_A6_Snd:
+		include	"sound/Sfx/A6.asm"
+		even
+Sfx_A7_Snd:
+		include	"sound/Sfx/A7.asm"
+		even
+Sfx_A8_Snd:
+		include	"sound/Sfx/A8.asm"
+		even
+Sfx_A9_Snd:
+		include	"sound/Sfx/A9.asm"
+		even
+Sfx_AA_Snd:
+		include	"sound/Sfx/AA.asm"
+		even
+Sfx_AB_Snd:
+		include	"sound/Sfx/AB.asm"
+		even
+Sfx_AC_Snd:
+		include	"sound/Sfx/AC.asm"
+		even
+Sfx_AD_Snd:
+		include	"sound/Sfx/AD.asm"
+		even
+Sfx_AE_Snd:
+		include	"sound/Sfx/AE.asm"
+		even
+Sfx_AF_Snd:
+		include	"sound/Sfx/AF.asm"
+		even
+Sfx_B0_Snd:
+		include	"sound/Sfx/B0.asm"
+		even
+Sfx_B1_Snd:
+		include	"sound/Sfx/B1.asm"
+		even
+Sfx_B2_Snd:
+		include	"sound/Sfx/B2.asm"
+		even
+Sfx_B3_Snd:
+		include	"sound/Sfx/B3.asm"
+		even
+Sfx_B4_Snd:
+		include	"sound/Sfx/B4.asm"
+		even
+Sfx_B5_Snd:
+		include	"sound/Sfx/B5.asm"
+		even
+Sfx_B6_Snd:
+		include	"sound/Sfx/B6.asm"
+		even
+Sfx_B7_Snd:
+		include	"sound/Sfx/B7.asm"
+		even
+Sfx_B8_Snd:
+		include	"sound/Sfx/B8.asm"
+		even
+Sfx_B9_Snd:
+		include	"sound/Sfx/B9.asm"
+		even
+Sfx_BA_Snd:
+		include	"sound/Sfx/BA.asm"
+		even
+Sfx_BB_Snd:
+		include	"sound/Sfx/BB.asm"
+		even
+Sfx_BC_Snd:
+		include	"sound/Sfx/BC.asm"
+		even
+Sfx_BD_Snd:
+		include	"sound/Sfx/BD.asm"
+		even
+Sfx_BE_Snd:
+		include	"sound/Sfx/BE.asm"
+		even
+Sfx_BF_Snd:
+		include	"sound/Sfx/BF.asm"
+		even
+Sfx_C0_Snd:
+		include	"sound/Sfx/C0.asm"
+		even
+Sfx_C1_Snd:
+		include	"sound/Sfx/C1.asm"
+		even
+Sfx_C2_Snd:
+		include	"sound/Sfx/C2.asm"
+		even
+Sfx_C3_Snd:
+		include	"sound/Sfx/C3.asm"
+		even
+Sfx_C4_Snd:
+		include	"sound/Sfx/C4.asm"
+		even
+Sfx_C5_Snd:
+		include	"sound/Sfx/C5.asm"
+		even
+Sfx_C6_Snd:
+		include	"sound/Sfx/C6.asm"
+		even
+Sfx_C7_Snd:
+		include	"sound/Sfx/C7.asm"
+		even
+Sfx_C8_Snd:
+		include	"sound/Sfx/C8.asm"
+		even
+Sfx_C9_Snd:
+		include	"sound/Sfx/C9.asm"
+		even
+Sfx_CA_Snd:
+		include	"sound/Sfx/CA.asm"
+		even
+Sfx_CB_Snd:
+		include	"sound/Sfx/CB.asm"
+		even
+Sfx_CC_Snd:
+		include	"sound/Sfx/CC.asm"
+		even
+Sfx_CD_Snd:
+		include	"sound/Sfx/CD.asm"
+		even
+Sfx_CE_Snd:
+		include	"sound/Sfx/CE.asm"
+		even
+Sfx_CF_Snd:
+		include	"sound/Sfx/CF.asm"
+		even
+Sfx_D0_Snd:
+		include	"sound/Sfx/D0.asm"
+		even
+Sfx_D1_Snd:
+		include	"sound/Sfx/D1.asm"
+		even
+Sfx_D2_Snd:
+		include	"sound/Sfx/D2.asm"
+		even
+Sfx_D3_Snd:
+		include	"sound/Sfx/D3.asm"
+		even
+Sfx_D4_Snd:
+		include	"sound/Sfx/D4.asm"
+		even
+Sfx_D5_Snd:
+		include	"sound/Sfx/D5.asm"
+		even
+Sfx_D6_Snd:
+		include	"sound/Sfx/D6.asm"
+		even
+Sfx_D7_Snd:
+		include	"sound/Sfx/D7.asm"
+		even
+Sfx_D8_Snd:
+		include	"sound/Sfx/D8.asm"
+		even
+Sfx_D9_Snd:
+		include	"sound/Sfx/D9.asm"
+		even
+Sfx_DA_Snd:
+		include	"sound/Sfx/DA.asm"
+		even
+Sfx_DB_Snd:
+		include	"sound/Sfx/DB.asm"
+		even
+
+

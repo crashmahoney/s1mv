@@ -1,0 +1,160 @@
+<?xml version="1.0"?>
+<ObjDef xmlns="http://www.sonicretro.org" Namespace="S1ObjectDefinitions.GHZ" TypeName="WallBarrier" Language="cs" Name="Wall Barrier" RememberState="true" Image="img1">
+  <Images>
+    <ImageFromMappings id="img1">
+      <ArtFile filename="../artnem/8x8 - GHZ1.bin"/>
+      <MapFile type="ASM" filename="../_maps/GHZ Edge Walls.asm" frame="0" startpal="2"/>
+    </ImageFromMappings>
+    <ImageFromMappings id="img2">
+      <ArtFile filename="../artnem/8x8 - GHZ1.bin"/>
+      <MapFile type="ASM" filename="../_maps/GHZ Edge Walls.asm" frame="1" startpal="2"/>
+    </ImageFromMappings>
+    <ImageFromMappings id="img3">
+      <ArtFile filename="../artnem/8x8 - GHZ1.bin"/>
+      <MapFile type="ASM" filename="../_maps/GHZ Edge Walls.asm" frame="2" startpal="2"/>
+    </ImageFromMappings>
+    <ImageFromMappings id="img4">
+      <ArtFile filename="../artnem/8x8 - GHZ1.bin"/>
+      <MapFile type="ASM" filename="../_maps/GHZ Edge Walls.asm" frame="3" startpal="2"/>
+    </ImageFromMappings>
+    <ImageFromMappings id="img5">
+      <ArtFile filename="../artnem/8x8 - GHZ1.bin"/>
+      <MapFile type="ASM" filename="../_maps/GHZ Edge Walls.asm" frame="4" startpal="2"/>
+    </ImageFromMappings>
+    <ImageFromMappings id="img6">
+      <ArtFile filename="../artnem/8x8 - GHZ1.bin"/>
+      <MapFile type="ASM" filename="../_maps/GHZ Edge Walls.asm" frame="5" startpal="2"/>
+    </ImageFromMappings>
+    <ImageFromMappings id="img7">
+      <ArtFile filename="../artnem/8x8 - GHZ1.bin"/>
+      <MapFile type="ASM" filename="../_maps/GHZ Edge Walls.asm" frame="6" startpal="2"/>
+    </ImageFromMappings>
+    <ImageFromMappings id="img8">
+      <ArtFile filename="../artnem/8x8 - GHZ1.bin"/>
+      <MapFile type="ASM" filename="../_maps/GHZ Edge Walls.asm" frame="7" startpal="2"/>
+    </ImageFromMappings>
+    <ImageFromMappings id="img9">
+      <ArtFile filename="../artnem/8x8 - GHZ1.bin"/>
+      <MapFile type="ASM" filename="../_maps/GHZ Edge Walls.asm" frame="8" startpal="2"/>
+    </ImageFromMappings>
+    <ImageFromMappings id="img10">
+      <ArtFile filename="../artnem/8x8 - GHZ1.bin"/>
+      <MapFile type="ASM" filename="../_maps/GHZ Edge Walls.asm" frame="9" startpal="2"/>
+    </ImageFromMappings>
+    <ImageFromMappings id="img11">
+      <ArtFile filename="../artnem/8x8 - GHZ1.bin"/>
+      <MapFile type="ASM" filename="../_maps/GHZ Edge Walls.asm" frame="10" startpal="2"/>
+    </ImageFromMappings>
+    <ImageFromMappings id="img12">
+      <ArtFile filename="../artnem/8x8 - GHZ1.bin"/>
+      <MapFile type="ASM" filename="../_maps/GHZ Edge Walls.asm" frame="11" startpal="2"/>
+    </ImageFromMappings>
+    <ImageFromMappings id="img13">
+      <ArtFile filename="../artnem/8x8 - GHZ1.bin"/>
+      <MapFile type="ASM" filename="../_maps/GHZ Edge Walls.asm" frame="12" startpal="2"/>
+    </ImageFromMappings>
+  </Images>
+  <Subtypes>
+    <Subtype id="10" name="Shadow top 1" image="img1"/>
+    <Subtype id="11" name="Side 1" image="img2"/>
+    <Subtype id="12" name="Shadow top 2" image="img3"/>
+    <Subtype id="13" name="Side 2" image="img4"/>
+    <Subtype id="14" name="Shadow top 3" image="img5"/>
+    <Subtype id="15" name="Shadow top 4" image="img6"/>
+    <Subtype id="16" name="Grass Edge" image="img7"/>
+    <Subtype id="17" name="Leaves Edge Small 1" image="img8"/>
+    <Subtype id="18" name="Leaves Edge Small 2" image="img9"/>
+    <Subtype id="19" name="Leaves Edge 1" image="img10"/>
+    <Subtype id="1A" name="Leaves Edge 2" image="img11"/>
+    <Subtype id="1B" name="Leaves Edge 3" image="img12"/>
+    <Subtype id="1C" name="Leaves Edge 4" image="img13"/>
+    <Subtype id="00" name="Shadow top 1 (Solid)" image="img1"/>
+    <Subtype id="01" name="Side 1 (Solid)" image="img2"/>
+    <Subtype id="02" name="Shadow top 2 (Solid)" image="img3"/>
+    <Subtype id="03" name="Side 2 (Solid)" image="img4"/>
+    <Subtype id="04" name="Shadow top 3 (Solid)" image="img5"/>
+    <Subtype id="05" name="Shadow top 4 (Solid)" image="img6"/>
+    <Subtype id="06" name="Grass Edge (Solid)" image="img7"/>
+    <Subtype id="07" name="Leaves Edge Small 1 (Solid)" image="img8"/>
+    <Subtype id="08" name="Leaves Edge Small 2 (Solid)" image="img9"/>
+    <Subtype id="09" name="Leaves Edge 1 (Solid)" image="img10"/>
+    <Subtype id="0A" name="Leaves Edge 2 (Solid)" image="img11"/>
+    <Subtype id="0B" name="Leaves Edge 3 (Solid)" image="img12"/>
+    <Subtype id="0C" name="Leaves Edge 4 (Solid)" image="img13"/>
+  </Subtypes>
+  <Properties>
+    <BitsProperty name="Art" type="EdgeType" startbit="0" length="4"/>
+    <BitsProperty name="Not Solid" type="bool" startbit="4" length="1"/>
+  </Properties>
+  <Enums>
+    <Enum name="EdgeType">
+      <EnumMember name="Shadow top 1"/>
+      <EnumMember name="Side 1"/>
+      <EnumMember name="Shadow top 2"/>
+      <EnumMember name="Side 2"/>
+      <EnumMember name="Shadow top 3"/>
+      <EnumMember name="Shadow top 4"/>
+      <EnumMember name="Grass Edge"/>
+      <EnumMember name="Leaves Edge Small 1"/>
+      <EnumMember name="Leaves Edge Small 2"/>
+      <EnumMember name="Leaves Edge 1"/>
+      <EnumMember name="Leaves Edge 2"/>
+      <EnumMember name="Leaves Edge 3"/>
+      <EnumMember name="Leaves Edge 4"/>
+    </Enum>
+  </Enums>
+  <Display>
+    <DisplayOption>
+      <Condition property="Art" value="Shadow top 1"/>
+      <ImageRef image="img1"/>
+    </DisplayOption>
+    <DisplayOption>
+      <Condition property="Art" value="Side 1"/>
+      <ImageRef image="img2"/>
+    </DisplayOption>
+    <DisplayOption>
+      <Condition property="Art" value="Shadow top 2"/>
+      <ImageRef image="img3"/>
+    </DisplayOption>
+    <DisplayOption>
+      <Condition property="Art" value="Side 2"/>
+      <ImageRef image="img4"/>
+    </DisplayOption>
+    <DisplayOption>
+      <Condition property="Art" value="Shadow top 3"/>
+      <ImageRef image="img5"/>
+    </DisplayOption>
+    <DisplayOption>
+      <Condition property="Art" value="Shadow top 4"/>
+      <ImageRef image="img6"/>
+    </DisplayOption>
+    <DisplayOption>
+      <Condition property="Art" value="Grass Edge"/>
+      <ImageRef image="img7"/>
+    </DisplayOption>
+    <DisplayOption>
+      <Condition property="Art" value="Leaves Edge Small 1"/>
+      <ImageRef image="img8"/>
+    </DisplayOption>
+    <DisplayOption>
+      <Condition property="Art" value="Leaves Edge Small 2"/>
+      <ImageRef image="img9"/>
+    </DisplayOption>
+    <DisplayOption>
+      <Condition property="Art" value="Leaves Edge 1"/>
+      <ImageRef image="img10"/>
+    </DisplayOption>
+    <DisplayOption>
+      <Condition property="Art" value="Leaves Edge 2"/>
+      <ImageRef image="img11"/>
+    </DisplayOption>
+    <DisplayOption>
+      <Condition property="Art" value="Leaves Edge 3"/>
+      <ImageRef image="img12"/>
+    </DisplayOption>
+    <DisplayOption>
+      <Condition property="Art" value="Leaves Edge 4"/>
+      <ImageRef image="img13"/>
+    </DisplayOption>
+  </Display>
+</ObjDef>

@@ -1,0 +1,2 @@
+Special Stage start positions are in misc/Start Location Array - Special Stages.bin
+top right is 02E0 02B0 (x,y), add $10 per block away from edge (you know what i mean)
