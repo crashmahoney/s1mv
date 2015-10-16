@@ -116,14 +116,14 @@ PLC_GHZ:	dc.w ((PLC_GHZ2-PLC_GHZ-2)/6)-1
 		plcm	Nem_HSpring, 	VRAMloc_HSpring	; horizontal spring
 		plcm	Nem_VSpring, 	VRAMloc_VSpring	; vertical spring
 		plcm    Nem_DSpring, 	VRAMloc_DSpring	; diagonal spring
+		plcm	Nem_GhzWall1, 	VRAMloc_GhzWall1	; breakable wall
 
 PLC_GHZ2:	dc.w ((PLC_GHZ2end-PLC_GHZ2-2)/6)-1
 		plcm	Nem_Swing, 		VRAMloc_Swing	; swinging platform
 		plcm	Nem_Bridge, 	VRAMloc_Bridge	; bridge
 		plcm	Nem_GHZplatform, VRAMloc_GHZplatform	; new platform
-		plcm	Nem_Leaves, 	VRAMloc_Leaves		; floating leaves
 		plcm	Nem_PplRock, 	VRAMloc_PplRock	; purple rock
-		plcm	Nem_GhzWall1, 	VRAMloc_GhzWall1	; breakable wall
+		plcm	Nem_Leaves, 	VRAMloc_Leaves		; floating leaves
 ;		plcm	Nem_GhzWall2, 	VRAMloc_GhzWall2	; normal wall
 		plcm    Nem_MonitorSpinDash, VRAMloc_MonitorSpinDash ; +++ spin dash icon, overwrites goggles icon
 	PLC_GHZ2end:
