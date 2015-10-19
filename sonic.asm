@@ -7137,6 +7137,7 @@ locret_ED1A:				; XREF: Obj0D_Index
 		include	"_incObj\Decorative Torch.asm"
 		include	"_incObj\Dash Spark.asm"
 		include	"_incObj\Leaf Generator.asm"
+		include	"_incObj\Island.asm"
 
 
 

@@ -147,8 +147,17 @@ loc_630A:
 		asl.l	#8,d2                ; multiply by $100 (256)
 		moveq	#0,d3
 		move.w	d0,d3
-		move.w	#$72,d1              ; height of lake
-		add.w	d4,d1                ; adjust loops according to bg y position
+
+; setup water ripple
+		move.b	(v_vbla_byte).w,d1			; get frame count
+		andi.w	#$7,d1						; change every 8 frames
+		bne.s	@loadaddress				; if frame not 0, branch and reuse old data
+		add.w	#4,(v_Deform_Temp_Value).w	; increase
+	@loadaddress:
+		move.w	(v_Deform_Temp_Value).w,d6	; ripple data offset
+		lea		(Drown_WobbleData).l,a2		; use values from table for ripple amounts
+		move.w	#$72,d1              		; height of lake
+		add.w	d4,d1                		; adjust loops according to bg y position
 	; Starting values
 	; d0 = FFFFBBBB (FFFF FG position (Remains unchanged in this section)/BBBB BG position)
 	; d2 = VVVVDDDD (Full add value complete with decimal point remainder)
@@ -156,6 +165,11 @@ loc_630A:
 @lakeloop:
 		move.w	d3,d0                ; move d3's VVVV to d0's BBBB
 		neg.w	d0                   ; BBBB negated
+		add.b	#14,d6				 ; advance 4 bytes in ripple table
+		andi.w  #$3F,d6				 ; table bounds check
+		move.b	(a2,d6),d5			 ; get ripple byte
+		ext.w	d5				 	 ; sign extend
+		add.w	d5,d0				 ; add to line position
 		move.l	d0,(a1)+             ; FFFFBBBB passed to scroll buffer
 		swap.w	d3                   ; d3 = VVVVDDDD
 		add.l	d2,d3                ; add d2's VVVVDDDD to d3's VVVVDDDD
@@ -178,7 +192,7 @@ Deform_LZ:				; XREF: Deform_Index
 		asl.l	#1,d4                         ;                     |       was 1        coarse control over scroll speed
 		add.l	d1,d4                         ;                     |
 		moveq	#0,d6                         ;                     |
-		bsr	ScrollBlock5                  ;                     V
+		bsr		ScrollBlock5                  ;                     V
 		move.w	(v_scrshiftx).w,d4            ;                     scroll middle land and waterfalls horizontally
 		ext.l	d4                            ;                     |
 		asl.l	#3,d4                         ;                     |       was 5        fine control over scroll speed

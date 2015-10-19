@@ -340,7 +340,7 @@ v_homingdistance   = $FFFFFF92    	; distance between closest object and sonic (
 v_homingtarget     = $FFFFFF94    	; object number that is closest to sonic
 v_homingtimer      = $FFFFFF95    	; frames that sonic can home on an object for (light dash only ATM)
 v_justwalljumped   = $FFFFFF96    	; if just wall jumped, don't run double jump code
-
+v_Deform_Temp_Value = $FFFFFF98		; GHZ uses this to save last frame's ripple data rom location (2 bytes)
 
 			; ^^^ can use values between here vvv
 v_lamp_xspeed:   = $FFFFFFB2    	; +++ saved x speed when moving between acts     (2 bytes)
