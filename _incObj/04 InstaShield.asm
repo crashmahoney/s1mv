@@ -21,35 +21,29 @@ Insta_Init:
 		move.b	#$10,obActWid(a0)
 		move.w	#$54F,obGfx(a0)	; shield specific code
 		move.w	#$A9E0,vram_address(a0)
+Insta_rts:
 		rts
 ; =========================================================================
 Insta_Main:     
+        tst.b   (v_objspace+$200).w         ; is invincibility object active?
+        bne.s   Insta_rts              		; if so, branch
+
 		move.w	(v_player+obX).w,obX(a0)
 		move.w	(v_player+obY).w,obY(a0)
-		move.w	#$80,obPriority(a0)           ; put object in front of sonic
+		bclr	#7,obGfx(a0)				; put on low plane
+		btst	#7,(v_player+obGfx).w		; is sonic on the high plane?
+		beq.s	@insta_chk					; is not, branch
+		bset	#7,obGfx(a0)				; put on high plane
+	@insta_chk:	
 		cmpi.b  #1,obAnim(a0)               ; is instashield active?
-		bne.s   @chk_invinc                 ; if not, branch
-		cmpi.b  #7,obFrame(a0)              ; final frame of instashield animation?
-                bne.s   @skip                       ; if not, branch
-                bclr    #7,(v_invinc).w
-	@skip:
-		move.l	#Map_Insta,obMap(a0)        ; load instashield mappings
-		lea	DynPLC_Insta,a2             ; load instashield dynamic plc
-		lea	Anim_Insta,a1
-		jsr	AnimateSprite
-		bsr.w	InstaShieldLoadArt
-		jmp	DisplaySprite
+		beq.s   Insta_Draw            		; if so, branch
 ; --------------------------------------------------------------------------
-        @chk_invinc:
-                tst.b   (v_objspace+$200).w         ; is invincibility object active?
-                beq.s   @getshieldtype              ; if not, branch
-                rts                                 ; don't draw shield
-        @getshieldtype:
+@getshieldtype:
 		moveq	#0,d0
 		move.b	(v_shield).w,d0
 		add.w   d0,d0
 		move.w	Shieldtype_Index(pc,d0.w),d1
-		jmp	Shieldtype_Index(pc,d1.w)
+		jmp		Shieldtype_Index(pc,d1.w)
 ; --------------------------------------------------------------------------
 Shieldtype_Index:
                 dc.w NoShield-Shieldtype_Index
@@ -59,49 +53,60 @@ Shieldtype_Index:
 ; --------------------------------------------------------------------------
 NoShield:
 		move.b	#0,obAnim(a0)
+		lea		Anim_Insta,a1
+		jsr		AnimateSprite
+		rts
+		
+	Insta_Draw:	
+		cmpi.b  #7,obFrame(a0)              ; final frame of instashield animation?
+        bne.s   @draw                       ; if not, branch
+        bclr    #7,(v_invinc).w				; clear invincibility
+	@draw:
 		move.l	#Map_Insta,obMap(a0)        ; load instashield mappings
-		lea	DynPLC_Insta,a2             ; load instashield dynamic plc
-		lea	Anim_Insta,a1
-		jsr	AnimateSprite
+		lea		DynPLC_Insta,a2             ; load instashield dynamic plc
+		lea		Anim_Insta,a1
+		jsr		AnimateSprite
+		move.w	#$80,obPriority(a0)         ; put object in front of sonic
 		bsr.w	InstaShieldLoadArt
-		jmp	DisplaySprite
+		jmp		DisplaySprite
 ; --------------------------------------------------------------------------
 StandardShield:
 		move.b	#2,obAnim(a0)
 		move.l	#Map_SShield,obMap(a0)      ; load standard shield mappings
-		lea	DynPLC_SShield,a2           ; load standard shield dynamic plc
-		lea	Anim_Insta,a1
-		jsr	AnimateSprite
+		lea		DynPLC_SShield,a2           ; load standard shield dynamic plc
+		lea		Anim_Insta,a1
+		jsr		AnimateSprite
+		move.w	#$80,obPriority(a0)           ; put object in front of sonic
 		bsr.s	InstaShieldLoadArt
-		jmp	DisplaySprite
+		jmp		DisplaySprite
 ; --------------------------------------------------------------------------
 ElectricShield:
 		move.b	#3,obAnim(a0)
 		move.l	#Map_ElecShield,obMap(a0)   ; load electric shield mappings
-		lea	DynPLC_ElecShield,a2        ; load electric shield dynamic plc
-		lea	Anim_Insta,a1
-		jsr	AnimateSprite
+		lea		DynPLC_ElecShield,a2        ; load electric shield dynamic plc
+		lea		Anim_Insta,a1
+		jsr		AnimateSprite
 		move.w	#$80,obPriority(a0)           ; put object in front of sonic
-                cmpi.b  #12,obFrame(a0)             ; frame 12 or higher?
-                blt.s   @skip                       ; if not, branch
+        cmpi.b  #12,obFrame(a0)             ; frame 12 or higher?
+        blt.s   @skip                       ; if not, branch
 		move.w	#$200,obPriority(a0)           ; move object behind sonic
-        @skip:
+    @skip:
 		bsr.s	InstaShieldLoadArt
-		jmp	DisplaySprite
+		jmp		DisplaySprite
 ; --------------------------------------------------------------------------
 FireShield:
 		move.b	#4,obAnim(a0)
 		move.l	#Map_FireShield,obMap(a0)   ; load standard shield mappings
-		lea	DynPLC_FireShield,a2        ; load standard shield dynamic plc
-		lea	Anim_Insta,a1
-		jsr	AnimateSprite
+		lea		DynPLC_FireShield,a2        ; load standard shield dynamic plc
+		lea		Anim_Insta,a1
+		jsr		AnimateSprite
 		move.w	#$80,obPriority(a0)           ; put object in front of sonic
-                cmpi.b  #14,obFrame(a0)             ; frame 14 or higher?
-                blt.s   @skip                       ; if not, branch
+        cmpi.b  #14,obFrame(a0)             ; frame 14 or higher?
+        blt.s   @skip                       ; if not, branch
 		move.w	#$200,obPriority(a0)           ; move object behind sonic
-        @skip:
+    @skip:
 		bsr.s	InstaShieldLoadArt
-		jmp	DisplaySprite
+		jmp		DisplaySprite
 ; =========================================================================
 ; Use Dynamic PLC's to load the correct art
 ; =========================================================================

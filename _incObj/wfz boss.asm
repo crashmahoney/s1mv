@@ -712,10 +712,10 @@ ObjC5_Laser:
 	moveq	#0,d0
 	move.b	ob2ndRout(a0),d0
 	move.w	ObjC5_LaserIndex(pc,d0.w),d1
-	jsr	ObjC5_LaserIndex(pc,d1.w)
+	jsr		ObjC5_LaserIndex(pc,d1.w)
 	bchg	#0,objoff_2F(a0)
 	bne.w	ObjC5_rts
-	bra.w	DisplaySprite
+	jmp		DisplaySprite
 ; ===========================================================================
 ObjC5_LaserIndex:
 	dc.w ObjC5_LaserInit-ObjC5_LaserIndex	        ; 0 - Loads mappings and collision and such

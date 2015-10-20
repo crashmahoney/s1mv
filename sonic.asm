@@ -7175,7 +7175,7 @@ Sonic_Main:	; Routine 0
 		move.w	#$100,obPriority(a0)
 		move.b	#$18,obActWid(a0)
 		move.b	#4,obRender(a0)
-                jsr     SetStatEffects
+        jsr     SetStatEffects
 		move.b	#id_SpinDashDust,(v_dustobj).w ; load the spindash dust object
 		move.b	#id_HomingTarget,(v_homingattackobj).w ; Homing Target object
 		move.b	#id_InstaShield,(v_shieldobj).w  ; generic shield object

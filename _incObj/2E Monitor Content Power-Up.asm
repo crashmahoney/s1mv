@@ -16,7 +16,7 @@ Pow_Index:	dc.w Pow_Main-Pow_Index
 
 Pow_Main:	; Routine 0
 		addq.b	#2,obRoutine(a0)
-		move.w	#$680,obGfx(a0)
+		move.w	#$8680,obGfx(a0)
 		move.b	#$24,obRender(a0)
 		move.w	#$180,obPriority(a0)
 		move.b	#8,obActWid(a0)

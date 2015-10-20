@@ -26,15 +26,15 @@ off_1D992:
 ; ===========================================================================
 
 InvincibilityStars_Main:
-        writeVRAM Art_Stars, $22*$20, $A9E0            ; DMA $22 tiles to VRAM
+    writeVRAM Art_Stars, $22*$20, $A9E0            ; DMA $22 tiles to VRAM
 	moveq	#0,d2
-	lea	off_1D992-6(pc),a2
-	lea	(a0),a1
+	lea		off_1D992-6(pc),a2
+	lea		(a0),a1
 
 	moveq	#3,d1                           ; create 4 star objects
 @makestarparent:
 	move.b	(a0),(a1)                       ; create object with the same id as this one
-	move.b	#4,obRoutine(a1)		; make new onject go straight to routine $4
+	move.b	#4,obRoutine(a1)				; make new onject go straight to routine $4
 	move.l	#Map_Invinc,obMap(a1)           ; mappings in sonic 2 format :o
 	move.w	#$54F,obGfx(a1)
 	move.b	#4,obRender(a1)
@@ -100,6 +100,13 @@ InvincibilityStars_Routine_4:
 	movea.w	#v_player,a1                    ; a1=character
 	tst.b	(v_invinc).w	                ; does Sonic have invincibility?
 	beq.w	Invinc_JmpTo_DeleteObject
+
+		bclr	#7,obGfx(a0)				; put on low plane
+		btst	#7,(v_player+obGfx).w		; is sonic on the high plane?
+		beq.s	@nothigh
+		bset	#7,obGfx(a0)				; put on high plane
+@nothigh:
+
 	lea	(v_trackpos).w,a5
 	lea	(v_tracksonic).w,a6
 	move.b	invinc_obj_num(a0),d1           ; get where in the chain this object is
