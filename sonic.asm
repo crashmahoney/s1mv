@@ -355,7 +355,7 @@ VBla_Index:	dc.w VBla_00-VBla_Index, VBla_02-VBla_Index
 		dc.w VBla_0C-VBla_Index, VBla_0E-VBla_Index
 		dc.w VBla_10-VBla_Index, VBla_12-VBla_Index
 		dc.w VBla_14-VBla_Index, VBla_16-VBla_Index
-		dc.w VBla_0C-VBla_Index
+		dc.w VBla_0C-VBla_Index, VBla_1A-VBla_Index
 ; ===========================================================================
 
 VBla_00:				; XREF: VBlank; VBla_Index
@@ -561,8 +561,16 @@ VBla_16:				; XREF: VBla_Index
 	@end:
 		rts	
 
-; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
+; ===========================================================================
+; Pause Menu Vblank routine
+VBla_1A:
+		bsr.w	ReadJoypads
+		writeCRAM	v_pal1_wat,$80,0
+		writeVRAM	v_scrolltable,$380,vram_hscroll
+		move.w	(v_hbla_hreg).w,(a5)
+		bra.w	sub_1642
 
+; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
 sub_106E:				; XREF: VBla_02; et al
 ; 		stopZ80

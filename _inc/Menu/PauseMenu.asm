@@ -43,7 +43,7 @@ Pause_Menu:
 		dbf	d1,@clearsprites 
 ; --------------------------------------------------------------------------
                 lea     (v_256x256).l, a1          ; clear all 256x256 tiles
-                move.l  #$C00,d1
+                move.l  #$23FF,d1
            @clrloop:
                 move.l	d0,(a1)+         
 		dbf	d1,@clrloop
@@ -104,7 +104,7 @@ PauseMenu_Main_Loop:
                 bsr     DrawSoundTest
        @notsoundtest:
                 bsr.w   PauseMenu_DeformLayers
-                move.b  #$12, (v_vbla_routine).w
+                move.b  #$1A, (v_vbla_routine).w
                 jsr     WaitForVBla
                 move    #$2300, SR                    ; interrupt mask level 3
                 move.b  (v_jpadpress1).w, D0
