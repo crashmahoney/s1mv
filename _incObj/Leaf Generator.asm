@@ -14,16 +14,16 @@ Obj2C_Index:
 		dc.w Leaf_Main-Obj2C_Index	; 4
 ; ===========================================================================
 Obj2C_CollisionFlags:
-		dc.b $D6
-		dc.b $D4	; 1
-		dc.b $D5	; 2
+		dc.b $20
+		dc.b $40	; 1
+		dc.b $60	; 2
 		dc.b   0	; 3
 ; ===========================================================================
 Obj2C_Init:
 	addq.b	#2,obRoutine(a0)
 	moveq	#0,d0
 	move.b	obSubtype(a0),d0
-	move.b	Obj2C_CollisionFlags(pc,d0.w),obColType(a0)
+	move.b	Obj2C_CollisionFlags(pc,d0.w),objoff_30(a0)
 	move.l	#Map_LTag,obMap(a0)
 	move.w	#$680,obGfx(a0)
 	move.b	#$84,obRender(a0)
@@ -33,21 +33,37 @@ Obj2C_Init:
 
 Obj2C_Main:
 	obRange Mark_ChkGone					; delete if out of range
-
-	move.b	obColProp(a0),d0				; will be nonzero if object was collided with
-	beq.s	@remove_collision				; branch if 0
-
-	sub.w	#1,objoff_2E(a0)				; subtract from counter
-	bpl.s	@remove_collision				; if not below 0, branch
-
+; ----------------------------------------------------------------------------
+; don't check collision every frame	
+	move.b	d7,d0
+	add.b	(v_vbla_byte).w,d0
+	andi.b	#7,d0
+	bne.s	@no_collision
+; ----------------------------------------------------------------------------
+; check y range	
 	lea		(v_player).w,a2 				; a2=character
-	bclr	#0,obColProp(a0)				; clear object's sonic collision bit
-	beq.s	@remove_collision				; if bit was 0, branch
+	move.w	obY(a0),d0						; get object's Y pos
+	sub.w	#$20,d0							; get top of object
+	sub.w   obY(a2),d0						; subtract sonic's Y pos
+	bcc.s	@reset_counter					; sonic is above it, so branch
+	add.w	#$40,d0							; get bottom of object
+	bcc.s	@reset_counter					; sonic is below, so branch
+; check X range
+	moveq	#0,d1
+	move.b  objoff_30(a0),d1				; X size
+	move.w	obX(a0),d0						; get object's X pos
+	sub.w   d1,d0							; get left side
+	sub.w	obX(a2),d0						; subtract sonic's X pos
+	bcc.s	@reset_counter					; sonic is to the left, so branch
+	add.w	d1,d1
+	add.w	d1,d0
+	bcc.s	@reset_counter					; sonic is to the right, so branch
+; ----------------------------------------------------------------------------
+	sub.w	#1,objoff_2E(a0)				; subtract from counter
+	bpl.s	@no_collision					; if not below 0, branch
 	bsr.s	@chk_speed						; create leaves
-	move.w	#24,objoff_2E(a0)				; set counter
-
-@remove_collision:
-	clr.b	obColProp(a0)
+	move.w	#2,objoff_2E(a0)				; set counter
+@no_collision:
 	rts
 ; ===========================================================================
 
@@ -71,8 +87,7 @@ Obj2C_Main:
 @create_leaf:
 	jsr		FindFreeObj
 	bne.w	@create_leaf_end
-	move.b	#id_Leaf,(a1) 	; load obj2C
-;	move.b	#4,obRoutine(a1)				; set to leaf routine
+	move.b	#id_Leaf,(a1) 					; load leaf
 	move.w	obX(a2),obX(a1)
 	move.w	obY(a2),obY(a1)
 	jsr		RandomNumber					; get random number
