@@ -71,12 +71,12 @@ Smash_Solid:	; Routine 2
 		bcs.s	@donothing	; if not, branch
 		move.w	speed(a0),obVelX(a1)
 		addq.w	#4,obX(a1)
-		lea	(Smash_FragSpd1).l,a4 ;	use fragments that move	right
+		lea	(Smash_FragSpd2).l,a4 ;	use fragments that move	right
 		move.w	obX(a0),d0
 		cmp.w	obX(a1),d0	; is Sonic to the right	of the block?
 		bcs.s	@smash		; if yes, branch
 		subq.w	#8,obX(a1)
-		lea	(Smash_FragSpd2).l,a4 ;	use fragments that move	left
+		lea	(Smash_FragSpd1).l,a4 ;	use fragments that move	left
 
 	@smash:
 		move.w	obVelX(a1),obInertia(a1)
