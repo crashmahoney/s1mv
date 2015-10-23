@@ -54,6 +54,7 @@ SprPoleMain:
 	move.w	obY(a0),obY(a1)
 	bclr	#1,obStatus(a1)			; clear in air flag
 	bset	#3,obStatus(a1)			; set standing flag
+	bclr	#4,obStatus(a1)			; clear in jumping afre rolling flag
 	clr.b	obJumping(a1)			; clear jumping flag
 	move.b	#id_Hang3,obAnim(a1)	; change sonic's animation
 	move.b	#1,(f_lockmulti).w		; lock sonic's controls
@@ -75,6 +76,7 @@ SprPoleAni:
 	move.b	#id_Spring,obAnim(a1) 	; use "bouncing" animation
 	move.b	#2,obRoutine(a1)
 	clr.b	(f_lockmulti).w			; allow sonic control again
+	clr.w	obLRLock(a0)			;clear horiz control lock	;Mercury Constants
 	sfx		sfx_ThrownOff
 
 @rts:
