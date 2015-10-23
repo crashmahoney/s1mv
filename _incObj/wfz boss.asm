@@ -1128,7 +1128,7 @@ ObjC5_MapB_0002:	dc.b 2
 ; --------------------------------------------------------------------------
 ; enmpty frame for platform hurt area
 ObjC5_Blank:
-	dc.w	ObjC5_Blank_Frame-ObjC5_MapA
+	dc.w	ObjC5_Blank_Frame-ObjC5_Blank
 ObjC5_Blank_Frame:	dc.b 0
         even
 
