@@ -76,8 +76,8 @@ Obj1B_GiveBoost:
 	bset	#0,obStatus(a1)					; turn him left
 	neg.w	obVelX(a1)						; make the boosting direction left
 @noflip2:
-;	move.w	#$F,move_lock(a1)				; don't let him turn around for a few frames
-	move.w	obVelX(a1),obInertia(a1)			; update his inertia value
+	move.w	#$F,obLRLock(a1)				; don't let him turn around for a few frames
+	move.w	obVelX(a1),obInertia(a1)		; update his inertia value
 	bclr	#5,obStatus(a0)
 	bclr	#6,obStatus(a0)
 	bclr	#5,obStatus(a1)
