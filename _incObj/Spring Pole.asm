@@ -23,25 +23,28 @@ SprPoleInit:
 	ori.b	#4,obRender(a0)
 	move.b	#8,obActWid(a0)
 	move.w	#$200,obPriority(a0)
+	btst	#0,obStatus(a0)				; is object flipped
+	beq.s	SprPoleMain					; if not, branch
+	addq.w	#8,obX(a0)					; correct X position
 ; ----------------------------------------------------------------------------
 SprPoleMain:
 	lea		(v_player).w,a1
 	move.w	obX(a1),d0
 	sub.w	obX(a0),d0
-	addi.w	#$C,d0
-	cmpi.w	#$24,d0
+	addi.w	#$14,d0
+	cmpi.w	#$2C,d0
 	bhs.w	@rts
 	move.w	obY(a1),d1
 	sub.w	obY(a0),d1
-	subi.w	#$4,d1
-	cmpi.w	#$C,d1
+	subi.w	#$8,d1
+	cmpi.w	#$10,d1
 	bhs.w	@rts
 	tst.b	(f_lockmulti).w
 	bmi.s	@rts
 	cmpi.b	#4,obRoutine(a1)
 	bhs.s	@rts
-;	tst.w	(Debug_placement_mode).w
-;	bne.s	@rts
+	tst.w	(v_debuguse).w
+	bne.s	@rts
 @holdon:
 	addq.b	#2,obRoutine(a0)
 	clr.w	obVelX(a1)
@@ -51,7 +54,7 @@ SprPoleMain:
 	move.w	obY(a0),obY(a1)
 	bclr	#1,obStatus(a1)			; clear in air flag
 	bset	#3,obStatus(a1)			; set standing flag
-	clr.b	obJumping(a1)
+	clr.b	obJumping(a1)			; clear jumping flag
 	move.b	#id_Hang3,obAnim(a1)	; change sonic's animation
 	move.b	#1,(f_lockmulti).w		; lock sonic's controls
 	sfx		sfx_GrabOn
@@ -65,7 +68,6 @@ SprPoleAni:
 	beq.s	@launch					; if equal, branch
 	add.w	#1,obY(a1)				; shift sonic down a pixel
 	bra.s	@rts
-
 @launch:
 	move.w	#-$A00,obVelY(a1)		; move sonic upwards
 	bset	#1,obStatus(a1)			; set in air flag
@@ -78,9 +80,7 @@ SprPoleAni:
 @rts:
 	addq.b	#1,objoff_30(a0)		; add to timer
 	lea		(Ani_SpringPole).l,a1
-	jsr		AnimateSprite
-	rts
-
+	jmp		AnimateSprite
 ; ===========================================================================
 SprPoleReset:
 	move.b	#1,obNextAni(a0) 		; reset animation

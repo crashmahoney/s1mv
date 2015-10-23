@@ -120,16 +120,8 @@ loc_630A:
 
     ; position of sky (always 0)
     	move.w  #0,d0
-		move.w	#$3F,d1               ; height of sky  ($1F default)
-		sub.w	d4,d1                 ; subtract rows of pixels offscreen from rows to write to scrolltable
-		bcs.s	@clouds
-    @skyloop:
-		move.l	d0,(a1)+              ; write position to scroll table
-		dbra	d1,@skyloop
-
-    ; position far mountains
-	@clouds:	
-		move.w	#$2C,d1              ; height of far mountains ($2F default)
+		move.w	#$6C,d1              ; height of far mountains ($2F default)
+		sub.w	d4,d1                 ; subtract rows of pixels offscreen from rows to write to scrolltable	
 		move.w	($FFFFF718).w,d0     ; add speed of scrollblock5
 		neg.w	d0
 @mountainloop:
