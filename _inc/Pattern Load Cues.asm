@@ -85,6 +85,8 @@ PLC_GameOver:	dc.w ((PLC_GameOverend-PLC_GameOver-2)/6)-1
 ; ---------------------------------------------------------------------------
 ; Pattern load cues - Green Hill
 ; ---------------------------------------------------------------------------
+
+VRAMloc_SpringPole	=	$7260
 VRAMloc_Swing 		=	$7400	; swinging platform
 VRAMloc_Bridge 		=	$75C0	; bridge
 VRAMloc_GHZplatform =	$7700	; new platform
@@ -124,6 +126,7 @@ PLC_GHZ2:	dc.w ((PLC_GHZ2end-PLC_GHZ2-2)/6)-1
 		plcm	Nem_GHZplatform, VRAMloc_GHZplatform	; new platform
 		plcm	Nem_PplRock, 	VRAMloc_PplRock	; purple rock
 		plcm	Nem_Leaves, 	VRAMloc_Leaves		; floating leaves
+		plcm	Nem_SpringPole, 	VRAMloc_SpringPole	
 ;		plcm	Nem_GhzWall2, 	VRAMloc_GhzWall2	; normal wall
 		plcm    Nem_MonitorSpinDash, VRAMloc_MonitorSpinDash ; +++ spin dash icon, overwrites goggles icon
 	PLC_GHZ2end:

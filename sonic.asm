@@ -315,6 +315,7 @@ Art_Text:	incbin	"artunc\menutext.bin" ; text used in level select and debug mod
 VBlank:					; XREF: Vectors
 
         movem.l	d0-a6,-(sp)                   ; save registers to stack
+
 		tst.b	(v_vbla_routine).w
 		beq		VBla_00
 		move.w	($C00004).l,d0
@@ -346,7 +347,7 @@ VBla_Music:				; XREF: VBla_00
 
 VBla_Exit:				; XREF: VBla_08
 		addq.l	#1,(v_vbla_count).w         ; add 1 to frame count
-		movem.l	(sp)+,d0-a6                 ; restore registers from stack
+   		movem.l	(sp)+,d0-a6                 ; restore registers from stack
 		rte	                            ; return from vblank interrupt
 ; ===========================================================================
 VBla_Index:	dc.w VBla_00-VBla_Index, VBla_02-VBla_Index
@@ -2181,8 +2182,8 @@ WaitForVBla:				; XREF: PauseGame
 		move	#$2300,sr
 
 	@wait:
-		tst.b	(v_vbla_routine).w ; has VBlank routine finished?
-		bne.s	@wait		; if not, branch
+		tst.b	(v_vbla_routine).w 			; has VBlank routine finished?
+		bne.s	@wait						; if not, branch
 		rts	
 ; End of function WaitForVBla
 
@@ -3037,16 +3038,21 @@ Level_StartGame:
 ; ---------------------------------------------------------------------------
 
 Level_MainLoop:
-                cmpi.b  #id_GotPowUpCard,(v_objspace+$5C0).w ; is powerup card active?
-                beq.s   PowerupCardLoop                      ; go to it's own loop
-
+        cmpi.b  #id_GotPowUpCard,(v_objspace+$5C0).w ; is powerup card active?
+        beq.w   PowerupCardLoop                      ; go to it's own loop
 		bsr.w	PauseGame
+	; change the background colour, for a pretty basic kind of cpu meter	
+		tst.w	(f_debugmode).w	                    ; is debug mode being used?
+		beq.s	@vbla_wait	                     	; if no, branch
+		move.w	#$8C89,($C00004).l	; H res 40 cells, no interlace, S/H enabled
+	@vbla_wait:	
 		move.b	#8,(v_vbla_routine).w
 		bsr.w	WaitForVBla
 		addq.w	#1,(v_framecount).w                  ; add 1 to level timer
+		move.w	#$8C81,($C00004).l	; H res 40 cells, no interlace, S/H disabled
 		bsr.w	MoveSonicInDemo
 		bsr.w	LZWaterFeatures
-		jsr	ExecuteObjects
+		jsr		ExecuteObjects
 
 		tst.w   (f_restart).w                        ; is restart flag set?
 		bne     GM_Level                             ; reload level
@@ -3059,8 +3065,8 @@ Level_MainLoop:
 		bsr.w	DeformLayers
 
 	Level_SkipScroll:
-		jsr	BuildSprites
-		jsr	ObjPosLoad
+		jsr		BuildSprites
+		jsr		ObjPosLoad
 		bsr.w	PaletteCycle
 		bsr.w	RunPLC
 		bsr.w	OscillateNumDo
@@ -7146,6 +7152,12 @@ locret_ED1A:				; XREF: Obj0D_Index
 		include	"_incObj\Dash Spark.asm"
 		include	"_incObj\Leaf Generator.asm"
 		include	"_incObj\Island.asm"
+		include	"_incObj\HangPoint.asm"
+		include	"_incObj\Spring Pole.asm"
+
+
+		
+		even
 
 
 
@@ -9184,6 +9196,8 @@ Art_Balance2:	incbin	"artunc\Sonic Balance2.bin"	; Sonic
 		even
 Art_SonicFlip:	incbin	"artunc\Sonic Flip.bin"	; Sonic
 		even
+Art_SonicHang:	incbin	"artunc\Sonic Hanging.bin"	; Sonic
+		even
 
 Art_InstaShield:incbin  "artunc\Instashield.bin"
                 even
@@ -9301,6 +9315,9 @@ Nem_Springboard:	incbin	"artnem\Springboard.bin"
 		even
 Nem_Leaves:	incbin	"artnem\GHZ Leaves.bin"
 		even
+Nem_SpringPole:	incbin	"artnem\Springy Pole.bin"
+		even
+
 
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - LZ stuff

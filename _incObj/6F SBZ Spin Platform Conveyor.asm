@@ -192,7 +192,7 @@ loc_16474:
 		move.b	#0,obAnim(a0)
 
 loc_16480:
-		bsr.w	LCon_ChangeDir
+		jsr		LCon_ChangeDir
 
 loc_16484:
 		jmp	SpeedToPos

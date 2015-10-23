@@ -232,6 +232,9 @@ SonicDynPLC:	dc.w SonPLC_Null-SonicDynPLC
 		dc.w SonPLC_Flip11-SonicDynPLC
 		dc.w SonPLC_Flip12-SonicDynPLC
 
+		dc.w SonPLC_Hang3-SonicDynPLC
+		dc.w SonPLC_Hang4-SonicDynPLC
+
 SonPLC_Null:	dc.b 0
 SonPLC_Stand:	dc.b 4,	$20, 0,	$70, 3,	$20, $B, $20, $E
 SonPLC_Wait1:	dc.b 3,	$50, $11, $50, $17, $20, $1D
@@ -492,6 +495,18 @@ SonPLC_04DA:	dc.b	3
 	DynPLC	2, (0x0643-$512),	Art_SonicDashCD-Art_Sonic
 	DynPLC	3, (0x0645-$512),	Art_SonicDashCD-Art_Sonic
 	DynPLC	16, (0x0648-$512),	Art_SonicDashCD-Art_Sonic
+
+
+
+SonPLC_Hang3: dc.b  $3
+	DynPLC  $8, $0, Art_SonicHang-Art_Sonic
+	DynPLC  $4, $8, Art_SonicHang-Art_Sonic
+	DynPLC  $6, $C, Art_SonicHang-Art_Sonic
+
+SonPLC_Hang4: dc.b  $3
+	DynPLC  $8, $12, Art_SonicHang-Art_Sonic
+	DynPLC  $4, $8, Art_SonicHang-Art_Sonic
+	DynPLC  $6, $1A, Art_SonicHang-Art_Sonic
 
 ; ===========================================================================
 

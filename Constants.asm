@@ -315,6 +315,8 @@ sfx_WaterRunning:	equ $BC
 sfx_Dash        equ $B6
 sfx_SpeedBoost	equ $4E
 sfx_Leaf		equ $52 ; 8D
+sfx_GrabOn		equ $4A
+sfx_ThrownOff	equ $8C
 
 ; Special Sounds
 musFadeOut      equ $E1

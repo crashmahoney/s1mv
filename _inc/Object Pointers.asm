@@ -152,6 +152,8 @@ ptr_Spark			dc.l Spark
 ptr_LeafGenerator	dc.l LeafGenerator
 ptr_Leaf			dc.l Leaf_Main
 ptr_Island			dc.l Island
+ptr_HangPoint		dc.l HangPoint			;98
+ptr_SpringPole		dc.l SpringPole
 	
 id_SonicPlayer:		equ ((ptr_SonicPlayer-Obj_Index)/4)+1		; $01
 id_Obj02:		equ ((ptr_ObjectFall-Obj_Index)/4)+1
@@ -304,3 +306,5 @@ id_Spark			equ ((ptr_Spark-Obj_Index)/4)+1
 id_LeafGenerator	equ ((ptr_LeafGenerator-Obj_Index)/4)+1
 id_Leaf				equ ((ptr_Leaf-Obj_Index)/4)+1
 id_Island			equ ((ptr_Island-Obj_Index)/4)+1
+id_HangPoint		equ ((ptr_HangPoint-Obj_Index)/4)+1		;98
+id_SpringPole		equ ((ptr_SpringPole-Obj_Index)/4)+1

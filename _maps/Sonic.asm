@@ -234,6 +234,8 @@ ptr_MS_Flip10:	dc.w MS_Flip10-Map_Sonic
 ptr_MS_Flip11:	dc.w MS_Flip11-Map_Sonic
 ptr_MS_Flip12:	dc.w MS_Flip12-Map_Sonic
 
+ptr_MS_Hang3:	dc.w MS_Hang3-Map_Sonic
+ptr_MS_Hang4:	dc.w MS_Hang4-Map_Sonic
 ; --------------------------------------------------------------------------
 
 MS_Null:	dc.b 0
@@ -1184,6 +1186,15 @@ MS_Flip12: dc.b  $2
 	dc.b  $E1, $5, $0, $0, $F0
 	dc.b  $F1, $F, $0, $4, $F0
 
+MS_Hang3: dc.b  $3
+	dc.b  $E8, $7, $0, $0, $F0
+	dc.b  $E0, $3, $0, $8, $0
+	dc.b  $0, $9, $0, $C, $0
+MS_Hang4: dc.b  $3
+	dc.b  $E8, $7, $0, $0, $F0
+	dc.b  $E0, $3, $0, $8, $0
+	dc.b  $0, $9, $0, $C, $0
+
 		even
 
 fr_Null:	equ (ptr_MS_Null-Map_Sonic)/2		; 0
@@ -1418,3 +1429,6 @@ fr_Flip9:	equ (ptr_MS_Flip9-Map_Sonic)/2
 fr_Flip10:	equ (ptr_MS_Flip10-Map_Sonic)/2
 fr_Flip11:	equ (ptr_MS_Flip11-Map_Sonic)/2
 fr_Flip12:	equ (ptr_MS_Flip12-Map_Sonic)/2
+
+fr_Hang3:	equ (ptr_MS_Hang3-Map_Sonic)/2
+fr_Hang4:	equ (ptr_MS_Hang4-Map_Sonic)/2

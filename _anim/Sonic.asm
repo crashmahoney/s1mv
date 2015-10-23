@@ -49,6 +49,7 @@ ptr_SupDuck:    dc.w Sonani_SupDuck-Ani_Sonic
 ptr_SupBalance: dc.w Sonani_SupBalance-Ani_Sonic
 ptr_BalanceBack:	dc.w SonAni_BalanceBack-Ani_Sonic
 ptr_BalanceFar:	dc.w SonAni_BalanceFar-Ani_Sonic
+ptr_Hang3:	dc.w SonAni_Hang3-Ani_Sonic
 
 
 SonAni_Walk:	dc.b $FF, fr_walk13, fr_walk14,	fr_walk15, fr_walk16, fr_walk11, fr_walk12, afEnd, afEnd, afEnd
@@ -92,6 +93,8 @@ SonAni_Spring:	dc.b $2F, fr_spring, afChange, id_Walk
 		even
 SonAni_Hang:	dc.b 4,	fr_hang1, fr_hang2, afEnd
 		even
+SonAni_Hang3:	dc.b $13,fr_Hang3,fr_Hang4,afEnd
+
 SonAni_Leap1:	dc.b $F, fr_leap1, fr_leap1, fr_leap1,	afBack, 1
 		even
 SonAni_Leap2:	dc.b $F, fr_leap1, fr_leap2, afBack, 1
@@ -190,6 +193,7 @@ id_SupDuck:	equ (ptr_SupDuck-Ani_Sonic)/2   ; $28
 id_SupBalance:	equ (ptr_SupBalance-Ani_Sonic)/2; $29
 id_BalanceBack:	equ (ptr_BalanceBack-Ani_Sonic)/2;$2A
 id_BalanceFar:	equ (ptr_BalanceFar-Ani_Sonic)/2 ;$2B
+id_Hang3:		equ (ptr_Hang3-Ani_Sonic)/2 ;$2C
 ; ===========================================================================
 ; Super Sonic Animation Set
 ; ===========================================================================
@@ -242,3 +246,4 @@ Ani_SuperSonic:
         dc.w Sonani_SupBalance-Ani_SuperSonic
 	dc.w Sonani_SupBalance-Ani_Sonic
         dc.w Sonani_SupBalance-Ani_Sonic
+	dc.w SonAni_Hang3-Ani_Sonic
