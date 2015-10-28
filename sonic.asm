@@ -3038,19 +3038,21 @@ Level_StartGame:
 ; ---------------------------------------------------------------------------
 
 Level_MainLoop:
-        cmpi.b  #id_GotPowUpCard,(v_objspace+$5C0).w ; is powerup card active?
-        beq.w   PowerupCardLoop                      ; go to it's own loop
+;    	cmpi.b  #id_GotPowUpCard,(v_objspace+$5C0).w ; is powerup card active?
+;        beq.w   PowerupCardLoop                      ; go to it's own loop
+		tst.b	(v_objspace+$5C0).w					; is powerup card active?
+        bne.w   PowerupCardLoop                      ; go to it's own loop
 		bsr.w	PauseGame
 	; change the background colour, for a pretty basic kind of cpu meter	
-		tst.w	(f_debugmode).w	                    ; is debug mode being used?
-		beq.s	@vbla_wait	                     	; if no, branch
-		move.w	#$8C89,($C00004).l	; H res 40 cells, no interlace, S/H enabled
-	@vbla_wait:	
+;		tst.w	(f_debugmode).w	                    ; is debug mode being used?
+;		beq.s	@vbla_wait	                     	; if no, branch
+;		move.w	#$8C89,($C00004).l	; H res 40 cells, no interlace, S/H enabled
+;	@vbla_wait:	
 		move.b	#8,(v_vbla_routine).w
 		bsr.w	WaitForVBla
 		addq.w	#1,(v_framecount).w                  ; add 1 to level timer
-		move.w	#$8C81,($C00004).l	; H res 40 cells, no interlace, S/H disabled
-		bsr.w	MoveSonicInDemo
+;		move.w	#$8C81,($C00004).l	; H res 40 cells, no interlace, S/H disabled
+;		bsr.w	MoveSonicInDemo
 		bsr.w	LZWaterFeatures
 		jsr		ExecuteObjects
 
@@ -3071,10 +3073,10 @@ Level_MainLoop:
 		bsr.w	RunPLC
 		bsr.w	OscillateNumDo
 		bsr.w	SynchroAnimate
-		bsr.w	SignpostArtLoad
+;		bsr.w	SignpostArtLoad
 
-		cmpi.b	#id_Demo,(v_gamemode).w
-		beq.w	Level_ChkDemo	                     ; if mode is 8 (demo), branch
+;		cmpi.b	#id_Demo,(v_gamemode).w
+;		beq.w	Level_ChkDemo	                     ; if mode is 8 (demo), branch
 		cmpi.b	#id_Level,(v_gamemode).w
 		beq.w	Level_MainLoop	                     ; if mode is $C (level), branch
 		rts
@@ -5440,7 +5442,7 @@ LevelLayoutLoad:
 		include	"_inc\DynamicLevelEvents.asm"
                 include "_incObj\sub SaveState LoadState.asm"
 
-		include	"_incObj\11 Bridge (part 1).asm"
+		include	"_incObj\11 Bridge.asm"
 
 ; ---------------------------------------------------------------------------
 ; Platform subroutine
@@ -5578,9 +5580,6 @@ Swing_Solid:				; XREF: Obj15_SetSolid
 ; End of function Obj15_Solid
 
 ; ===========================================================================
-
-		include	"_incObj\11 Bridge (part 2).asm"
-
 ; ---------------------------------------------------------------------------
 ; Subroutine allowing Sonic to walk or jump off	a platform
 ; ---------------------------------------------------------------------------
@@ -5612,8 +5611,6 @@ locret_75F2:
 		rts	
 ; End of function ExitPlatform
 
-		include	"_incObj\11 Bridge (part 3).asm"
-		include	"_maps\Bridge.asm"
 
 		include	"_incObj\15 Swinging Platforms (part 1).asm"
 
