@@ -27,6 +27,7 @@ objoff_3a         = $3A
 objoff_3b         = $3B
 objoff_3c         = $3C
 MtzBoss_health2   = $3E
+objoff_3f         = $3F
 ; Sprite_32288:
 MTZBoss:
 ;        rts

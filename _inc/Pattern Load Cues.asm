@@ -86,6 +86,7 @@ PLC_GameOver:	dc.w ((PLC_GameOverend-PLC_GameOver-2)/6)-1
 ; Pattern load cues - Green Hill
 ; ---------------------------------------------------------------------------
 
+VRAMloc_Island		=	$7000	; BG islands
 VRAMloc_SpringPole	=	$7260
 VRAMloc_Swing 		=	$7400	; swinging platform
 VRAMloc_Bridge 		=	$75C0	; bridge
@@ -108,6 +109,7 @@ VRAMloc_MonitorSpinDash =	$D400 ; +++ spin dash icon, overwrites goggles icon
 
 PLC_GHZ:	dc.w ((PLC_GHZ2-PLC_GHZ-2)/6)-1
 		plcm	Nem_GHZ_1st, 0		; GHZ main patterns
+		plcm	Nem_Island, VRAMloc_Island	; springboard
 		plcm	Nem_Springboard, VRAMloc_Springboard	; springboard
 		plcm	Nem_Turtroll, 	VRAMloc_Turtroll	; turtroll enemy
 		plcm	Nem_Buzz, 		VRAMloc_Buzz	; buzz bomber enemy

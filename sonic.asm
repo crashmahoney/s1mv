@@ -9314,6 +9314,8 @@ Nem_Leaves:	incbin	"artnem\GHZ Leaves.bin"
 		even
 Nem_SpringPole:	incbin	"artnem\Springy Pole.bin"
 		even
+Nem_Island:	incbin	"artnem\Island.bin"
+		even
 
 
 ; ---------------------------------------------------------------------------
