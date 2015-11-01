@@ -50,8 +50,10 @@ PCycGHZ_Go:
 		addq.w	#1,(v_pcyc_num).w ; increment cycle number
 		andi.w	#3,d0		; if cycle > 3, reset to 0
 		lsl.w	#3,d0
-		lea	(v_pal1_wat+$58).w,a1
+		lea		(v_pal1_wat+$58).w,a1
+		move.l	(a0,d0.w),$20(a1)
 		move.l	(a0,d0.w),(a1)+
+		move.l	4(a0,d0.w),$20(a1)	; copy palette data to RAM
 		move.l	4(a0,d0.w),(a1)	; copy palette data to RAM
 
 PCycGHZ_Skip:
