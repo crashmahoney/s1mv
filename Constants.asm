@@ -332,7 +332,7 @@ Level_Select_PauseMenu_snd   equ $0081
 ;Ring_Snd        equ $00B5
 ;Volume_Down     equ $00E0
 ;Stop_Sound      equ $00E4
-FontLocation    equ $0560 ;$0580
+FontLocation    equ  $0000 ;$0560
 
 ; Offsets of data within each inventory item
 InvNameOffset   equ $4

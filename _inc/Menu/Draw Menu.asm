@@ -1,8 +1,8 @@
 Foreground_ZigZags:         ; number of tiles to draw /2, 2 nametable entries
-        dc.l    59, $25832583, 19, $25842D84, 359, $0, 19, $25852D85, 19, $25862D86, 59, $25832583
+        dc.l    59, $20232023, 19, $20242824, 359, $0, 19, $20252825, 19, $20262826, 59, $20232023
         even    
 Foreground_ZigZags2:        ; vram location, 2 nametable entries
-        dc.l    $41800003, $25842D84, $4B000003, $25852D85, $4B800003, $25862D86
+        dc.l    $41800003, $20242824, $4B000003, $20252825, $4B800003, $20262826
 ;========================================================================================================================
 ; Draw The Menu
 ;========================================================================================================================
@@ -41,7 +41,7 @@ Draw_checkered_bg:
         lea     ($C00000).l,a6
         move.l  #$60000003,4(a6)    ; vram address
         moveq   #31,d2              ; draw 32 rows
-        move.l  #$05810582,d1       ; tilemap to move
+        move.l  #$00210022,d1       ; tilemap to move
     @bg_Line:
         moveq   #31,d3              ; draw 64 columns
     @bg_Cell:
@@ -63,7 +63,7 @@ PauseMenu_DrawTopMenu:
         add.b   d2,d2
 		adda.w	(a0,d2.w),a0                  ; load pointer to graphics
         lea	    ($C00000).l,a6
-		locVRAM	$BC80,4(a6)
+		locVRAM	$1080,4(a6)
 		move.l	#$AF,d0
 	@LoadIconGFX:
 		move.l	(a0)+,(a6)
@@ -87,7 +87,7 @@ PauseMenu_DrawTopMenu:
                 moveq   #0,d0                    ; clear d0
                 lea     (v_menufg).l,a2
                 adda    #$006C,a2                ; text on screen location
-                move.w  #$25E4,d0                   ; first tile to draw
+                move.w  #$2084,d0                   ; first tile to draw
                 moveq   #10,d1                   ; draw 11 tiles
 @drawtile:
                 move.w  d0, (a2)+                ; set a2 to letter required and advance

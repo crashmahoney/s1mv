@@ -34,7 +34,6 @@ Emerald_Snd2             = $0093
 Ring_Snd                = $00B5
 Volume_Down             = $00E0
 Stop_Sound              = $00E4
-FontLocation            = $0580
 ;-------------------------------------------------------------------------------
 Pause_Menu:
                  tst.b   (v_levelselnofade).w     ; is don't fade flag set?

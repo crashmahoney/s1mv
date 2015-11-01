@@ -87,22 +87,22 @@ DrawDescriptionIndex:
 ; =========================================================================
 @loadGFX:
 		lea	    ($C00000).l,a6
-		locVRAM	$BB00,4(a6)
+		locVRAM	$0F00,4(a6)
         movea.l (a1)+,a5                       ; move icon location to a5, advance a1 to palette location
 		moveq	#$5F,d1
 	@LoadIconGFX:
 		move.l	(a5)+,(a6)
-		dbf	d1,@LoadIconGFX
+		dbf		d1,@LoadIconGFX
 
 ; =========================================================================
 ; load the palette
 ; =========================================================================
-                movea.l (a1)+,a6
-                lea     ($FFFFFB40).w,a2
-                moveq   #$07, d1
+		movea.l (a1)+,a6
+		lea     ($FFFFFB40).w,a2
+		moveq   #$07, d1
 @iconpaletteloop:                
-                move.l  (a6)+, (a2)+
-                dbra    d1, @iconpaletteloop
+		move.l  (a6)+, (a2)+
+		dbra    d1, @iconpaletteloop
 
 ; =========================================================================
 ; create the tile map for the icon  (this is retarded, cos of the way sonmaped is saving the art)
@@ -111,7 +111,7 @@ DrawDescriptionIndex:
                 lea     (v_256x256).l,a2
                 adda    #$0782,a2                ; icon on screen location
                 moveq   #2,d1                    ; draw 3 lines
-                move.w  #$45D8,d0   ; first tile to draw
+                move.w  #$4078,d0               ; first tile to draw
 @drawline:
                 moveq   #$3,d2                   ; line is 4 tiles long
 @drawtile:
