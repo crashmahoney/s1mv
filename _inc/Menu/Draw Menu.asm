@@ -283,14 +283,16 @@ Status_Draw_Number:
 ;========================================================================================================================
 ; Draw The Map Screen
 ;========================================================================================================================
-
 PauseMenu_DrawMap:
                 lea     (v_menufg), A3
-                lea     (Map_Text), A1    ; loads first item of first string to a1 (the first byte of the string defines string length)
-                lea     (Map_Positions), A5
-                moveq   #0,d0
-                moveq   #1,d1                      ; number of items to draw (-1)
-                bsr.w   DrawBasicMenuText          ; draw the menu
+                move.w  #$140,d3                 ; put required text position in d3
+                lea     (a3,d3),a2               ; sets a2 to address of requred text position
+                move.w  #$20A0,d0               ; first tile to draw
+                move.w  #$2CF,d2                 ; number of tiles to draw
+@loadtextloop1:
+                move.w  d0,(a2)+                 ; set a2 to letter required and advance
+                addq.w  #1,d0
+                dbf     d2,@loadtextloop1        ; if d2 is over 0 loop back and draw next letter
                 jmp     PauseMenu_DrawMenu         ; draw the Menu
 ;========================================================================================================================
 ; Draw The Items Screen

@@ -74,14 +74,93 @@ Pause_Menu:
 		move.w  D0, ($00C00004)
 WaitForPLC:
 		move.b	#$C,(v_vbla_routine).w
-		jsr	WaitForVBla
-		jsr	RunPLC
+		jsr		WaitForVBla
+		jsr		RunPLC
  		tst.l	(v_plc_buffer).w ; are there any items in the pattern load cue?
  		bne.s	WaitForPLC ; if yes, branch
 ; ---------------------------------------------------------------------------
 ; DMA uncompressed menu GFX
 ; ---------------------------------------------------------------------------
-		writeVRAM Art_MenuFont, $54*$20, $0020*$20
+		writeVRAM Art_MenuFont, $74*$20, $0000
+
+; ---------------------------------------------------------------------------
+; Create Map Screen
+; ---------------------------------------------------------------------------
+; first buffer map graphics to ram
+		lea		(v_worldmap).w,a0				; table of revealed tiles
+		lea		WorldMap,a1						; 4 x 4 tile mappings
+		lea		Art_MapTiles,a2					; 5 x 5 tile graphics
+		lea		(v_mapbuffer).l,a3				; temp ram to write graphics to
+		moveq	#34,d3							; number of 5x5 rows to draw
+
+@dorow:
+		move.w	#79,d2							; number of 5x5 tiles to draw
+		moveq	#0,d4							; bit to check
+@dotile:	
+		moveq	#0,d0
+		move.b	(a1)+,d0						; get tile id to draw
+		beq.s	@nexttile						; if blank tile, skip
+
+		btst	d4,(a0)							; test current bit
+		beq.s	@nexttile						; if 0, branch
+
+		lsl.w	#5,d0							; multiply d0 by 16 (size of an 8x8 tile)
+		lea		(a2,d0.w),a4					; get tile gfx start
+		movea.l	a3,a5							; copy tile ram start
+
+		moveq	#4,d1							; draw 5 rows of pixels
+	@buffertile:
+		move.l	(a5),d0	
+		andi.l	#$FFF,d0
+		add.l	(a4)+,d0
+		move.l	d0,(a5)
+		lea		160(a5),a5						; next line
+		dbf		d1,@buffertile
+
+	@nexttile:
+		addq.w	#1,d4							; add 1 to bit to check
+		cmpi.w	#8,d4							
+		bne.s	@ok
+		moveq	#0,d4							; set bit to check to 0
+		adda.w	#1,a0							; add 1 to byte to check
+	@ok:	
+		lea		2(a3),a3						; get next tile ram location
+		dbf		d2,@dotile
+
+		lea		480(a3),a3						; start of next row ram 			
+		dbf		d3,@dorow
+
+; now send it to Vram
+		lea		($C00000).l,a6
+		locVRAM	$00A0*$20
+		lea		(v_mapbuffer).l,a0 
+
+		moveq	#17,d2
+@transferrow:
+		moveq	#39,d1							; number of 8x8 tiles to transfer
+	@transfertile:
+		movea.l	a0,a1
+		move.l	(a1),(a6)
+		lea		160(a1),a1						
+		move.l	(a1),(a6)
+		lea		160(a1),a1				
+		move.l	(a1),(a6)
+		lea		160(a1),a1						
+		move.l	(a1),(a6)
+		lea		160(a1),a1					
+		move.l	(a1),(a6)
+		lea		160(a1),a1					
+		move.l	(a1),(a6)
+		lea		160(a1),a1					
+		move.l	(a1),(a6)
+		lea		160(a1),a1					
+		move.l	(a1),(a6)
+		lea		4(a0),a0
+		dbf		d1,@transfertile
+
+		lea		$460(a0),a0						; start of next row ram
+		dbf		d2,@transferrow
+
 		bsr.w   RedrawFullMenu           ; Draw the menu
 		jsr     PaletteFadeInFast
 
@@ -101,6 +180,10 @@ PauseMenu_Main_Loop:
                 bne.s   @notsoundtest                 ; if not, branch
                 bsr     DrawSoundTest
        @notsoundtest:
+		lea	(v_objspace).w,a0 ; set address for object RAM
+
+       			bsr.w	MapPointerObject			  ; run 'you are here' object
+				jsr		BuildSprites
                 bsr.w   PauseMenu_DeformLayers
                 move.b  #$1A, (v_vbla_routine).w
                 jsr     WaitForVBla
@@ -123,6 +206,82 @@ PauseMenu_Main_Loop:
         include "_inc\menu\Draw Sound Test.asm"
         include "_inc\menu\Deform Layers.asm"
 
+
+MapPointerObject:
+        cmpi.b  #$1,(v_levselpage).w          ; viewing map?
+        beq.s	@show_pointer
+        rts
+    @show_pointer:
+		lea		(v_mappointerobj).l,a0
+		tst.b	(a0)							; is object set up?
+		bne.s	@pointer_display				; if so, branch
+
+		move.b	#2,(a0)							; give it an id
+		move.l	#Map_Pointer,obMap(a0)
+		move.w	#$2000,obGfx(a0)
+		move.b	#0,obRender(a0)
+		move.w	#0,obPriority(a0)
+
+		lea		WorldMapTopLeft,a1
+		moveq	#0,d3
+		move.b	(v_zone).w,d3                    ; get zone number
+		lsl.w   #2,d3                            ; mult by 4 to get index number of first act in zone
+		add.b   (v_act).w,d3                     ; add act number to get final index number
+		lsl.w   #1,d3                            ; mutliply by 2 (number of bytes of data for each act)
+		lea     (a1,d3),a1                       ; sets a3 to address of data		
+
+		move.w	(v_player+obX).w,d0			; get player X position
+		lsr.w	#8,d0						; divide by 512
+		lsr.w	#1,d0						; divide by 512
+		add.b	(a1)+,d0
+		lsl.w	#2,d0						; multiply by 4 (pixels)
+		add.w	#$83,d0						; add top corner of map display position
+		move.w	d0,obX(a0)
+
+		move.w	(v_player+obY).w,d1			; get player Y position
+		lsr.w	#8,d1						; divide by 512
+		lsr.w	#1,d1						; divide by 512
+		add.b	(a1),d1
+		lsl.w	#2,d1						; multiply by 4 (pixels)
+		add.w	#$A3,d1						; add top corner of map display position
+		move.w	d1,obScreenY(a0)
+
+@pointer_display:
+		lea		(Ani_Pointer).l,a1
+		jsr		AnimateSprite
+		jmp		DisplaySprite
+; ===========================================================================
+; Sprite mappings - generated by Flex - Sonic 1 format
+
+Map_Pointer:
+	dc.w AMY_Frame0-Map_Pointer, ZPE_Frame1-Map_Pointer
+	dc.w ECI_Frame2-Map_Pointer, WRJ_Frame3-Map_Pointer
+	dc.w RGO_Frame4-Map_Pointer, LSV_Frame5-Map_Pointer
+	dc.w ALL_Frame6-Map_Pointer, NFL_Frame7-Map_Pointer
+
+AMY_Frame0: dc.b  $1
+	dc.b  $FC, $0, $0, $1, $FC
+ZPE_Frame1: dc.b  $1
+	dc.b  $F8, $5, $0, $2, $F8
+ECI_Frame2: dc.b  $1
+	dc.b  $F8, $5, $0, $6, $F8
+WRJ_Frame3: dc.b  $1
+	dc.b  $F8, $5, $0, $A, $F8
+RGO_Frame4: dc.b  $1
+	dc.b  $F8, $5, $0, $E, $F8
+LSV_Frame5: dc.b  $1
+	dc.b  $FC, $0, $0, $12, $FC
+ALL_Frame6: dc.b  $1
+	dc.b  $FC, $0, $0, $13, $FC
+NFL_Frame7: dc.b  $1
+	dc.b  $FC, $0, $0, $14, $FC
+;-------------------------------------------------------------------------------
+Ani_Pointer:
+	dc.w @idle-Ani_Pointer
+@idle:	dc.b $2, 0,0,0,0,0,0,1,2,3,4,5,6,7,afEnd
+	even
+
+; ===========================================================================
 ;-------------------------------------------------------------------------------
 PauseMenu_Code_Test:
                 move.w  ($FFFFFF0C).w, D0
@@ -174,6 +333,13 @@ PauseMenu_Code_Not_0xFF:
 ExitPauseMenu:
         move    #$2700, SR                    ; interrupt mask level 7
         jsr     PaletteFadeOutFast
+
+		lea		(v_mappointerobj).l,a0			; delete 'you are here' object
+		moveq	#9,d0
+	@delete_obj:
+		clr.l	(a0)+
+		dbf		d0,@delete_obj	
+
         jsr	    (InitDMAQueue).l
 		clr.w	(v_sgfx_buffer).w              ; +++ ProcessDMAQueue crap
 		move.w	#v_sgfx_buffer,(v_vdp_buffer_slot).w   ; +++

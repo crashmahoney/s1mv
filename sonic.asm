@@ -526,7 +526,7 @@ VBla_0C:				; XREF: VBla_Index
 		movem.l	d0-d7,($FFFFFF10).w
 		movem.l	(v_bgscroll1).w,d0-d1
 		movem.l	d0-d1,($FFFFFF30).w
-		bsr.w	LoadTilesAsYouMove
+		jsr	LoadTilesAsYouMove
 		jsr	AnimateLevelGfx
 		jsr	HUD_Update
 		bsr.w	sub_1642
@@ -568,6 +568,7 @@ VBla_1A:
 		bsr.w	ReadJoypads
 		writeCRAM	v_pal1_wat,$80,0
 		writeVRAM	v_scrolltable,$380,vram_hscroll
+		writeVRAM	v_sprites,$280,vram_sprites
 		move.w	(v_hbla_hreg).w,(a5)
 		bra.w	sub_1642
 
@@ -3074,6 +3075,7 @@ Level_MainLoop:
 		bsr.w	RunPLC
 		bsr.w	OscillateNumDo
 		bsr.w	SynchroAnimate
+		jsr		RevealMapTile
 ;		bsr.w	SignpostArtLoad
 
 ;		cmpi.b	#id_Demo,(v_gamemode).w
@@ -8845,7 +8847,8 @@ SS_MapIndex:
 		include	"_anim\Homing Target.asm"
 		include	"_maps\HomingTarget.asm"
 
-                include "_incObj\03 Plane & Layer Switcher.asm"
+        include "_incObj\03 Plane & Layer Switcher.asm"
+        include "_incObj\sub RevealMapTile.asm"
 
 		include	"_inc\AnimateLevelGfx.asm"
 
@@ -10170,6 +10173,10 @@ Art_MenuFont:   incbin "artunc\Menu Font.bin"
 Eni_MenuBG:     incbin "tilemaps\Menu Background (Enigma).bin"
                 even               
 
+Art_MapTiles:	incbin "artunc\maptiles.bin"
+				even
+                include "_inc\WorldMap.asm"
+                even
 
          include "_debugger\DebuggerBlob.asm"
                 even

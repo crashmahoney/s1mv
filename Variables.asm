@@ -106,10 +106,11 @@ Kos_module_queue =		$FFFFF4B4  ; $18 bytes 		; 6 bytes per entry, first longword
 Kos_module_source =		$FFFFF4B4  ; long 		; the compressed data location for the first module in the queue
 Kos_module_destination =	$FFFFF4CC  ; word 		; the VRAM destination for the first module in the queue
 
-			;$FFFFF49E - $FFFFF600 free
+			;$FFFFF49E - $FFFFF4A0 free
 
+v_worldmap		= $FFFFF4A0		; $160 bytes, 1 bit for each square of the 80x35 map that has been visited		
 
-v_gamemode:	= $FFFFF600		; game mode (00=Sega			; 04=Title			; 08=Demo			; 0C=Level			; 10=SS			; 14=Cont			; 18=End			; 1C=Credit			; +8C=PreLevel)
+v_gamemode:		= $FFFFF600		; game mode (00=Sega			; 04=Title			; 08=Demo			; 0C=Level			; 10=SS			; 14=Cont			; 18=End			; 1C=Credit			; +8C=PreLevel)
 v_jpadhold2:	= $FFFFF602		; joypad input - held, duplicate
 v_jpadpress2:	= $FFFFF603		; joypad input - pressed, duplicate
 v_jpadhold1:	= $FFFFF604		; joypad input - held
@@ -405,8 +406,12 @@ FirstDrawnItem  = $FFFF1FFD     	; when inventory scrolls, which number in inv a
 NumberOfItems   = $FFFF1FFE     	; total number of items currently held in the inventory (2 bytes)
 CurrentInventoryArray  = $FFFF2000 	; all inventory items to draw (?? bytes)
 
+v_mappointerobj	= $FFFFD400			; $40 bytes, 'you are here' object on map screen
+
 v_menu_fgX		= $FFFF3000
 v_menu_bgX		= $FFFF3002
 v_menu_fgY		= $FFFF3004
 v_menu_bgY		= $FFFF3006
+
+v_mapbuffer =   $FFFF3010			; map screen graphics are buffered here before sending to VRAM
 
