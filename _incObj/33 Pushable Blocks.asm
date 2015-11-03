@@ -107,12 +107,12 @@ PushB_Main:	; Routine 0
 		bset	#0,2(a2,d0.w)
         endif
 		bne.w	DeleteObject
-                cmpi.w  #$0A78,obX(a0)          ; is it the block on the stomper in MZ1?
-                bne.s   loc_BF6E                ; if not, branch
-		btst    #0,(v_actflags).w       ; is flag set
-		beq.s   loc_BF6E                ; if not, branch
-		move.w	#$0AD0,obX(a0)          ; move block onto switch
-		move.w	#$03F0,obY(a0)          ;   "    "     "    "
+;                cmpi.w  #$0A78,obX(a0)          ; is it the block on the stomper in MZ1?
+;                bne.s   loc_BF6E                ; if not, branch
+;		btst    #0,(v_actflags).w       ; is flag set
+;		beq.s   loc_BF6E                ; if not, branch
+;		move.w	#$0AD0,obX(a0)          ; move block onto switch
+;		move.w	#$03F0,obY(a0)          ;   "    "     "    "
 
 
 loc_BF6E:	; Routine 2

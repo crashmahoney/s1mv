@@ -6,10 +6,10 @@ invtime:	= $32		; time left for invincibility
 shoetime:	= $34		; time left for speed shoes
 
 Sonic_Display:
-                tst.b   (v_homingtimer).w
-                beq.s   @timeriszero
-                subq.b  #1,(v_homingtimer).w  ; reduce timer
-       @timeriszero:         
+		tst.b   (v_homingtimer).w
+		beq.s   @timeriszero
+		subq.b  #1,(v_homingtimer).w  ; reduce timer
+	@timeriszero:         
 		move.w	flashtime(a0),d0
 		beq.s	@display
 		subq.w	#1,flashtime(a0)
@@ -17,20 +17,20 @@ Sonic_Display:
 		bcc.s	@effects
 
 	@display:
-		tst.b   (v_temp_teletest).w
+		tst.b   (v_teleportin).w
 		bne.s   @effects
-		jsr	(DisplaySprite).l
+		jsr		(DisplaySprite).l
 		
 ; --------------------------------------------------------------------------
 @effects:
-                lea     (ItemEffects).w,a2   ; get the list of current effects
-                moveq   #15,d1          ; loop through 16 items
-        @effectloop:
-                tst.b   (a2)            ; is there an active effect in this slot?
-                bne.s   @activeeffect   ; if so, branch
-            @nextslot:
-                addq.w  #4,a2           ; go to next slot
-                dbf     d1,@effectloop  ; loop
+		lea     (ItemEffects).w,a2   ; get the list of current effects
+		moveq   #15,d1          ; loop through 16 items
+	@effectloop:
+		tst.b   (a2)            ; is there an active effect in this slot?
+		bne.s   @activeeffect   ; if so, branch
+	@nextslot:
+		addq.w  #4,a2           ; go to next slot
+		dbf     d1,@effectloop  ; loop
 
 
 ; --------------------------------------------------------------------------
@@ -42,13 +42,13 @@ Sonic_Display:
 		subq.w	#1,shoetime(a0)	; subtract 1 from time
 		bne.s	@exit
 		move.b	#0,(v_shoes).w	; cancel speed shoes
-                jsr     SetStatEffects
+		jsr     SetStatEffects
 
-         if z80SoundDriver=0
+	if z80SoundDriver=0
 		move.w	#$E3,d0
 		jmp	(PlaySound).l	; run music at normal speed
-         else
-                move.w	#0,d0
+	else
+		move.w	#0,d0
 		jmp	(SetTempo).l	; run music at normal speed
          endif
 

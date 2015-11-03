@@ -1,12 +1,13 @@
 ; ---------------------------------------------------------------------------
 ; Object 26 - monitors
 ; ---------------------------------------------------------------------------
+mon_ActBit		= $30		; which bit in the act flags this monitor is mapped to
 
 Monitor:				; XREF: Obj_Index
 		moveq	#0,d0
 		move.b	obRoutine(a0),d0
 		move.w	Mon_Index(pc,d0.w),d1
-		jmp	Mon_Index(pc,d1.w)
+		jmp		Mon_Index(pc,d1.w)
 ; ===========================================================================
 Mon_Index:	dc.w Mon_Main-Mon_Index
 		dc.w Mon_Solid-Mon_Index
@@ -24,35 +25,30 @@ Mon_Main:	; Routine 0
 		move.b	#4,obRender(a0)
 		move.w	#$180,obPriority(a0)
 		move.b	#$F,obActWid(a0)
-                obTestBit 0                   ; check if marked as broken in respawn table
+		obTestBit 0                   ; check if marked as broken in respawn table
 		beq.s	@checksavedstatus     ; if not, branch
 @broken:
 		move.b	#8,obRoutine(a0)      ; run "Mon_Display" routine
 		move.b	#$B,obFrame(a0)	      ; use broken monitor frame
-                bra.w     RememberState       ; check if in range, display if so, delete if not
+		bra.w     RememberState       ; check if in range, display if so, delete if not
 ; ---------------------------------------------------------------------------
 ; Decide if monitor has already been destroyed on previous time in level
 ; ---------------------------------------------------------------------------
 @checksavedstatus:
-                obSetBit 1                    ; set bit so this check doesn't get run again
-                lea     (v_monitorlocations).w,a3
-                moveq   #23,d4                ; number of loops
-                moveq   #7,d5                 ; bit to test
-                lea     (v_brokenmonitors1).w,a5
-        @monitorloop:
-                move.w  (a3)+,d3              ; put x postion out of table into d3
-                cmp.w   obX(a0),d3            ; is it equal to monitor's x position?
-                bne.s   @nextbit              ; if not, check the next
-                btst	d5,(a5)	              ; has bit been set?
-                beq.s	@notbroken	      ; if not, branch
-                bra.s   @broken               ; looks like it's broken then!
-        @nextbit:
-                subq    #1,d5                 ; check the next bit next loop
-                bcc.s   @next                 ; if not all bit in byte checked, branch
-                moveq   #7,d5                 ; reset bit to test
-                adda.w  #1,a5                 ; check the next byte next loop
-        @next:
-                dbf     d4,@monitorloop
+		obSetBit 1                    ; set bit so this check doesn't get run again
+		lea     (v_monitorlocations).w,a3
+		moveq   #23,d0                ; number of loops
+	@x_pos_loop:
+		move.w  (a3)+,d1              ; put x postion out of table into d3
+		cmp.w   obX(a0),d1            ; is it equal to monitor's x position?
+		beq.s   @checkbit             ; if so, check if bit is set
+		dbf     d0,@x_pos_loop
+
+@checkbit:
+		move.b	d0,mon_ActBit(a0)	; remember which bit this is saved to
+		bsr.w	GetActFlag			; check bit number in d0 is set
+		tst.b	d0					; is it set?
+		bne.s	@broken				; if yes, branch
 ; ===========================================================================
 
 	@notbroken:
@@ -170,23 +166,9 @@ Mon_BreakOpen:	; Routine 4
 ; ---------------------------------------------------------------------------
 ; Save the fact that monitor is destroyed
 ; ---------------------------------------------------------------------------
-                lea     (v_monitorlocations).w,a3
-                moveq   #23,d4                ; number of loops
-                moveq   #7,d5                 ; bit to test
-                lea     (v_brokenmonitors1).w,a5
-        @monitorloop:
-                move.w  (a3)+,d3              ; put x postion out of table into d3
-                cmp.w   obX(a0),d3            ; is it equal to monitor's x position?
-                bne.s   @nextbit              ; if not, check the next
-                bset	d5,(a5)	              ; save it to correct bit
-		bra.s   @breakopen
-        @nextbit:
-                subq    #1,d5                 ; check the next bit next loop
-                bcc.s   @next                 ; if not all bit in byte checked, branch
-                moveq   #7,d5                 ; reset bit to test
-                adda.w  #1,a5                 ; check the next byte next loop
-        @next:
-                dbf     d4,@monitorloop
+		moveq	#0,d0
+		move.b	mon_ActBit(a0),d0
+		bsr.w	SetActFlag
 ; ---------------------------------------------------------------------------
 
      @breakopen:

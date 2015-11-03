@@ -37,10 +37,10 @@ v_variables        = $FFFFF360
 v_statspeed        = v_variables+$0     ;  speed stat
 v_stataccel        = v_variables+$1     ;  acceleration stat
 v_statjump         = v_variables+$2     ;  jump stat
-v_brokenmonitors1  = v_variables+$3     ;  which monitors are broken in current act, first byte
-v_brokenmonitors2  = v_variables+$4     ;  which monitors are broken in current act, second byte
-v_brokenmonitors3  = v_variables+$5     ;  which monitors are broken in current act, third byte
-v_actflags         = v_variables+$6     ;  flags in the current act to be saved to sram
+;v_brokenmonitors1  = v_variables+$3     ;  which monitors are broken in current act, first byte
+;v_brokenmonitors2  = v_variables+$4     ;  which monitors are broken in current act, second byte
+;v_brokenmonitors3  = v_variables+$5     ;  which monitors are broken in current act, third byte
+;v_actflags         = v_variables+$6     ;  flags in the current act to be saved to sram
 v_levselpage       = v_variables+$7     ;  which page of the pause menu is selected
 v_a_ability        = v_variables+$8     ; ability assigned to button A
 v_b_ability        = v_variables+$9     ; ability assigned to button B
@@ -64,8 +64,6 @@ v_inv_test      = v_inv_items+$4
 v_inv_bomb      = v_inv_items+$5
 v_inv_eshield   = v_inv_items+$6     	; electric shields
 v_inv_fshield   = v_inv_items+$7     	; fire shields
-
-v_temp_teletest = v_inv_items+$8		; testing the teleport beam object
 
 v_shoe_items    = v_inventory+$20
 v_shoe_default  = v_shoe_items+$0
@@ -106,8 +104,8 @@ Kos_module_queue =		$FFFFF4B4  ; $18 bytes 		; 6 bytes per entry, first longword
 Kos_module_source =		$FFFFF4B4  ; long 		; the compressed data location for the first module in the queue
 Kos_module_destination =	$FFFFF4CC  ; word 		; the VRAM destination for the first module in the queue
 
-			;$FFFFF49E - $FFFFF4A0 free
-
+v_worldmap_X	= $FFFFF49E		; current level's left boundary position in world map squares (1 byte)
+v_worldmap_Y	= $FFFFF49F		; current level's top boundary position in world map squares  (1 byte)
 v_worldmap		= $FFFFF4A0		; $160 bytes, 1 bit for each square of the 80x35 map that has been visited		
 
 v_gamemode:		= $FFFFF600		; game mode (00=Sega			; 04=Title			; 08=Demo			; 0C=Level			; 10=SS			; 14=Cont			; 18=End			; 1C=Credit			; +8C=PreLevel)
@@ -246,18 +244,10 @@ v_pal0_dry:	= $FFFFFA80		; duplicate palette data - main ($80 bytes)
 v_pal1_wat:	= $FFFFFB00		; palette data - underwater ($80 bytes)
 v_pal1_dry:	= $FFFFFB80		; palette data - main ($80 bytes)
 
-Boss_AnimationArray:= $FFFFFC00		; up to $10 bytes			; 2 bytes per entry
-unk_F750:       = $FFFFFC10
-Boss_X_pos:	= $FFFFFC10     	; Boss_MoveObject reads a long, but all other places in the game use only the high word
-Boss_Y_pos:	= $FFFFFC14     	; same here
-Boss_X_vel:	= $FFFFFC18
-Boss_Y_vel:	= $FFFFFC1A
-unk_F75C:	= $FFFFFC1C
 
-			; $200 free bytes, $FFFFFC00 to FFFFFE00
 
-H_int_jump      = $FFFFFCFC     	; 6 bytes 			; contains an instruction to jump to the H-int handler
-H_int_addr      = $FFFFFCFE     	; long
+v_actstates	= $FFFFFC00		; 4 bytes of saved data per act ($A0 bytes, will expand when more zones added)
+
 
 ; stack goes from FE00 backwards, seems like leaving $100 bytes for it would be safe????
 
@@ -308,8 +298,8 @@ v_lamp_wtrpos:	= v_lastlamp+$20 	; water position at lamppost (2 bytes)
 v_lamp_wtrrout:	= v_lastlamp+$22 	; water routine at lamppost
 v_lamp_wtrstat:	= v_lastlamp+$23 	; water state at lamppost
 v_lamp_lives:	= v_lastlamp+$24 	; lives counter at lamppost
-v_emeralds:	= $FFFFFE57		; number of chaos emeralds
-v_emldlist:	= $FFFFFE58		; which individual emeralds you have (00 = no			; 01 = yes) (6 bytes)
+v_emeralds:		= $FFFFFE57		; number of chaos emeralds
+v_emldlist:		= $FFFFFE58		; which individual emeralds you have (00 = no			; 01 = yes) (6 bytes)
 v_oscillate:	= $FFFFFE5E		; values which oscillate - for swinging platforms, et al ($42 bytes)
 v_ani0_time:	= $FFFFFEC0		; synchronised sprite animation 0 - time until next frame (used for synchronised animations)
 v_ani0_frame:	= $FFFFFEC1		; synchronised sprite animation 0 - current frame
@@ -319,18 +309,40 @@ v_ani2_time:	= $FFFFFEC4		; synchronised sprite animation 2 - time until next fr
 v_ani2_frame:	= $FFFFFEC5		; synchronised sprite animation 2 - current frame
 v_ani3_time:	= $FFFFFEC6		; synchronised sprite animation 3 - time until next frame
 v_ani3_frame:	= $FFFFFEC7		; synchronised sprite animation 3 - current frame
-v_ani3_buf:	= $FFFFFEC8		; synchronised sprite animation 3 - info buffer (2 bytes)
+v_ani3_buf:		= $FFFFFEC8		; synchronised sprite animation 3 - info buffer (2 bytes)
 v_limittopdb:	= $FFFFFEF0		; level upper boundary, buffered for debug mode (2 bytes)
 v_limitbtmdb:	= $FFFFFEF2		; level bottom boundary, buffered for debug mode (2 bytes)
 
-v_levseldelay:	= $FFFFFF80		; level select - time until change when up/down is held (2 bytes)
-v_levselitem:	= $FFFFFF82		; level select - item selected (2 bytes)
-v_levselsound:	= $FFFFFF84		; level select - sound selected (2 bytes)
-v_levelselnofade  = $FFFFFF86   	; +++ pause menu, don't fade when redrawing text
+; boss animation array from ported sonic 2 bosses
+Boss_AnimationArray:= $FFFFFEF4	; up to $10 bytes			; 2 bytes per entry
+unk_F750:       = $FFFFFF04
+Boss_X_pos:		= $FFFFFF04   	; Boss_MoveObject reads a long, but all other places in the game use only the high word
+Boss_Y_pos:		= $FFFFFF08	; same here
+Boss_X_vel:		= $FFFFFF0C
+Boss_Y_vel:		= $FFFFFF0E
+unk_F75C:		= $FFFFFF3E	; used by mtz boss, only seems to use 2 bytes
 
+			; ^^^ can use values between here vvv not FF30 on though, vblank uses it
+
+
+v_monitorlocations: = $FFFFFF40    	; array of monitor x positions ($30 bytes)
+
+v_wassfxspindash: = $FFFFFF70   	; +++ is 1 if the last sound played was the spin dash
+v_timersfxspindash: = $FFFFFF71 	; +++ timer for spin dash rev
+v_pitchsfxspindash: = $FFFFFF72 	; +++ spindash sfx pitch increase
+v_vscrolldelay  = $FFFFFF73 
+v_hscrolldelay: = $FFFFFF74     	; +++ something to do with the spin dash and horizontal scrolling
+f_dontstopmusic: = $FFFFFF76    	; +++ let music continue from last act
+v_popuptimer	= $FFFFFF77			; how long the popup timer can be onscreen
+
+			; ^^^ can use values between here vvv
+
+v_levseldelay:	= $FFFFFF80			; level select - time until change when up/down is held (2 bytes)
+v_levselitem:	= $FFFFFF82			; level select - item selected (2 bytes)
+v_levselsound:	= $FFFFFF84			; level select - sound selected (2 bytes)
+v_levelselnofade  = $FFFFFF86   	; +++ pause menu, don't fade when redrawing text
 v_airjumpcount:    = $FFFFFF88    	; +++ times jumped in the air, for double jump
 v_jumpdashcount:   = $FFFFFF89    	; +++ times jump dashed
-
 f_supersonic       = $FFFFFF8A    	; +++ has sonic turned Super Sonic?
 v_supersonicpal    = $FFFFFF8B    	; +++ has super sonic palette value
 v_supersonicpalframe  = $FFFFFF8C 	; +++ has super sonic palette frame (2 bytes)
@@ -342,8 +354,12 @@ v_homingtarget     = $FFFFFF94    	; object number that is closest to sonic
 v_homingtimer      = $FFFFFF95    	; frames that sonic can home on an object for (light dash only ATM)
 v_justwalljumped   = $FFFFFF96    	; if just wall jumped, don't run double jump code
 v_Deform_Temp_Value = $FFFFFF98		; GHZ uses this to save last frame's ripple data rom location (2 bytes)
+H_int_jump      = $FFFFFF9A     	; 6 bytes 			; contains an instruction to jump to the H-int handler
+H_int_addr      = $FFFFFFA0     	; long
+v_teleportin	= $FFFFFFA4			; set when sonic needs to beam into the new level
 
 			; ^^^ can use values between here vvv
+
 v_lamp_xspeed:   = $FFFFFFB2    	; +++ saved x speed when moving between acts     (2 bytes)
 v_lamp_yspeed:   = $FFFFFFB4    	; +++ saved y speed when moving between acts     (2 bytes)
 v_lamp_inertia:  = $FFFFFFB6    	; +++ saved inertia when moving between acts     (2 bytes)
@@ -358,39 +374,28 @@ v_scorecopy:	= $FFFFFFC0		; score, duplicate (4 bytes)
 v_scorelife:	= $FFFFFFC0		; points required for an extra life (4 bytes) (JP1 only)
 f_levselcheat:	= $FFFFFFE0		; level select cheat flag
 f_slomocheat:	= $FFFFFFE1		; slow motion & frame advance cheat flag
+Slow_Motion_Flag      equ $FFFFFFE1
 f_debugcheat:	= $FFFFFFE2		; debug mode cheat flag
+Debug_Mode_Flag       equ $FFFFFFE2
 f_creditscheat:	= $FFFFFFE3		; hidden credits & press start cheat flag
 v_title_dcount:	= $FFFFFFE4		; number of times the d-pad is pressed on title screen (2 bytes)
 v_title_ccount:	= $FFFFFFE6		; number of times C is pressed on title screen (2 bytes)
 
-v_monitorlocations: = $FFFFFF40    	; array of monitor x positions ($30 bytes)
+			; ^^^ can use values between here vvv
 
-v_wassfxspindash: = $FFFFFF70   	; +++ is 1 if the last sound played was the spin dash
-v_timersfxspindash: = $FFFFFF71 	; +++ timer for spin dash rev
-v_pitchsfxspindash: = $FFFFFF72 	; +++ spindash sfx pitch increase
-v_vscrolldelay  = $FFFFFF73 
-v_hscrolldelay: = $FFFFFF74     	; +++ something to do with the spin dash and horizontal scrolling
-f_dontstopmusic: = $FFFFFF76    	; +++ let music continue from last act
-v_popuptimer	= $FFFFFF77		; how long the popup timer can be onscreen
-
-
-
-f_demo:		= $FFFFFFF0		; demo mode flag (0 = no			; 1 = yes			; $8001 = ending) (2 bytes)
-v_demonum:	= $FFFFFFF2		; demo level number (not the same as the level number) (2 bytes)
+f_demo:			= $FFFFFFF0		; demo mode flag (0 = no			; 1 = yes			; $8001 = ending) (2 bytes)
+v_demonum:		= $FFFFFFF2		; demo level number (not the same as the level number) (2 bytes)
 v_creditsnum:	= $FFFFFFF4		; credits index number (2 bytes)
 v_layer:        = $FFFFFFF6     	; The bit in the 16x16 entries in the 128x128 block mappings to check for top solidity. Is either $C (for the default collision layer), or $E (for the alternate collision layer).
 v_layerplus     = $FFFFFFF7     	; The bit in the 16x16 entries in the 128x128 block mappings to check for left/right/bottom solidity. Is either $D (for the default collision layer), or $F (for the alternate collision layer).
 v_megadrive:	= $FFFFFFF8		; Megadrive machine type
 f_debugmode:	= $FFFFFFFA		; debug mode flag (sometimes 2 bytes)
-v_init:		= $FFFFFFFC		; 'init' text string (4 bytes)
+v_init:			= $FFFFFFFC		; 'init' text string (4 bytes)
 
-
-
-Slow_Motion_Flag      equ $FFFFFFE1
-Debug_Mode_Flag       equ $FFFFFFE2
-
-
+; ===========================================================================
 ; Pause Menu Memory Locations (only used when in menu, otherwise the 256x256 tiles go here)
+; ===========================================================================
+
 v_menufg        =   $FFFF0000
 v_menubg        =   $FFFF08C0
 v_sndtsttilemap =   $FFFF1180

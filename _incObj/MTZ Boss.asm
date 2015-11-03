@@ -494,7 +494,7 @@ loc_327CA:
 MTZBoss_Laugh:
 	cmpi.b	#4,(v_player+obRoutine).w        ; is sonic hurt?
 	bne.s	@rts                             ; if not, branch
-	lea	(Boss_AnimationArray).w,a1
+	lea		(Boss_AnimationArray).w,a1
 	move.b	2(a1),d0
 	andi.b	#$F,d0
 	cmpi.b	#4,d0
@@ -511,7 +511,7 @@ MTZ_Boss_10_Defeated:
 	blo.s	loc_32846
 	bmi.s	loc_32820
 	bsr.w	BossDefeated
-	lea	(Boss_AnimationArray).w,a1
+	lea		(Boss_AnimationArray).w,a1
 	move.b	#7,2(a1)
 	bra.s	loc_32846
 ; ===========================================================================
@@ -522,7 +522,7 @@ loc_32820:
 	clr.w	(Boss_Y_vel).w
 	addq.b	#2,boss_routine(a0)
 	move.w	#-$12,(unk_F75C).w
-	lea	(Boss_AnimationArray).w,a1
+	lea		(Boss_AnimationArray).w,a1
 	move.b	#3,2(a1)
 	music	bgm_GHZ
 ;	bsr.w	JmpTo7_PlayLevelMusic
@@ -530,7 +530,7 @@ loc_32820:
 loc_32846:
 	move.w	(Boss_Y_pos).w,obY(a0)
 	move.w	(Boss_X_pos).w,obX(a0)
-	lea	(Anim_MTZBoss).l,a1
+	lea		(Anim_MTZBoss).l,a1
 	bsr.w	AnimateBoss
 	bsr.w	MtzBoss_UpdateChildspritePositions
 	bra.w	JmpTo40_DisplaySprite
@@ -560,27 +560,29 @@ loc_32894:
 	bsr.w	loc_328C0
 	move.w	(Boss_Y_pos).w,obY(a0)
 	move.w	(Boss_X_pos).w,obX(a0)
-	lea	(Anim_MTZBoss).l,a1
+	lea		(Anim_MTZBoss).l,a1
 	bsr.w	AnimateBoss
 	bsr.w	MtzBoss_UpdateChildspritePositions
 	bra.w	JmpTo40_DisplaySprite
 ; ===========================================================================
 
 JmpTo60_DeleteObject
+	moveq	#plcid_GHZ,d0
+	jsr		NewPLC		        ; load level object patterns
 	moveq	#plcid_GHZ2,d0
-	jsr	NewPLC		        ; load level object patterns
-
-        lea     (Pal_GHZ).l,a2
-        lea	(v_pal1_wat+$20).w,a1
- 	moveq	#$7,d0                         ; move 16 colours
+	jsr		AddPLC		        ; load level object patterns
+	lea     (Pal_GHZ).l,a2
+	lea		(v_pal1_wat+$20).w,a1
+ 	moveq	#$F,d0                         ; move 16 colours
     @movecolour:
  	move.w	(a2)+,(a1)+
-        dbf     d0,@movecolour
+	dbf     d0,@movecolour
 
-	move.w	#$800,(v_limitbtm1).w
-	move.w	#$800,(v_limitbtm2).w
+	move.w	#$7FF,(v_limitbtm1).w
+	move.w	#$7FF,(v_limitbtm2).w
  	move.w	#0,(v_limitleft2).w
- 	move.w	#$4000,(v_limitright2).w
+ 	move.w	#$25E0,(v_limitright1).w
+ 	move.w	#$25E0,(v_limitright2).w
 	move.b	#0,(f_lockscreen).w     ; unlock screen
 	move.b	#0,(v_bossstatus).w
 

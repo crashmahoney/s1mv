@@ -41,7 +41,7 @@ BGHZ_LoadBoss:				; XREF: BGHZ_Main
 		move.w	#$180,obPriority(a1)
 		move.b	(a2)+,obAnim(a1)
 		move.l	a0,$34(a1)
-		dbf	d1,BGHZ_Loop	; repeat sequence 2 more times
+		dbf		d1,BGHZ_Loop	; repeat sequence 2 more times
 
 loc_17772:
 		move.w	obX(a0),$30(a0)

@@ -303,10 +303,11 @@ loc_18566:
 
 loc_1856C:
 		clr.w	obVelY(a0)
-		music	bgm_MZ		; play MZ music
-		bset    #0,(v_actflags).w ; remember that boss is beaten
-	        moveq	#plcid_MZ,d0
- 		jmp	AddPLC		; reload level patterns
+		music	bgm_MZ				; play MZ music
+		moveq	#31,d0				; act flag 31
+		jsr		SetActFlag			; remember boss has been beaten
+		moveq	#plcid_MZ,d0
+ 		jmp		AddPLC				; reload level patterns
 
 loc_1857A:
 		bsr.w	BossMove

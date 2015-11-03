@@ -14,13 +14,13 @@ GRing_Index:	dc.w GRing_Main-GRing_Index
 ; ===========================================================================
 
 GRing_Main:	; Routine 0
-                moveq   #0,d0
+		moveq   #0,d0
 		move.b	obSubtype(a0),d0
-		move.b	(v_actflags).w,d1
-		btst	d0,d1
+		bsr.w	GetActFlag			; has ring already bee entered?
+		tst.b	d0
 		beq.s	@notcollected		; only make the ring if it hasn't already been collected
 		bra.w	GRing_Delete
-       @notcollected:
+	@notcollected:
 		move.l	#Map_GRing,obMap(a0)
 		move.w	#$2580,obGfx(a0)
 		ori.b	#4,obRender(a0)
@@ -63,13 +63,11 @@ GRing_Collect:	; Routine 4
 		bset	#0,obRender(a1)	; reverse flash	object
 
 GRing_PlaySnd:
-		sfx	sfx_GiantRing	; play giant ring sound
-                moveq   #0,d0
+		sfx		sfx_GiantRing	; play giant ring sound
+		moveq   #0,d0
 		move.b	obSubtype(a0),d0
-		move.b	(v_actflags).w,d1
-		bset	d0,d1
-		move.b	d1,(v_actflags).w	; Set the special stage ring as collected
-                writeVRAM Art_BigRingFlash, $0D20, $B000
+		bsr.w	SetActFlag
+		writeVRAM Art_BigRingFlash, $0D20, $B000
 ;		bra.s	GRing_Animate
 ; ===========================================================================
 
@@ -83,6 +81,6 @@ GRing_Delete:	; Routine 6
 GRing_DeleteRange:
         ; reload graphics replaced by ring when ring goes out of range
 		moveq	#plcid_Explode,d0
-		jsr	(AddPLC).l	; load explosion patterns
-		jsr	(LoadAnimalPLC).l ; load animal patterns
+		jsr		(AddPLC).l	; load explosion patterns
+		jsr		(LoadAnimalPLC).l ; load animal patterns
 		bra.s	GRing_Delete

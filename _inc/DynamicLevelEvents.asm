@@ -88,23 +88,23 @@ DLE_GHZ1:
 		jmp	DLE_GHZ1_Modes(pc,d0.w)
 ; ===========================================================================
 DLE_GHZ1_Modes:	dc.w DLE_GHZ1_Main-DLE_GHZ1_Modes
-		dc.w DLE_GHZ1boss-DLE_GHZ1_Modes
-		dc.w DLE_GHZ1end-DLE_GHZ1_Modes
+				dc.w DLE_GHZ1boss-DLE_GHZ1_Modes
+				dc.w DLE_GHZ1end-DLE_GHZ1_Modes
 ; --------------------------------------------------------------------------
 DLE_GHZ1_Main:
 		cmpi.w	#$1F00,(v_screenposx).w     ; has the camera reached $1780 on x-axis?
-		bcs.w	@rts      	            ; if not, branch
+		bcs.w	@rts      	            	; if not, branch
  		addq.b	#2,(v_dle_routine).w
-        @rts:
-                rts
+	@rts:
+		rts
 ; --------------------------------------------------------------------------
 DLE_GHZ1boss:
 ;		btst    #0,(v_actflags).w       ; has boss already been beaten?
 ;		bne.w   GHZBossBeaten             ; if so, skip boss
 		cmpi.w	#$110,(v_screenposy).w
-                ble.w   @loadboss
+        ble.w   @loadboss
  		subq.b	#2,(v_dle_routine).w
-                rts
+        rts
 
 ;loc_6EB0:
 ;		move.w	#$400,(v_limitbtm1).w
@@ -124,21 +124,21 @@ DLE_GHZ1boss:
 ; 		move.w	(v_screenposx).w,(v_limitleft2).w
 		cmpi.w	#MTZBscreenX,(v_screenposx).w           ; in middle of the boss arena?
 		bcs.w	@rts
-		jsr	FindFreeObj
+		jsr		FindFreeObj
 		bne.s	@nofreeobj
 		move.b	#id_MTZBoss,0(a1)       ; load GHZ boss	object
 @nofreeobj:
 		move.w	#bgm_Boss,d0
-		jsr	PlaySound	; play boss music
+		jsr		PlaySound	; play boss music
 		move.b	#1,(f_lockscreen).w ; lock screen
  		move.w	#MTZBscreenX,(v_limitleft2).w
 		addq.b	#2,(v_dle_routine).w
-                lea     (MTZBoss_Pal).l,a0
-	        lea	(v_pal1_wat+$20).w,a1
-	        moveq	#$B,d0                         ; move 16 colours
-        @movecolour:
-	        move.w	(a0)+,(a1)+                    ; load colour stored in d0
-                dbf     d0,@movecolour
+		lea     (MTZBoss_Pal).l,a0
+		lea		(v_pal1_wat+$20).w,a1
+		moveq	#$B,d0                         ; move 16 colours
+	@movecolour:
+		move.w	(a0)+,(a1)+                    ; load colour stored in d0
+		dbf     d0,@movecolour
 		moveq	#plcid_MTZBoss,d0
 		bra.w	AddPLC		; load boss patterns
 ; --------------------------------------------------------------------------
@@ -238,7 +238,9 @@ loc_6EB0:
 ; loc_6EB02:
 		cmpi.w	#$2A80,(v_screenposx).w
 		bcs.s	locret_6EE8
-		btst    #0,(v_actflags).w       ; has boss already been beaten?
+		moveq	#31,d0				; test act flag 31
+		bsr.w	GetActFlag			; has boss already been beaten?
+		tst.b	d0
 		bne.s   GHZBossBeaten             ; if so, skip boss
 ;		move.w	#$2960,(v_limitright2).w
 		move.w	#$2AB0,(v_limitright2).w
@@ -543,7 +545,9 @@ DLE_MZ3boss:
 		move.w	#$210,(v_limitbtm1).w
 		cmpi.w	#$17F0,(v_screenposx).w
 		bcs.s	locret_70E8
-		btst    #0,(v_actflags).w       ; has boss already been beaten?
+		moveq	#31,d0					; test act flag 31
+		bsr.w	GetActFlag				; has boss already been beaten?
+		tst.b	d0
 		bne.s   MZBossBeaten             ; if so, skip boss
   		move.w	#$1800,(v_limitright2).w
 		bsr.w	FindFreeObj
@@ -568,7 +572,9 @@ locret_70E8:
 
 DLE_MZ3end:
 ;		move.w	(v_screenposx).w,(v_limitleft2).w
-		btst    #0,(v_actflags).w       ; has boss already been beaten?
+		moveq	#31,d0				; test act flag 31
+		bsr.w	GetActFlag			; has boss already been beaten?
+		tst.b	d0
 		bne.s   MZBossBeaten             ; if so, skip boss
 		move.w	#$0,(v_limitleft2).w
 

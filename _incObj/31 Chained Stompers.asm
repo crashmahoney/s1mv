@@ -178,12 +178,12 @@ CStom_TypeIndex:dc.w CStom_Type00-CStom_TypeIndex
 ; ===========================================================================
 
 CStom_Type00:				; XREF: CStom_TypeIndex
-                cmpi.w  #$0A60,obX(a0)    ; is it the switch/block puzzle stomper in MZ1?
-                bne.s   @notflagged       ; if not, branch
-		btst    #0,(v_actflags).w ; is flag set?
-                beq.s   @notflagged       ; if not, branch
-                move.w	#0,$32(a0)        ; fully retract stomper
-		move.w	#0,obVelY(a0)
+;                cmpi.w  #$0A60,obX(a0)    ; is it the switch/block puzzle stomper in MZ1?
+;                bne.s   @notflagged       ; if not, branch
+;		btst    #0,(v_actflags).w ; is flag set?
+;                beq.s   @notflagged       ; if not, branch
+;                move.w	#0,$32(a0)        ; fully retract stomper
+;		move.w	#0,obVelY(a0)
 
        @notflagged:
                 lea	(f_switch).w,a2	; load switch statuses
@@ -213,7 +213,7 @@ loc_B892:
 
 loc_B8A0:
 		move.w	#0,obVelY(a0)
-		bset    #0,(v_actflags).w       ; set flag (if you add more buttons to press with a block in a single level, add code to check which one it is)
+;		bset    #0,(v_actflags).w       ; set flag (if you add more buttons to press with a block in a single level, add code to check which one it is)
 		bra.s	CStom_Restart
 ; ===========================================================================
 

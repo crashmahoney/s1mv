@@ -2675,15 +2675,10 @@ GM_Level:				; XREF: GameModeArray
 		tst.w	(f_demo).w	; is an ending sequence demo running?
 		bmi.s	Level_ClrRam	; if yes, branch
 		move	#$2700,sr
-; 		locVRAM	$B000
-; 		lea	(Nem_TitleCard).l,a0 ; load title card patterns
-; 		bsr.w	NemDec
  		tst.w	(f_dontstopmusic).w     ; +++ TESTING
 		bne.w	Level_ClrRam	        ; +++ IF YOU DON'T NEED TO RELOAD GRAPHICS, THEN DON'T >:(
 
-                writeVRAM Art_TitleCard, $1000, $B000
-
-                fillVRAM $0, $FFFF, $0
+	writeVRAM Art_TitleCard, $1000, $B000
 
 		move	#$2300,sr
 		moveq	#0,d0
@@ -2731,22 +2726,20 @@ Level_ClrRam:
 ; --------------------------------------------------------------------------
 		move	#$2700,sr
 		bsr.w	ClearScreen
-		lea	($C00004).l,a6
-		move.w	#$8B03,(a6)	; line scroll mode
-		move.w	#$8200+(vram_fg>>10),(a6) ; set foreground nametable address
-		move.w	#$8400+(vram_bg>>13),(a6) ; set background nametable address
+		lea		($C00004).l,a6
+		move.w	#$8B03,(a6)					; line scroll mode
+		move.w	#$8200+(vram_fg>>10),(a6) 	; set foreground nametable address
+		move.w	#$8400+(vram_bg>>13),(a6) 	; set background nametable address
 		move.w	#$8500+(vram_sprites>>9),(a6) ; set sprite table address
-		move.w	#$9001,(a6)		; 64-cell hscroll size
-		move.w	#$8004,(a6)		; 8-colour mode
-		move.w	#$8720,(a6)		; set background colour (line 3; colour 0)
-		move.w	#$8A00+223,(v_hbla_hreg).w ; set palette change position (for water)
+		move.w	#$9001,(a6)					; 64-cell hscroll size
+		move.w	#$8004,(a6)					; 8-colour mode
+		move.w	#$8720,(a6)					; set background colour (line 3; colour 0)
+		move.w	#$8A00+223,(v_hbla_hreg).w 	; set palette change position (for water)
 		move.w	(v_hbla_hreg).w,(a6)
-		clr.w	(v_sgfx_buffer).w              ; +++ ProcessDMAQueue crap
+		clr.w	(v_sgfx_buffer).w			; +++ ProcessDMAQueue crap
 		move.w	#v_sgfx_buffer,(v_vdp_buffer_slot).w   ; +++
 
 LoadMonitorSRAM:
-                jsr     LoadState                  ; Load act's state from SRAM
-
 		cmpi.b	#id_LZ,(v_zone).w ; is level LZ?
 		bne.s	Level_LoadPal	; if not, branch
 		move	#$2700,sr
@@ -2854,113 +2847,78 @@ Level_TtlCardLoop:
                 clr.b   (f_dontstopmusic).w    ; reset the music continue flag
 		move.b	#$C,(v_vbla_routine).w
 		bsr.w	WaitForVBla
-		jsr	ExecuteObjects
-		jsr	BuildSprites
+		jsr		ExecuteObjects
+		jsr		BuildSprites
 		bsr.w	RunPLC
 		move.w	(v_objspace+$108).w,d0
-		cmp.w	(v_objspace+$130).w,d0 ; has title card sequence finished?
-		bne.s	Level_TtlCardLoop ; if not, branch
-		tst.l	(v_plc_buffer).w ; are there any items in the pattern load cue?
-		bne.s	Level_TtlCardLoop ; if yes, branch
-		jsr	Hud_Base	; load basic HUD gfx
+		cmp.w	(v_objspace+$130).w,d0 	; has title card sequence finished?
+		bne.s	Level_TtlCardLoop 		; if not, branch
+		tst.l	(v_plc_buffer).w		; are there any items in the pattern load cue?
+		bne.s	Level_TtlCardLoop 		; if yes, branch
+		jsr		Hud_Base				; load basic HUD gfx
 
 	Level_SkipTtlCard:
 		moveq	#palid_Sonic,d0
-		bsr.w	PalLoad1	; load Sonic's palette
+		bsr.w	PalLoad1				; load Sonic's palette
 		bsr.w	LevelSizeLoad
 		bsr.w	DeformLayers
 		bset	#2,(v_bgscroll1).w
 		move.w  #$2300,sr
-		bsr.w	LoadZoneTiles	; load level art
-		bsr.w	LevelDataLoad ; load block mappings and palettes
+		bsr.w	LoadZoneTiles			; load level art
+		bsr.w	LevelDataLoad 			; load block mappings and palettes
 		bsr.w	LoadTilesFromStart
-;		jsr	FloorLog_Unk                ; unused even in the original game!!! :)
 		bsr.w	ColIndexLoad
 		move.w  #$2700,sr
 		bsr.w	LZWaterFeatures
 		move.b	#id_SonicPlayer,(v_objspace).w ; load Sonic object
 		jsr		Check_TeleportIntro
 		tst.w	(f_demo).w
-		bmi.s	Level_ChkDebug
+		bmi.s	Level_ChkWater
 		move.b	#id_HUD,(v_objspace+$40).w ; load HUD object
-
-Level_ChkDebug:         ; disabled, enter debug mode with debug menu!!!
-;                 tst.b	(f_debugcheat).w ; has debug cheat been entered?
-; 		beq.s	Level_ChkWater	; if not, branch
-;                 btst	#bitA,(v_jpadhold1).w ; is A button held?
-; 		beq.s	Level_ChkWater	; if not, branch
-; 		move.b	#1,(f_debugmode).w ; enable debug mode
 
 Level_ChkWater:
 		move.w	#0,(v_jpadhold2).w
 		move.w	#0,(v_jpadhold1).w
-		cmpi.b	#id_LZ,(v_zone).w ; is level LZ?
-		bne.s	Level_LoadObj	; if not, branch
+		cmpi.b	#id_LZ,(v_zone).w 		; is level LZ?
+		bne.s	Level_LoadObj			; if not, branch
 		move.b	#id_WaterSurface,(v_objspace+$780).w ; load water surface object
 		move.w	#$60,(v_objspace+$780+obX).w
 		move.b	#id_WaterSurface,(v_objspace+$7C0).w
 		move.w	#$120,(v_objspace+$7C0+obX).w
 
 Level_LoadObj:
-       ; put monitor x positions into an array for the monitor code to use to figure out if it's broken or not
-       ; this is super unoptimized because there are extra checks to play sfx to let you know that there's a problem with the level layout
-	        move.w	(v_zone).w,d0
-	        lsl.b	#6,d0
-	        lsr.w	#4,d0
-	        lea	(ObjPos_Index).l,a0    ; load the first pointer in the object layout list pointer index,
-	        adda.w	(a0,d0.w),a0           ; load the pointer to the current object layout
-                lea     (v_monitorlocations).w,a1
-                moveq   #23,d0                 ; 24 max monitors
-       @loop:
-                cmp.w   #$FFFF,(a0)            ; end of object list?
-                beq.w   @end
-                cmp.b   #$26,4(a0)             ; is this object a monitor?
-                bne.s   @nextobject
-                move.w  (a0),d1
-                cmp.w   (a1),d1                ; is this monitor's x position the same as the last one added to the list?
-                bne.s   @addtolist
-                sfx     sfx_Teleport           ; play a sound to signify that 2 monitors have the same x position
-       @addtolist:
-                addq.w  #2,a1
-                move.w  (a0),(a1)              ; put object's location into list
-	        addq.w	#6,a0                  ; next object
-                dbf     d0,@loop
-                sfx     sfx_SSGoal             ; play a sound to signify that there are too many monitors in this level
-                bra.s   @end
-       @nextobject:
-	        addq.w	#6,a0                  ; next object
-                bra.s   @loop
-       @end:
-		jsr	ObjPosLoad
-		jsr	ExecuteObjects
-		jsr	BuildSprites
+		jsr		CreateMonitorArray
+		jsr     LoadState				; Load act's state from SRAM
+		jsr		ObjPosLoad
+		jsr		ExecuteObjects
+		jsr		BuildSprites
 		moveq	#0,d0
-		tst.b	(v_lastlamp).w	; are you starting from	a lamppost?
-		bne.s	Level_SkipClr	; if yes, branch
-        ;       move.w	d0,(v_rings).w	; +++ clear rings (commented out, retain rings)
-	;	move.l	d0,(v_time).w	; clear time
-	;	move.b	d0,(v_lifecount).w ; clear lives counter
+		tst.b	(v_lastlamp).w			; are you starting from	a lamppost?
+		bne.s	Level_SkipClr			; if yes, branch
+	;	move.w	d0,(v_rings).w			; +++ clear rings (commented out, retain rings)
+	;	move.l	d0,(v_time).w			; clear time
+	;	move.b	d0,(v_lifecount).w 		; clear lives counter
 	;	move.b	d0,(f_timeover).w
-		move.b	d0,(v_shield).w	; clear shield
-		move.b	d0,(v_invinc).w	; clear invincibility
-		move.b	d0,(v_shoes).w	; clear speed shoes
+		move.b	d0,(v_shield).w			; clear shield
+		move.b	d0,(v_invinc).w			; clear invincibility
+		move.b	d0,(v_shoes).w			; clear speed shoes
 		move.b	d0,($FFFFFE2F).w
 
-
-	Level_SkipClr:
-                cmpi.b  #$FF,(v_lastlamp).w   ; are you transitioning between acts?
-                bne.s   @dontclearlamppost  ; if not, branch
-                clr.b   (v_lastlamp).w      ; clear lamp post
-        @dontclearlamppost:
-                cmpi.b  #$80,(v_lastlamp).w   ; are you coming back from a special stage?
-                blt.s   @notfromSS
-                subi.b  #$80,(v_lastlamp).w   ; set the last lamppost data back to normal
-        @notfromSS:
+Level_SkipClr:
+		cmpi.b  #$FF,(v_lastlamp).w   	; are you transitioning between acts?
+		bne.s   @dontclearlamppost  	; if not, branch
+		clr.b   (v_lastlamp).w      	; clear lamp post
+	@dontclearlamppost:
+		cmpi.b  #$80,(v_lastlamp).w   	; are you coming back from a special stage?
+		blt.s   @notfromSS
+		subi.b  #$80,(v_lastlamp).w   	; set the last lamppost data back to normal
+	@notfromSS:
 		move.b	d0,(f_timeover).w
 		move.w	d0,(v_debuguse).w
 		move.w	d0,(f_restart).w
 		move.w	d0,(v_framecount).w
 		bsr.w	OscillateNumInit
+		jsr		GetWorldMapCoOrds
 		move.b	#1,(f_scorecount).w ; update score counter
 		move.b	#1,(f_ringcount).w ; update rings counter
 		move.b	#1,(f_timecount).w ; update time counter
@@ -5484,7 +5442,7 @@ LevelLayoutLoad:
 		move.w	d0,d2
 		add.w	d0,d0
 		add.w	d2,d0
-		lea	(Level_Index).l,a1
+		lea		(Level_Index).l,a1
 		movea.l	(a1,d0.w),a1				; MJ: moving the address strait to a1 rather than adding a word to an address
 		move.l	a1,(v_lvllayout).w			; MJ: save location of layout to $FFFFA400
 		adda.w	#$0080,a1				; MJ: add 80 (As the BG line is always after the FG line)
@@ -5493,7 +5451,9 @@ LevelLayoutLoad:
 ; End of function LevelLayoutLoad2
 
 		include	"_inc\DynamicLevelEvents.asm"
-                include "_incObj\sub SaveState LoadState.asm"
+		include "_incObj\sub SaveState LoadState.asm"
+		include "_incObj\sub CreateMonitorArray.asm"
+		include "_incObj\sub GetActFlag SetActFlag.asm"
 
 		include	"_incObj\11 Bridge.asm"
 
@@ -8188,12 +8148,12 @@ BossDefeated:
 		move.b	(v_vbla_byte).w,d0
 		andi.b	#7,d0
 		bne.s	locret_178A2
-		jsr	FindFreeObj
+		jsr		FindFreeObj
 		bne.s	locret_178A2
 		move.b	#id_ExplosionBomb,(a1)	; load explosion object
 		move.w	obX(a0),obX(a1)
 		move.w	obY(a0),obY(a1)
-		jsr	(RandomNumber).l
+		jsr		(RandomNumber).l
 		move.w	d0,d1
 		moveq	#0,d1
 		move.b	d0,d1

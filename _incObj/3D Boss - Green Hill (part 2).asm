@@ -109,10 +109,11 @@ loc_179DA:
 
 loc_179E0:
 		clr.w	obVelY(a0)
-		music	bgm_GHZ		; play GHZ music
-		bset    #0,(v_actflags).w ; remember that boss is beaten
-	        moveq	#plcid_GHZ,d0
- 		jmp	AddPLC		; reload level patterns
+		music	bgm_GHZ				; play GHZ music
+		moveq	#31,d0				; act flag 31
+		jsr		SetActFlag			; remember boss had been beaten
+		moveq	#plcid_GHZ,d0
+ 		jmp		AddPLC				; reload level patterns
 
 
 loc_179EE:

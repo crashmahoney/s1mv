@@ -86,18 +86,18 @@ Sonic_LevelBound:			; XREF: Obj01_MdNormal; et al
 
 
 @nextact
-		clr.b	(v_lastlamp).w	; clear	lamppost counter
-		move.b  #1,(f_dontstopmusic).w     ; keep playing current song
-                jsr     SaveState                        ; Save act's state to SRAM
+		clr.b	(v_lastlamp).w					; clear	lamppost counter
+		move.b  #1,(f_dontstopmusic).w     		; keep playing current song
+		jsr     SaveState                       ; Save act's state to SRAM
 	; +++ save the position you enter the next level at
-		move.b	#$FF,(v_lastlamp).w 	; lamppost number
+		move.b	#$FF,(v_lastlamp).w 			; lamppost number
 		move.b	(v_lastlamp).w,($FFFFFE31).w
-		move.w	obX(a0),($FFFFFE32).w		; x-position
-	;	move.w	obY(a0),($FFFFFE34).w		; y-position
-		move.w	#$0001,($FFFFFE34).w		; y-position
-		move.w	(v_rings).w,($FFFFFE36).w 	; rings
+		move.w	obX(a0),($FFFFFE32).w			; x-position
+	;	move.w	obY(a0),($FFFFFE34).w			; y-position
+		move.w	#$0001,($FFFFFE34).w			; y-position
+		move.w	(v_rings).w,($FFFFFE36).w 		; rings
 		move.b	(v_lifecount).w,($FFFFFE54).w 	; lives
-		move.l	(v_time).w,($FFFFFE38).w 	; time
+		move.l	(v_time).w,($FFFFFE38).w 		; time
 		move.w	(v_screenposx).w,($FFFFFE40).w 	; screen x-position
 		move.w	(v_limitbtm1).w,(v_lamp_limitbtm).w
 		move.w	($FFFFF708).w,($FFFFFE44).w 	; bg position
@@ -107,23 +107,23 @@ Sonic_LevelBound:			; XREF: Obj01_MdNormal; et al
 		move.w	($FFFFF718).w,($FFFFFE4C).w 	; bg position
 		move.w	($FFFFF71C).w,($FFFFFE4E).w 	; bg position
 
-                move.w  (v_player+obVelX).w,(v_lamp_xspeed).w
-                move.w  (v_player+obVelY).w,(v_lamp_yspeed).w
+		move.w  (v_player+obVelX).w,(v_lamp_xspeed).w
+		move.w  (v_player+obVelY).w,(v_lamp_yspeed).w
 		move.w	(v_player+obInertia).w,(v_lamp_inertia).w
-                move.w  (v_player+obAnim).w,(v_lamp_anim).w
+		move.w  (v_player+obAnim).w,(v_lamp_anim).w
 
-                move.b  #0,(v_lamp_dir).w               ; clear dir flag
-                btst    #0,(v_player+obStatus).w         ; test which way sonic is facing
-                beq.s   @chkroll                         ; if left, branch
-                move.b  #1,(v_lamp_dir).w               ; set if facing right
+		move.b  #0,(v_lamp_dir).w               ; clear dir flag
+		btst    #0,(v_player+obStatus).w         ; test which way sonic is facing
+		beq.s   @chkroll                         ; if left, branch
+		move.b  #1,(v_lamp_dir).w               ; set if facing right
 
-         @chkroll:
-                move.b  #0,(v_lamp_roll).w               ; clear roll flag
-                btst    #2,(v_player+obStatus).w         ; test if sonic is rolling
-                beq.s   @notrolling                      ; if not, branch
-                move.b  #1,(v_lamp_roll).w               ; set roll flag
+	@chkroll:
+		move.b  #0,(v_lamp_roll).w               ; clear roll flag
+		btst    #2,(v_player+obStatus).w         ; test if sonic is rolling
+		beq.s   @notrolling                      ; if not, branch
+		move.b  #1,(v_lamp_roll).w               ; set roll flag
 
-         @notrolling:
+	@notrolling:
 
 		add.w	#1,(v_zone).w ; set level to next    +++
 		move.w	#1,(f_restart).w ; restart the level
@@ -136,7 +136,7 @@ Sonic_LevelBound:			; XREF: Obj01_MdNormal; et al
 @prevact:
 		clr.b	(v_lastlamp).w	; clear	lamppost counter
 		move.b  #1,(f_dontstopmusic).w     ; keep playing current song
-                jsr     SaveState                        ; Save act's state to SRAM
+		jsr     SaveState                        ; Save act's state to SRAM
 	; +++ save the position you enter the next level at
 		move.b	#$FF,(v_lastlamp).w 	; lamppost number
 		move.b	(v_lastlamp).w,($FFFFFE31).w

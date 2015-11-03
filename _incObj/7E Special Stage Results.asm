@@ -145,7 +145,7 @@ locret_C8EA:
 ; ===========================================================================
 
 SSR_Exit:	; Routine $A, $12
-		move.b  #1,(v_temp_teletest).w			; set teleport flag
+;		move.b  #1,(v_teleportin).w			; set teleport flag
 
 		cmpi.b	#6,(v_emeralds).w                   ; do you have all chaos emeralds?
 		bne.s	@exit	                            ; if not, branch

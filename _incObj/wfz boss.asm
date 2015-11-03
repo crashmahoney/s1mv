@@ -327,11 +327,15 @@ ObjC5_CaseDefeated:
 ; ===========================================================================
 
 ObjC5_End:	; play music and change camera speed
+	moveq	#plcid_GHZ,d0
+	jsr		NewPLC		        ; load level object patterns
+	moveq	#plcid_GHZ2,d0
+	jsr		AddPLC		        ; load level object patterns
 	moveq	#bgm_GHZ,d0
-	jsr	PlaySound
+	jsr		PlaySound
 ;	move.w	#$720,d0
 	move.w	#$0,(v_limittop1).w
-	move.w	#$800,(v_limitbtm1).w
+	move.w	#$7FF,(v_limitbtm1).w
 	bsr.w	DeleteObject
 	addq.w	#4,sp
 ObjC5_rts:

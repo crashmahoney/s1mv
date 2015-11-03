@@ -90,7 +90,7 @@ TeleBeam_Finish:																								; Routine 8
 		add.b   #1,$2D(a0)						; increase timer
 		cmpi.b  #30,$2D(a0)
 		bne.s	@chk_unlock
-		move.b  #0,(v_temp_teletest).w			; allow sonic to display
+		move.b  #0,(v_teleportin).w			; allow sonic to display
 	@chk_unlock:
 		cmpi.b  #40,$2D(a0)
 		bne.s	@rts
@@ -152,14 +152,14 @@ Art_TeleBeam:
 ; ===========================================================================
 
 Check_TeleportIntro:	
-;		tst.b   (v_temp_teletest).w				; is sonic supposed to teleport in?
-;		beq.s	@nobeam							; if not, branch
+		tst.b   (v_teleportin).w				; is sonic supposed to teleport in?
+		beq.s	@nobeam							; if not, branch
 		jsr		FindFreeObj
 		bne.s	@nobeam							; branch if no free object slots
 		move.b	#id_TeleportBeam,0(a1)			; create beam
 		move.b  #1,(f_lockctrl).w				; lock controls
-		move.b  #1,(v_temp_teletest).w			; set teleport flag
+		move.b  #1,(v_teleportin).w				; set teleport flag
 		rts							
 @nobeam:
-		move.b  #0,(v_temp_teletest).w			; clear teleport flag
+		move.b  #0,(v_teleportin).w				; clear teleport flag
 		rts

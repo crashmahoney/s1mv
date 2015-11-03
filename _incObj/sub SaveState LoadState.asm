@@ -3,38 +3,38 @@
 ; ---------------------------------------------------------------------------
 
 SaveState:
-                move    #$2700, SR                    ; interrupt mask level 7
-		moveq	#0,d1
-		moveq	#0,d3
-
-                lea     (SRAMLevelStates).l,a1
-		move.b	(v_zone).w,d3         ; get zone number
-		add.w	d3,d3
-		add.w	d3,d3
-                adda.l  d3,a1
-                movea.l (a1),a1               ; set a1 to Sram location for act 1
-
-		moveq	#0,d3
-		move.b  (v_act).w,d3          ; add act number to get final index number
-		mulu    #4,d3                 ; mutliply by number of bytes saved in each act
-                add.w   d3,d3                 ; double (cos we have to skip even bytes)
-                adda.l  d3,a1                 ; set a1 to Sram location with correct act
-
-                gotoSRAM
-                move.b  (v_brokenmonitors1).w,d1
-                move.b  d1,(a1)
-                addq.l   #2,a1
-                move.b  (v_brokenmonitors2).w,d1
-                move.b  d1,(a1)
-                addq.l   #2,a1
-                move.b  (v_brokenmonitors3).w,d1
-                move.b  d1,(a1)
-                addq.l   #2,a1
-                move.b  (v_actflags).w,d1
-                move.b  d1,(a1)
-                gotoROM
-                move    #$2300, SR                    ; interrupt mask level 3
-                rts
+;        move    #$2700, SR                    ; interrupt mask level 7
+;		moveq	#0,d1
+;		moveq	#0,d3
+;
+ ;       lea     (SRAMLevelStates).l,a1
+;		move.b	(v_zone).w,d3         ; get zone number
+;		add.w	d3,d3
+;		add.w	d3,d3
+ ;       adda.l  d3,a1
+  ;      movea.l (a1),a1               ; set a1 to Sram location for act 1
+;
+;		moveq	#0,d3
+;		move.b  (v_act).w,d3          ; add act number to get final index number
+;		mulu    #4,d3                 ; mutliply by number of bytes saved in each act
+ ;       add.w   d3,d3                 ; double (cos we have to skip even bytes)
+  ;      adda.l  d3,a1                 ; set a1 to Sram location with correct act
+;
+;    gotoSRAM
+ ;       move.b  (v_brokenmonitors1).w,d1
+  ;      move.b  d1,(a1)
+   ;     addq.l   #2,a1
+    ;    move.b  (v_brokenmonitors2).w,d1
+;        move.b  d1,(a1)
+;        addq.l   #2,a1
+;        move.b  (v_brokenmonitors3).w,d1
+;        move.b  d1,(a1)
+;        addq.l   #2,a1
+;        move.b  (v_actflags).w,d1
+;        move.b  d1,(a1)
+;    gotoROM
+;        move    #$2300, SR                    ; interrupt mask level 3
+        rts
 
 ; ===========================================================================
 
@@ -43,38 +43,38 @@ SaveState:
 ; ---------------------------------------------------------------------------
 
 LoadState:
-                move    #$2700, SR                    ; interrupt mask level 7
-		moveq	#0,d1
-		moveq	#0,d3
+;        move    #$2700, SR                    ; interrupt mask level 7
+;		moveq	#0,d1
+;		moveq	#0,d3
+;
+;        lea     (SRAMLevelStates).l,a1
+;		move.b	(v_zone).w,d3         ; get zone number
+;		add.w	d3,d3
+;		add.w	d3,d3
+;        adda.l  d3,a1
+;        movea.l (a1),a1               ; set a1 to Sram location for act 1
 
-                lea     (SRAMLevelStates).l,a1
-		move.b	(v_zone).w,d3         ; get zone number
-		add.w	d3,d3
-		add.w	d3,d3
-                adda.l  d3,a1
-                movea.l (a1),a1               ; set a1 to Sram location for act 1
+;		moveq	#0,d3
+;		move.b  (v_act).w,d3          ; add act number to get final index number
+;		mulu    #4,d3                 ; mutliply by number of bytes saved in each act
+ ;       add.w   d3,d3                 ; double (cos we have to skip even bytes)
+;        adda.l  d3,a1                 ; set a1 to Sram location with correct act
 
-		moveq	#0,d3
-		move.b  (v_act).w,d3          ; add act number to get final index number
-		mulu    #4,d3                 ; mutliply by number of bytes saved in each act
-                add.w   d3,d3                 ; double (cos we have to skip even bytes)
-                adda.l  d3,a1                 ; set a1 to Sram location with correct act
-
-                gotoSRAM
-                move.b  (a1),d1
-                move.b  d1,(v_brokenmonitors1).w
-                addq.l   #2,a1
-                move.b  (a1),d1
-                move.b  d1,(v_brokenmonitors2).w
-                addq.l   #2,a1
-                move.b  (a1),d1
-                move.b  d1,(v_brokenmonitors3).w
-                addq.l   #2,a1
-                move.b  (a1),d1
-                move.b  d1,(v_actflags).w
-                gotoROM
-                move    #$2300, SR                    ; interrupt mask level 3
-                rts
+;    gotoSRAM
+;        move.b  (a1),d1
+;        move.b  d1,(v_brokenmonitors1).w
+;        addq.l   #2,a1
+;        move.b  (a1),d1
+;        move.b  d1,(v_brokenmonitors2).w
+;        addq.l   #2,a1
+;        move.b  (a1),d1
+;        move.b  d1,(v_brokenmonitors3).w
+;        addq.l   #2,a1
+;        move.b  (a1),d1
+;        move.b  d1,(v_actflags).w
+;    gotoROM
+;        move    #$2300, SR                    ; interrupt mask level 3
+        rts
 
                 even
 SRAMLevelStates:

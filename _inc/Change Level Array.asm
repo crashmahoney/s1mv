@@ -1,6 +1,6 @@
 RightData:
            ; dontstopmusic x-pos,  yoffset   bottom   routine new level
-RightGHZ1:    dc.w $0000,  $0002,   $0160,   $07FF,    $0000,   $0200
+RightGHZ1:    dc.w $0000,  $0002,   $01A0,   $07FF,    $0000,   $0200
 RightGHZ2:    dc.w $0100,  $0002,   $0000,   $0300,    $0000,   $0002
 RightGHZ3:    dc.w $0000,  $0008,   -$0140,  $0520,    $0000,   $0200
 RightGHZ4:    dc.w $0000,  $0008,   -$0140,  $0520,    $0000,   $0200
