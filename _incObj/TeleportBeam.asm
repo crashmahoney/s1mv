@@ -35,6 +35,7 @@ TeleBeam_Main:																									; Routine 0
 
 TeleBeam_BeamDown:  																							; Routine 2
 		addq.b	#2,obRoutine(a0)
+		move.w	#120,(v_player+flashtime).w	; set temp invincible time to 2 seconds
 		jsr		FindFreeObj
 		bne.s	@next							; branch if no free object slots
 		move.b	#id_TeleportBeam,0(a1)			; create beam segment
@@ -58,12 +59,14 @@ TeleBeam_BeamDown:  																							; Routine 2
 ; ===========================================================================
 
 TeleBeam_BeamDownWait:  																						; Routine 4
+		move.w	#120,(v_player+flashtime).w	; set temp invincible time to 2 seconds
 		subq.b	#2,obRoutine(a0)
 		rts
 
 ; ===========================================================================
 
 TeleBeam_Shake:																									; Routine 6		
+		move.w	#120,(v_player+flashtime).w	; set temp invincible time to 2 seconds
 		move.w	#$54,d0							; s3k teleport sound effect
 		jsr		(PlaySound).l		
 		moveq   #0,d0
@@ -77,6 +80,7 @@ TeleBeam_Shake:																									; Routine 6
 		add.b   #1,$2C(a0)						; advance array position
 		rts
 	@next:	
+		move.w	#30,(v_player+flashtime).w		; set temp invincible time to .5 seconds
 		addq.b	#2,obRoutine(a0)
 		rts
 
@@ -86,12 +90,8 @@ TeleBeam_ShakeAmount:
 
 
 ; ===========================================================================
-TeleBeam_Finish:																								; Routine 8
+TeleBeam_Finish:					; Routine 8
 		add.b   #1,$2D(a0)						; increase timer
-		cmpi.b  #30,$2D(a0)
-		bne.s	@chk_unlock
-		move.b  #0,(v_teleportin).w			; allow sonic to display
-	@chk_unlock:
 		cmpi.b  #40,$2D(a0)
 		bne.s	@rts
 		move.b  #0,(f_lockctrl).w				; unlock controls
@@ -154,6 +154,7 @@ Art_TeleBeam:
 Check_TeleportIntro:	
 		tst.b   (v_teleportin).w				; is sonic supposed to teleport in?
 		beq.s	@nobeam							; if not, branch
+		move.w	#120,(v_player+flashtime).w		; set temp invincible time to 2 seconds
 		jsr		FindFreeObj
 		bne.s	@nobeam							; branch if no free object slots
 		move.b	#id_TeleportBeam,0(a1)			; create beam

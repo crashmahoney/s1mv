@@ -17,8 +17,6 @@ Sonic_Display:
 		bcc.s	@effects
 
 	@display:
-		tst.b   (v_teleportin).w
-		bne.s   @effects
 		jsr		(DisplaySprite).l
 		
 ; --------------------------------------------------------------------------
@@ -62,10 +60,6 @@ Sonic_Display:
 
 	@exit:
 	        rts
-
-; =========================================================================
-; Countdown effect timer, remove effect when expired
-; =========================================================================
 
 ; =========================================================================
 ; Remove invincibility effect

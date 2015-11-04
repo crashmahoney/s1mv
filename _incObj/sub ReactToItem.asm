@@ -440,7 +440,7 @@ HurtSonic:
 	@isleft:
 		move.w	#0,obInertia(a0)
 		move.b	#id_Hurt,obAnim(a0)
-		move.w	#120,$30(a0)	; set temp invincible time to 2 seconds
+		move.w	#120,flashtime(a0)	; set temp invincible time to 2 seconds
 		move.w	#sfx_Death,d0	; load normal damage sound
 		cmpi.b	#id_Spikes,(a2)	; was damage caused by spikes?
 		bne.s	@sound		; if not, branch
