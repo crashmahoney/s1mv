@@ -50,6 +50,7 @@ v_equippeditem1    = v_variables+$C
 v_equippeditem2    = v_variables+$D
 v_equippedemerald  = v_variables+$E
 
+v_activeeffects = v_variables+$F		; number of currently active effects
 ItemEffects     = v_variables+$10      	; current active effects (byte)& empty byte & time left (word), 16 slots ($40 bytes)
 ; --------------------------------------------------------------------------
 ; Inventory items and abilities

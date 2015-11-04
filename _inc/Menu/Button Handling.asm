@@ -351,6 +351,8 @@ SelectInventory:
 ; ---------------------------------------------------------------------------
 
 ApplyItemEffects:
+                cmpi.b  #16,(v_activeeffects).w ;already at max effects?
+                bhs.s   @rts            ; if so branch
                 lea     (ItemEffects).w,a3   ; current effects list
                 moveq   #0,d0
                 adda    #InvEffeOffset,a1    ; get effect time timit
@@ -363,6 +365,7 @@ ApplyItemEffects:
                 move.b  (a1)+,(a3)      ; set effect type
                 move.b  (a1)+,1(a3)     ; set effect amount
                 move.w  d0,2(a3)        ; set time limit
+                add.b   #1,(v_activeeffects).w
                 tst.b   (a1)            ; is there another effect?
                 beq.s   @breakfromloop  ; if not, exit loop
         @skip:
@@ -370,6 +373,7 @@ ApplyItemEffects:
                 dbf     d1,@effectloop  ; loop
         @breakfromloop:
                 bsr.w   SetStatEffects  ; apply effects
+        @rts:
                 rts
 ; ===========================================================================
 

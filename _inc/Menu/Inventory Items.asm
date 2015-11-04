@@ -114,6 +114,7 @@ Inv_Invincibility:
                 jsr     SetStatEffects  ; apply effects
         @breakfromloop:
 ; apply invincibility effects
+        add.b   #1,(v_activeeffects).w
  		move.b	#1,(v_invinc).w	         ; make Sonic invincible
 		move.b	#id_InvincibilityStars,(v_objspace+$200).w ; load stars object ($3801)
 		tst.b	(f_lockscreen).w          ; is boss mode on?

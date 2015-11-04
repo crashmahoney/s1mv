@@ -23,15 +23,23 @@ Sonic_Display:
 		
 ; --------------------------------------------------------------------------
 @effects:
-		lea     (ItemEffects).w,a2   ; get the list of current effects
-		moveq   #15,d1          ; loop through 16 items
+		lea     (v_activeeffects).w,a2   	; get the number of current effects
+		moveq   #0,d1
+		move.b	(a2)+,d1
+		bra.s	@nextslot          		; if there are no effects, this will fall through
 	@effectloop:
-		tst.b   (a2)            ; is there an active effect in this slot?
-		bne.s   @activeeffect   ; if so, branch
+		tst.l   (a2)+            		; is there an active effect in this slot?
+		beq.s   @effectloop   			; if not, branch
+		subq.w  #1,-2(a2)       		; sub 1 from time left
+		bne.s   @nextslot       		; if time left is not 0, branch
+		cmpi.b  #eInvincibility,-4(a2) 	; is effect invincibility?
+		beq.s   @chkinvincible  		; if so branch
+	@returninvinc:
+		clr.l  	-4(a2)         			; clear effect
+		sub.b	#1,(v_activeeffects).w	; sub 1 from active effect count
+		jsr     SetStatEffects  		; update stats
 	@nextslot:
-		addq.w  #4,a2           ; go to next slot
-		dbf     d1,@effectloop  ; loop
-
+		dbf     d1,@effectloop  		; loop
 
 ; --------------------------------------------------------------------------
 	@chkshoes:
@@ -58,17 +66,7 @@ Sonic_Display:
 ; =========================================================================
 ; Countdown effect timer, remove effect when expired
 ; =========================================================================
-           @activeeffect:
-                subq.w  #1,2(a2)        ; sub 1 from time left
-                bne.s   @nextslot       ; if time left is not 0, branch
-                cmpi.b  #eInvincibility,(a2) ; is effect invincibility?
-                beq.s   @chkinvincible  ; if so branch
-           @returninvinc:
-                move.b  #0,(a2)         ; clear effect type
-                move.b  #0,1(a2)        ; clear effect amount
-                move.w  #0,2(a2)        ; clear effect time
-                jsr     SetStatEffects  ; update stats
-                bra.s   @nextslot
+
 ; =========================================================================
 ; Remove invincibility effect
 ; =========================================================================
@@ -79,32 +77,9 @@ Sonic_Display:
 		bcs.s	@removeinvincible
 		moveq	#0,d0
 		move.b	(v_zone).w,d0
-
-                cmpi.b	#$0,(v_act).w	; is this act 1?
-		bne.s	@GetBgm2	; if not, branch
-		lea	(MusicList1).l,a1	; load Music Playlist for Acts 1
-		bra.s	@PlayMusic	; go to PlayMusic
- 
-         @GetBgm2:
-		cmpi.b	#$1,(v_act).w	; is this act 2?
-		bne.s	@GetBgm3	; if not, branch
-		lea	(MusicList2).l,a1	; load Music Playlist for Acts 2
-		bra.s	@PlayMusic	; go to PlayMusic
- 
-         @GetBgm3:
-		cmpi.b	#$2,(v_act).w	; is this act 3?
-		bne.s	@GetBgm4	; if not, branch
-		lea	(MusicList3).l,a1	; load Music Playlist for Acts 3
-		bra.s	@PlayMusic	; go to PlayMusic
- 
-         @GetBgm4:
-		cmpi.b	#$3,(v_act).w	; is this act 4?
-		bne.s	@PlayMusic	; if not, branch
-		lea	(MusicList4).l,a1	; load Music Playlist for Acts 4
- 
-         @PlayMusic:
+		lea		(MusicList1).l,a1	; load Music Playlist for Acts 1
 		move.b	(a1,d0.w),d0
-		jsr	(PlaySound).l	; play normal music
+		jsr		(PlaySound).l	; play normal music
 
 	@removeinvincible:
 		move.b	#0,(v_invinc).w ; cancel invincibility
