@@ -30,7 +30,7 @@ Sonic_Move:				; XREF: Obj01_MdNormal
 		tst.w	obInertia(a0)	; is Sonic moving?
 		bne.w	Sonic_ResetScr	; if yes, branch
 		bclr	#5,obStatus(a0)
-		move.b	#id_Wait,obAnim(a0) ; use "standing" animation
+		move.b	#id_Wait2,obAnim(a0) ; use "standing" animation
 		btst	#3,obStatus(a0)
 		beq.w	Sonic_Balance
 		moveq	#0,d0

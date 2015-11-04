@@ -236,6 +236,12 @@ ptr_MS_Flip12:	dc.w MS_Flip12-Map_Sonic
 
 ptr_MS_Hang3:	dc.w MS_Hang3-Map_Sonic
 ptr_MS_Hang4:	dc.w MS_Hang4-Map_Sonic
+
+ptr_MS_Wait21:	dc.w MS_Wait21-Map_Sonic
+ptr_MS_Wait22:	dc.w MS_Wait22-Map_Sonic
+ptr_MS_Wait23:	dc.w MS_Wait23-Map_Sonic
+ptr_MS_Wait24:	dc.w MS_Wait24-Map_Sonic
+ptr_MS_Wait25:	dc.w MS_Wait25-Map_Sonic
 ; --------------------------------------------------------------------------
 
 MS_Null:	dc.b 0
@@ -1195,6 +1201,22 @@ MS_Hang4: dc.b  $3
 	dc.b  $E0, $3, $0, $8, $0
 	dc.b  $0, $9, $0, $C, $0
 
+MS_Wait21: dc.b  $2
+	dc.b  $EC, $B, $0, $0, $F0
+	dc.b  $C, $9, $0, $C, $F8
+MS_Wait22: dc.b  $3
+	dc.b  $EC, $3, $0, $0, $F0
+	dc.b  $EC, $7, $0, $4, $F8
+	dc.b  $C, $9, $0, $C, $F8
+MS_Wait23: dc.b  $2
+	dc.b  $F4, $B, $0, $0, $F0
+	dc.b  $4, $1, $0, $C, $8
+MS_Wait24: dc.b  $2
+	dc.b  $F4, $B, $0, $0, $E8
+	dc.b  $4, $5, $0, $C, $0
+MS_Wait25: dc.b  $2
+	dc.b  $F4, $B, $0, $0, $E8
+	dc.b  $4, $5, $0, $C, $0
 		even
 
 fr_Null:	equ (ptr_MS_Null-Map_Sonic)/2		; 0
@@ -1432,3 +1454,9 @@ fr_Flip12:	equ (ptr_MS_Flip12-Map_Sonic)/2
 
 fr_Hang3:	equ (ptr_MS_Hang3-Map_Sonic)/2
 fr_Hang4:	equ (ptr_MS_Hang4-Map_Sonic)/2
+
+fr_Wait21:	equ (ptr_MS_Wait21-Map_Sonic)/2		
+fr_Wait22:	equ (ptr_MS_Wait22-Map_Sonic)/2		
+fr_Wait23:	equ (ptr_MS_Wait23-Map_Sonic)/2
+fr_Wait24:	equ (ptr_MS_Wait24-Map_Sonic)/2
+fr_Wait25:	equ (ptr_MS_Wait25-Map_Sonic)/2

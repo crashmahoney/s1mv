@@ -235,6 +235,12 @@ SonicDynPLC:	dc.w SonPLC_Null-SonicDynPLC
 		dc.w SonPLC_Hang3-SonicDynPLC
 		dc.w SonPLC_Hang4-SonicDynPLC
 
+		dc.w SonPLC_Wait21-SonicDynPLC
+		dc.w SonPLC_Wait22-SonicDynPLC
+		dc.w SonPLC_Wait23-SonicDynPLC
+		dc.w SonPLC_Wait24-SonicDynPLC
+		dc.w SonPLC_Wait25-SonicDynPLC
+
 SonPLC_Null:	dc.b 0
 SonPLC_Stand:	dc.b 4,	$20, 0,	$70, 3,	$20, $B, $20, $E
 SonPLC_Wait1:	dc.b 3,	$50, $11, $50, $17, $20, $1D
@@ -507,6 +513,23 @@ SonPLC_Hang4: dc.b  $3
 	DynPLC  $8, $12, Art_SonicHang-Art_Sonic
 	DynPLC  $4, $8, Art_SonicHang-Art_Sonic
 	DynPLC  $6, $1A, Art_SonicHang-Art_Sonic
+
+SonPLC_Wait21: dc.b  $2
+	DynPLC  $C, $0, Art_SonicIdle-Art_Sonic
+	DynPLC  $6, $C, Art_SonicIdle-Art_Sonic
+SonPLC_Wait22: dc.b  $3
+	DynPLC  $4, $12, Art_SonicIdle-Art_Sonic
+	DynPLC  $8, $1C, Art_SonicIdle-Art_Sonic
+	DynPLC  $6, $16, Art_SonicIdle-Art_Sonic
+SonPLC_Wait23: dc.b  $2
+	DynPLC  $C, $24, Art_SonicIdle-Art_Sonic
+	DynPLC  $10, $30, Art_SonicIdle-Art_Sonic ; needs 1 more tile??
+SonPLC_Wait24: dc.b  $2
+	DynPLC  $C, $32, Art_SonicIdle-Art_Sonic
+	DynPLC  $4, $3E, Art_SonicIdle-Art_Sonic
+SonPLC_Wait25: dc.b  $2
+	DynPLC  $C, $32, Art_SonicIdle-Art_Sonic
+	DynPLC  $4, $42, Art_SonicIdle-Art_Sonic
 
 ; ===========================================================================
 

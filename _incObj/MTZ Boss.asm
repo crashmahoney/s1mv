@@ -510,7 +510,7 @@ MTZ_Boss_10_Defeated:
 	cmpi.w	#$3C,(unk_F75C).w
 	blo.s	loc_32846
 	bmi.s	loc_32820
-	bsr.w	BossDefeated
+	jsr		BossDefeated
 	lea		(Boss_AnimationArray).w,a1
 	move.b	#7,2(a1)
 	bra.s	loc_32846

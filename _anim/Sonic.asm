@@ -50,6 +50,7 @@ ptr_SupBalance: dc.w Sonani_SupBalance-Ani_Sonic
 ptr_BalanceBack:	dc.w SonAni_BalanceBack-Ani_Sonic
 ptr_BalanceFar:	dc.w SonAni_BalanceFar-Ani_Sonic
 ptr_Hang3:	dc.w SonAni_Hang3-Ani_Sonic
+ptr_Wait2:	dc.w SonAni_Wait2-Ani_Sonic
 
 
 SonAni_Walk:	dc.b $FF, fr_walk13, fr_walk14,	fr_walk15, fr_walk16, fr_walk11, fr_walk12, afEnd, afEnd, afEnd
@@ -64,6 +65,26 @@ SonAni_Push:	dc.b $FD,  fr_push1,  fr_push2,  fr_push3,  fr_push4,     afEnd,   
 		even
 SonAni_Wait:	dc.b $17, fr_stand, fr_stand, fr_stand, fr_stand, fr_stand, fr_stand, fr_stand, fr_stand, fr_stand
 		dc.b fr_stand, fr_stand, fr_stand, fr_wait2, fr_wait1, fr_wait1, fr_wait1, fr_wait2, fr_wait3, afBack, 2
+		even
+SonAni_Wait2:	dc.b $5			; speed
+		dc.b fr_stand, fr_stand, fr_stand, fr_stand, fr_stand, fr_stand, fr_stand, fr_stand, fr_stand, fr_stand     ; stand still
+		dc.b fr_stand, fr_stand, fr_stand, fr_stand, fr_stand, fr_stand, fr_stand, fr_stand, fr_stand, fr_stand		; stand still
+		dc.b fr_stand, fr_stand, fr_stand, fr_stand, fr_stand, fr_stand, fr_stand, fr_stand, fr_stand, fr_stand		; stand still
+		dc.b fr_wait21,fr_wait1, fr_wait1, fr_wait1, fr_wait1, fr_wait1												; turn + bulge eyes
+		dc.b fr_wait2, fr_wait2, fr_wait2, fr_wait3, fr_wait3, fr_wait3, fr_wait3									; tap
+		dc.b fr_wait2, fr_wait2, fr_wait2, fr_wait3, fr_wait3, fr_wait3, fr_wait3									; tap
+		dc.b fr_wait2, fr_wait2, fr_wait2, fr_wait3, fr_wait3, fr_wait3, fr_wait3									; tap
+		dc.b fr_wait22,fr_wait22,fr_wait22,fr_wait22,fr_wait22,fr_wait22,fr_wait22,fr_wait22,fr_wait22,fr_wait22	; look at watch
+		dc.b fr_wait2, fr_wait2, fr_wait2, fr_wait3, fr_wait3, fr_wait3, fr_wait3									; tap
+		dc.b fr_wait2, fr_wait2, fr_wait2, fr_wait3, fr_wait3, fr_wait3, fr_wait3									; tap
+		dc.b fr_wait2, fr_wait2, fr_wait2, fr_wait3, fr_wait3, fr_wait3, fr_wait3									; tap
+		dc.b fr_wait22,fr_wait22,fr_wait22,fr_wait22,fr_wait22,fr_wait22,fr_wait22,fr_wait22,fr_wait22,fr_wait22	; look at watch
+		dc.b fr_wait2, fr_wait2, fr_wait2, fr_wait3, fr_wait3, fr_wait3, fr_wait3									; tap
+		dc.b fr_wait2, fr_wait2, fr_wait2, fr_wait3, fr_wait3, fr_wait3, fr_wait3									; tap
+		dc.b fr_wait2, fr_wait2, fr_wait2, fr_wait3, fr_wait3, fr_wait3, fr_wait3									; tap
+		dc.b fr_wait22,fr_wait22,fr_wait22,fr_wait22,fr_wait22,fr_wait22,fr_wait22,fr_wait22,fr_wait22,fr_wait21	; look at watch
+		dc.b fr_wait23,fr_wait24,fr_wait24,fr_wait24,fr_wait25,fr_wait25,fr_wait25									; sit down
+		dc.b afBack, 6			; loop last 6 frames
 		even
 SonAni_Balance:	dc.b $1F, fr_balance1, fr_balance2, afEnd
 		even
@@ -194,6 +215,7 @@ id_SupBalance:	equ (ptr_SupBalance-Ani_Sonic)/2; $29
 id_BalanceBack:	equ (ptr_BalanceBack-Ani_Sonic)/2;$2A
 id_BalanceFar:	equ (ptr_BalanceFar-Ani_Sonic)/2 ;$2B
 id_Hang3:		equ (ptr_Hang3-Ani_Sonic)/2 ;$2C
+id_Wait2:	equ (ptr_Wait2-Ani_Sonic)/2	; 2D
 ; ===========================================================================
 ; Super Sonic Animation Set
 ; ===========================================================================
@@ -247,3 +269,4 @@ Ani_SuperSonic:
 	dc.w Sonani_SupBalance-Ani_Sonic
         dc.w Sonani_SupBalance-Ani_Sonic
 	dc.w SonAni_Hang3-Ani_Sonic
+	dc.w SonAni_SupStand-Ani_SuperSonic

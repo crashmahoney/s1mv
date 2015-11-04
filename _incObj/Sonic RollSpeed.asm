@@ -56,7 +56,7 @@ loc_131AA:
 		bclr	#2,obStatus(a0)
 		move.b	#$13,obWidth(a0)
 		move.b	#9,obHeight(a0)
-		move.b	#id_Wait,obAnim(a0) ; use "standing" animation
+		move.b	#id_Wait2,obAnim(a0) ; use "standing" animation
 		subq.w	#5,obY(a0)
 
 loc_131CC:      

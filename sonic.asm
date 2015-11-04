@@ -9209,6 +9209,8 @@ Art_SonicFlip:	incbin	"artunc\Sonic Flip.bin"	; Sonic
 		even
 Art_SonicHang:	incbin	"artunc\Sonic Hanging.bin"	; Sonic
 		even
+Art_SonicIdle:	incbin	"artunc\Sonic Extra Idle Frames.bin"	; Sonic
+		even
 
 Art_InstaShield:incbin  "artunc\Instashield.bin"
                 even

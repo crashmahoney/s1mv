@@ -88,7 +88,7 @@ loc_1636C:
 		move.b	#0,obAnim(a0)
 
 loc_16378:
-		bsr.w	LCon_ChangeDir
+		jsr		LCon_ChangeDir
 		bra.w	loc_163D8
 ; ===========================================================================
 
