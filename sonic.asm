@@ -2537,6 +2537,14 @@ PlayLevel:
 		move.b	d0,(v_continues).w ; clear continues
 		move.b  #1,(v_abil_none).w ; give the "no ability" ability
 		move.b  #1,(v_shoe_default).w ; give default shoes
+		move.b  #aNoAbility,(v_a_ability).w
+		move.b  #aNoAbility,(v_b_ability).w
+		move.b  #aNoAbility,(v_c_ability).w
+		move.b  #sDefault,(v_equippedshoes).w
+		move.b  #iNoItem,(v_equippeditem1).w
+		move.b  #iNoItem,(v_equippeditem2).w
+		move.b  #eDefault,(v_equippedemerald).w
+
 		move.b  #1,(f_debugcheat).w ; TESTING, enable debug mode, remove this line for release!!!
 
                 move    #$2700, SR                    ; interrupt mask level 7

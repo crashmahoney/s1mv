@@ -1,50 +1,11 @@
-EquipItemsList:                        ; keep this list in the order that items will be displayed
+EquipItemsList:          ; keep this list in the order that items will be displayed
                 dc.l  Inv_Null
 ptr_noitem:     dc.l  Item_NoItem
 ptr_goggles:    dc.l  Item_Goggles
 ptr_itemsaver:  dc.l  Item_ItemSaver
 ptr_spdbracelet:dc.l  Item_SpeedBracelet
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
+
+EquipItemsList_End:
 
 ;========================================================================================================================
 ; ---------------------------------------------------------------------------

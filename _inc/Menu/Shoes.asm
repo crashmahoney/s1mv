@@ -4,44 +4,8 @@ ptr_default:    dc.l  Shoe_Sonic
 ptr_runners:    dc.l  Shoe_Runners
 ptr_springsh:   dc.l  Shoe_Spring
 ptr_spikeproof: dc.l  Shoe_Spikeproof
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
+
+EquipShoesList_End:
 
 ;========================================================================================================================
 ; ---------------------------------------------------------------------------

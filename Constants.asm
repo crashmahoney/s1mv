@@ -349,13 +349,14 @@ eJumpHeight     equ $4
 
 ; Abilities
 aNoAbility      equ ((ptr_noability-EquipAbilitiesList)/4)
+aDoubleJump2    equ ((ptr_djump2-EquipAbilitiesList)/4)
 aDoubleJump1    equ ((ptr_djump1-EquipAbilitiesList)/4)
 aJumpDash       equ ((ptr_jdash-EquipAbilitiesList)/4)
 aHoming         equ ((ptr_homing-EquipAbilitiesList)/4)
-aDoubleJump2    equ ((ptr_djump2-EquipAbilitiesList)/4)
 aLightDash      equ ((ptr_ldash-EquipAbilitiesList)/4)
-aDownAttack     equ ((ptr_dattack-EquipAbilitiesList)/4)
 aInstaShield    equ ((ptr_insta-EquipAbilitiesList)/4)
+aDownAttack     equ ((ptr_dattack-EquipAbilitiesList)/4)
+
 
 ; Inventory items
 ; shoes

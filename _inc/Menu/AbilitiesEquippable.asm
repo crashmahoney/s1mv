@@ -1,4 +1,4 @@
-EquipAbilitiesList:                        ; keep this list in the order that items will be displayed
+EquipAbilitiesList:      ; keep this list in the order that items will be displayed
                 dc.l  Inv_Null
 ptr_noability:  dc.l  Ability_NoAbility
 ptr_djump2:     dc.l  Ability_DoubleJumpLv2
@@ -8,43 +8,8 @@ ptr_homing:     dc.l  Ability_Homing
 ptr_ldash:      dc.l  Ability_LightDash
 ptr_insta:      dc.l  Ability_InstaShield
 ptr_dattack:    dc.l  Ability_DownAttack
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
-                dc.l  Inv_Null
+
+EquipAbilitiesList_End:
 
 ;========================================================================================================================
 ; ---------------------------------------------------------------------------

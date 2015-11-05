@@ -346,67 +346,6 @@ Description_Text_Positions:   ; I think these numbers are how many 8x8 tiles bef
                 dc.w    $0870          ; line5                        $0005               $0001
                 dc.w    $0898          ; line6                        $0006               $0000
                 even
-
-;========================================================================================================================
-; Map Screen
-;========================================================================================================================
-Map_Text
-                dc.b    $0E, "MAP GOES HERE. "
-Map_Positions:   ; I think these numbers are how many 8x8 tiles before drawing each option
-                dc.w    $03D8
-
-
-____  = $00    ;         blank tile
-
-
-_tlc = $80     ;         top left closed
-_tlo = $83     ;         top left, top open
-_tl0 = $86     ;         top left, side open
-
-_toc = $81     ;         top closed
-_too = $84     ;         top open
-
-_trc = $82     ;         top right closed
-_tro = $85     ;         top right, top open
-_tr0 = $87     ;         top right, side open
-
-_lec = $78     ;  |      left closed
-_leo = $7B     ;  :      left open
-
-_cen = $79     ;         centre tile
-
-_ric = $7A     ;    |    right closed
-_rio = $7D     ;    :    right open
-
-_blc = $70     ;  |_     bottom left closed
-_blo = $73     ;  |_ _   bottom left, bottom open
-_bl0 = $7E     ;  :_     bottom left, side open
-
-_boc = $71     ;  _      bottom closed
-_boo = $74     ;  _ _    bottom open
-
-_brc = $72     ;  _|     bottom right closed
-_bro = $75     ;  _ _|   bottom right, bottom open
-_br0 = $7F     ;  _:     bottom right, side open
-
-_ver = $76     ; []      vertical open
-_hor = $77     ; =       horizontal open
-
-GHZ1_Description:
-                dc.b    $06, _tlc, _toc, _toc, _toc, _toc, _toc, _trc
-                dc.b    $06, _bl0, _boc, _boo, _boc, _boc, _boc, _brc
-GHZ2_Description:
-                dc.b    $06, _tlc, _toc, _too, _toc, _toc, _toc, _tr0
-                dc.b    $06, _blc, _boc, _boc, _boc, _boc, _boc, _brc
-GHZ3_Description:
-                dc.b    $08, _tl0, _toc, _toc, _toc, _toc, _toc, _toc, _toc, _trc
-                dc.b    $08, _blc, _boc, _boc, _boc, _boc, _boc, _brc, ____, ____
-MZ1_Description:
-                dc.b    $05, _bl0, _boc, _too, _toc, _boc, _br0
-                dc.b    $05, ____, ____, _leo, _ric, ____, ____
-                dc.b    $05, ____, ____, _blo, _brc, ____, ____
-
-                even
 ; ===========================================================================
 Tab_Descriptions:
                 dc.w    UseItem_Description-Tab_Descriptions

@@ -28,12 +28,12 @@ v_homingattackobj = v_objspace+$300
 v_lvlobjspace:	= $FFFFD800		; level object variable space ($1800 bytes)
 
 v_lvllayout:	= $FFFFF000		; layout is read from rom now, this contains pointers to the location of level layouts on ROM now 			; level and background layouts ($400 bytes)
-v_screenposy_last   = $FFFFF050   	; S3K Object manager
-v_screenposx_coarse = $FFFFF054   	;         ''
-v_screenposy_coarse = $FFFFF058   	;         ''
-v_objstate:	= $FFFFF060		; object state list ($300 bytes)
+v_screenposy_last   = $FFFFF060   	; S3K Object manager
+v_screenposx_coarse = $FFFFF064   	;         ''
+v_screenposy_coarse = $FFFFF068   	;         ''
+v_objstate:	= $FFFFF070		; object state list ($300 bytes)
 
-v_variables        = $FFFFF360
+v_variables        = $FFFFF370
 v_statspeed        = v_variables+$0     ;  speed stat
 v_stataccel        = v_variables+$1     ;  acceleration stat
 v_statjump         = v_variables+$2     ;  jump stat
@@ -54,7 +54,7 @@ v_activeeffects = v_variables+$F		; number of currently active effects
 ItemEffects     = v_variables+$10      	; current active effects (byte)& empty byte & time left (word), 16 slots ($40 bytes)
 ; --------------------------------------------------------------------------
 ; Inventory items and abilities
-v_inventory     = v_variables+$50
+v_inventory     = v_variables+$40
 
 v_inv_items     = v_inventory+$0
 v_inv_shield    = v_inv_items+$0                                      
@@ -78,12 +78,12 @@ v_item_itemsaver = v_item_items+$1
 v_item_speedbracelet = v_item_items+$2
 
 v_abil_items    = v_inventory+$60
-v_abil_spindash = v_abil_items+$0
-v_abil_jumpdash = v_abil_items+$1
-v_abil_homing   = v_abil_items+$2
-v_abil_doublejump1 = v_abil_items+$3
-v_abil_doublejump2 = v_abil_items+$4
-v_abil_none     = v_abil_items+$5
+v_abil_none     = v_abil_items+$0
+v_abil_spindash = v_abil_items+$1
+v_abil_jumpdash = v_abil_items+$2
+v_abil_homing   = v_abil_items+$3
+v_abil_doublejump1 = v_abil_items+$4
+v_abil_doublejump2 = v_abil_items+$5
 v_abil_lightdash = v_abil_items+$6
 v_abil_down     = v_abil_items+$7
 v_abil_peelout  = v_abil_items+$8
@@ -412,7 +412,6 @@ FirstDrawnItem  = $FFFF1FFD     	; when inventory scrolls, which number in inv a
 NumberOfItems   = $FFFF1FFE     	; total number of items currently held in the inventory (2 bytes)
 CurrentInventoryArray  = $FFFF2000 	; all inventory items to draw (?? bytes)
 
-v_mappointerobj	= $FFFFD400			; $40 bytes, 'you are here' object on map screen
 
 v_menu_fgX		= $FFFF3000
 v_menu_bgX		= $FFFF3002
@@ -420,4 +419,6 @@ v_menu_fgY		= $FFFF3004
 v_menu_bgY		= $FFFF3006
 
 v_mapbuffer =   $FFFF3010			; map screen graphics are buffered here before sending to VRAM
+
+v_mappointerobj	= $FFFFD400			; $40 bytes, 'you are here' object on map screen
 
