@@ -1112,7 +1112,8 @@ ProcessDMAQueue:
 	move.w	d0,(a5)
 	move.l	(a1)+,(a5)
 	move.l	(a1)+,(a5)
-	move.l	(a1)+,(a5)
+	move.w	(a1)+,(a5)
+	move.w	(a1)+,(a5)
 	endr
 	moveq	#0,d0
 
