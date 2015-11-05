@@ -2,7 +2,7 @@ Sonic 1 SVN INIs/dllcache
 Sonic 1 SVN INIs/SonLVL.log
 errors.txt
 s1built.bin
-"Z80 Sound Driver.h"
+SMPS flamewing/Z80 Sound Driver.h
 *.h
 *.lst
 *.p
