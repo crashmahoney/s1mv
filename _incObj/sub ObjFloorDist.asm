@@ -20,6 +20,7 @@ ObjFloorDist:
 
 ObjFloorDist2:                                                  
 		move.w	obY(a0),d2
+ObjFloorDist3:		
 		moveq	#0,d0
 		move.b	obWidth(a0),d0
 		ext.w	d0

@@ -7173,6 +7173,7 @@ locret_ED1A:				; XREF: Obj0D_Index
 		include	"_incObj\Island.asm"
 		include	"_incObj\HangPoint.asm"
 		include	"_incObj\Spring Pole.asm"
+		include	"_incObj\Splats.asm"
 
 
 		
