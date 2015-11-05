@@ -213,9 +213,10 @@ Sonic_LevelBound:			; XREF: Obj01_MdNormal; et al
 		move.b  (a3),(f_dontstopmusic).w        ; load graphics/change music?
                 adda    #2,a3                           ; advance data location
 		move.w	(a3)+,($FFFFFE32).w		; x-position
-		move.w	obY(a0),($FFFFFE34).w		; y-position
-		move.w	(a3)+,d1         		; put y offset in d1
-		add.w   d1,($FFFFFE34).w                ; add offset to y position
+		move.w	obY(a0),d1
+		add.w	(a3)+,d1         		; put y offset in d1
+		andi.w	#$FFF,d1
+		move.w	d1,($FFFFFE34).w                ; add offset to y position
 		move.w	(a3)+,(v_lamp_limitbtm).w       ; screen bottom limit
 		move.b	(a3),($FFFFFE3C).w              ; routine counter for dynamic level mod
                 adda    #2,a3                           ; advance data location
