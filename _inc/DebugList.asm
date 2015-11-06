@@ -22,85 +22,100 @@ dbug:	macro map,object,subtype,frame,vram
 @GHZ:
 	dc.w (@GHZend-@GHZ-2)/8
 
-;		mappings	object		subtype	frame	VRAM setting
-	dbug 	Map_Ring,	id_Rings,	0,	0,	$27B2
-	dbug	Map_Monitor,	id_Monitor,	0,	0,	$680
-	dbug	Map_Crab,	id_Crabmeat,	0,	0,	$400
-	dbug	Map_Turtroll,	id_Turtroll,	0,	0,	$400
-	dbug	Map_Buzz,	id_BuzzBomber,	0,	0,	$444
-	dbug	Map_Chop,	id_Chopper,	0,	0,	$47B
-	dbug	Map_Spike,	id_Spikes,	0,	0,	$51B
-	dbug	Map_Plat_GHZ,	id_BasicPlatform, 0,	0,	$4000
-	dbug	Map_PRock,	id_PurpleRock,	0,	0,	$63D0
-	dbug	Map_Moto,	id_MotoBug,	0,	0,	$4F0
-	dbug	Map_Spring,	id_Springs,	0,	0,	$523
-	dbug	Map_Newt,	id_Newtron,	0,	0,	$249B
-	dbug	Map_Edge,	id_EdgeWalls,	0,	0,	$434C
-	dbug	Map_GBall,	id_Obj19,	0,	0,	$43AA
-	dbug	Map_Lamp,	id_Lamppost,	1,	0,	$7A0
-	dbug	Map_GRing,	id_GiantRing,	0,	0,	$2400
-	dbug	Map_Bonus,	id_HiddenBonus,	1,	1,	$84B6
-	dbug	Map_PRock,	id_PushBlock,	0,	0,	$63D0
+;		mappings	object			subtype	frame	VRAM setting
+	dbug 	Map_Ring,	id_Rings,		0,	0,	$27B2
+	dbug	Map_Monitor,	id_Monitor,		0,	0,	$680
+;	dbug	Map_Crab,	id_Crabmeat,		0,	0,	$400
+	dbug	Map_Turtroll,	id_Turtroll,		0,	0,	VRAMloc_Turtroll/$20
+	dbug	Map_Splats,	id_Splats,		0,	0,	(VRAMloc_Splats/$20)+$2000
+	dbug	Map_Buzz,	id_BuzzBomber,		0,	0,	VRAMloc_Buzz/$20
+	dbug	Map_Chop,	id_Chopper,		0,	0,	VRAMloc_Chopper/$20
+	dbug	Map_Spike,	id_Spikes,		0,	0,	$51B
+	dbug	Map_Plat_GHZ,	id_BasicPlatform, 	0,	0,	(VRAMloc_GHZplatform/$20)+$4000
+	dbug	Map_PRock,	id_PurpleRock,		0,	0,	(VRAMloc_PplRock/$20)+$4000
+	dbug	Map_PRock,	id_PushBlock,		0,	0,	(VRAMloc_PplRock/$20)+$4000
+	dbug	Map_Moto,	id_MotoBug,		0,	0,	(VRAMloc_Motobug/$20)+$2000
+	dbug	Map_Spring,	id_Springs,		0,	0,	VRAMloc_HSpring/$20
+	dbug	Map_Spring,	id_Springs,		$10,	3,	VRAMloc_VSpring/$20
+	dbug	Map_Spring,	id_Springs,		$20,	0,	VRAMloc_HSpring/$20
+	dbug	Map_Spring,	id_Springs,		$30,	6,	VRAMloc_DSpring/$20
+	dbug	Map_Spring,	id_Springs,		$40,	6,	VRAMloc_DSpring/$20
+	dbug	Map_Newt,	id_Newtron,		0,	0,	(VRAMloc_Newtron/$20)+$2000
+	dbug	Map_Springboard,id_Springboard,		0,	0,	VRAMloc_Springboard/$20	
+	dbug	Map_Springpole,	id_Springpole,		0,	0,	(VRAMloc_SpringPole/$20)+$2000	
+	dbug	Map_Edge,	id_EdgeWalls,		0,	0,	$4000
+	dbug	Map_GBall,	id_Obj19,		0,	0,	$43AA
+	dbug	Map_Lamp,	id_Lamppost,		1,	0,	$D800/$20
+	dbug	Map_GRing,	id_GiantRing,		0,	0,	$2580
         @GHZend:
 
 @LZ:
 	dc.w (@LZend-@LZ-2)/8
 
-;		mappings	object		subtype	frame	VRAM setting
-	dbug	Map_Ring,	id_Rings,	0,	0,	$27B2
-	dbug	Map_Monitor,	id_Monitor,	0,	0,	$680
-	dbug	Map_Spring,	id_Springs,	0,	0,	$523
-	dbug	Map_Jaws,	id_Jaws,	8,	0,	$2486
-	dbug	Map_Burro,	id_Burrobot,	0,	2,	$84A6
-	dbug	Map_Harp,	id_Harpoon,	0,	0,	$3CC
-	dbug	Map_Harp,	id_Harpoon,	2,	3,	$3CC
-	dbug	Map_Push,	id_PushBlock,	0,	0,	$43DE
-	dbug	Map_But,	id_Button,	0,	0,	$513
-	dbug	Map_Spike,	id_Spikes,	0,	0,	$51B
-	dbug	Map_MBlockLZ,	id_MovingBlock,	4,	0,	$43BC
-	dbug	Map_LBlock,	id_LabyrinthBlock, 1,	0,	$43E6
-	dbug	Map_LBlock,	id_LabyrinthBlock, $13,	1,	$43E6
-	dbug	Map_LBlock,	id_LabyrinthBlock, 5,	0,	$43E6
-	dbug	Map_Gar,	id_Gargoyle,	0,	0,	$443E
-	dbug	Map_LBlock,	id_LabyrinthBlock, $27,	2,	$43E6
-	dbug	Map_LBlock,	id_LabyrinthBlock, $30,	3,	$43E6
-	dbug	Map_LConv,	id_LabyrinthConvey, $7F, 0,	$3F6
-	dbug	Map_Orb,	id_Orbinaut,	0,	0,	$467
-	dbug	Map_Bub,	id_Bubble,	$84,	$13,	$8348
-	dbug	Map_WFall,	id_Waterfall,	2,	2,	$C259
-	dbug	Map_WFall,	id_Waterfall,	9,	9,	$C259
-	dbug	Map_Pole,	id_Pole,	0,	0,	$43DE
-	dbug	Map_Flap,	id_FlapDoor,	2,	0,	$4328
-	dbug	Map_Lamp,	id_Lamppost,	1,	0,	$7A0
+;		mappings	object			subtype	frame	VRAM setting
+	dbug	Map_Ring,	id_Rings,		0,	0,	$27B2
+	dbug	Map_Monitor,	id_Monitor,		0,	0,	$680
+	dbug	Map_Spring,	id_Springs,		0,	0,	VRAMloc_HSpring/$20
+	dbug	Map_Spring,	id_Springs,		$10,	3,	VRAMloc_VSpring/$20
+	dbug	Map_Spring,	id_Springs,		$20,	0,	VRAMloc_HSpring/$20
+	dbug	Map_Spring,	id_Springs,		$30,	6,	VRAMloc_DSpring/$20
+	dbug	Map_Spring,	id_Springs,		$40,	6,	VRAMloc_DSpring/$20
+	dbug	Map_Jaws,	id_Jaws,		8,	0,	$2486
+	dbug	Map_Burro,	id_Burrobot,		0,	2,	$84A6
+	dbug	Map_Harp,	id_Harpoon,		0,	0,	$3CC
+	dbug	Map_Harp,	id_Harpoon,		2,	3,	$3CC
+	dbug	Map_Push,	id_PushBlock,		0,	0,	$43DE
+	dbug	Map_But,	id_Button,		0,	0,	$513
+	dbug	Map_Spike,	id_Spikes,		0,	0,	$51B
+	dbug	Map_MBlockLZ,	id_MovingBlock,		4,	0,	$43BC
+	dbug	Map_LBlock,	id_LabyrinthBlock, 	1,	0,	$43E6
+	dbug	Map_LBlock,	id_LabyrinthBlock, 	$13,	1,	$43E6
+	dbug	Map_LBlock,	id_LabyrinthBlock, 	5,	0,	$43E6
+	dbug	Map_Gar,	id_Gargoyle,		0,	0,	$443E
+	dbug	Map_LBlock,	id_LabyrinthBlock, 	$27,	2,	$43E6
+	dbug	Map_LBlock,	id_LabyrinthBlock, 	$30,	3,	$43E6
+	dbug	Map_LConv,	id_LabyrinthConvey, 	$7F, 0,	$3F6
+	dbug	Map_Orb,	id_Orbinaut,		0,	0,	$467
+	dbug	Map_Bub,	id_Bubble,		$84,	$13,	$8348
+	dbug	Map_WFall,	id_Waterfall,		2,	2,	$C259
+	dbug	Map_WFall,	id_Waterfall,		9,	9,	$C259
+	dbug	Map_Pole,	id_Pole,		0,	0,	$43DE
+	dbug	Map_Flap,	id_FlapDoor,		2,	0,	$4328
+	dbug	Map_Lamp,	id_Lamppost,		1,	0,	$7A0
 	dbug	Map_CFlo,	id_CollapseFloor,	0,	4,	$42FA
-	dbug	Map_Swing_LZ,	id_SwingingPlatform, 4, 0, $4310
-	dbug	Map_Smab2,	id_SmashBlock,	0,	0,	$42FA
-	dbug	Map_Smash,	id_SmashWall, 0, 	3,	$42FA
+	dbug	Map_Swing_LZ,	id_SwingingPlatform, 	4, 0, $4310
+	dbug	Map_Smab2,	id_SmashBlock,		0,	0,	$42FA
+	dbug	Map_Smash,	id_SmashWall, 		0, 	3,	$42FA
         @LZend:
 
 @MZ:
 	dc.w (@MZend-@MZ-2)/8
 
-;		mappings	object		subtype	frame	VRAM setting
-	dbug	Map_Ring,	id_Rings,	0,	0,	$27B2
-	dbug	Map_Monitor,	id_Monitor,	0,	0,	$680
-	dbug	Map_Buzz,	id_BuzzBomber,	0,	0,	$444
-	dbug	Map_Spike,	id_Spikes,	0,	0,	$51B
-	dbug	Map_Spring,	id_Springs,	0,	0,	$523
-	dbug	Map_Fire,	id_LavaMaker,	0,	0,	$345
-	dbug	Map_Brick,	id_MarbleBrick,	0,	0,	$4000
-	dbug	Map_Geyser,	id_GeyserMaker,	0,	0,	$63A8
-	dbug	Map_LWall,	id_LavaWall,	0,	0,	$63A8
-	dbug	Map_Push,	id_PushBlock,	0,	0,	$42B8
-	dbug	Map_Yad,	id_Yadrin,	0,	0,	$247B
-	dbug	Map_Smab,	id_SmashBlock,	0,	0,	$42B8
-	dbug	Map_MBlock,	id_MovingBlock,	0,	0,	$2B8
-	dbug	Map_CFlo,	id_CollapseFloor, 0,	0,	$62B8
-	dbug	Map_LTag,	id_LavaTag,	0,	0,	$8680
-	dbug	Map_Bas,	id_Basaran,	0,	0,	$4B8
-	dbug	Map_Cat,	id_Caterkiller,	0,	0,	$24FF
-	dbug	Map_Lamp,	id_Lamppost,	1,	0,	$7A0
-	dbug	Map_Smash,	id_SmashWall,	0,	3,	$42B8
+;		mappings	object			subtype	frame	VRAM setting
+	dbug	Map_Ring,	id_Rings,		0,	0,	$27B2
+	dbug	Map_Monitor,	id_Monitor,		0,	0,	$680
+	dbug	Map_Spring,	id_Springs,		0,	0,	VRAMloc_HSpring/$20
+	dbug	Map_Spring,	id_Springs,		$10,	3,	VRAMloc_VSpring/$20
+	dbug	Map_Spring,	id_Springs,		$20,	0,	VRAMloc_HSpring/$20
+	dbug	Map_Spring,	id_Springs,		$30,	6,	VRAMloc_DSpring/$20
+	dbug	Map_Spring,	id_Springs,		$40,	6,	VRAMloc_DSpring/$20
+	dbug	Map_Buzz,	id_BuzzBomber,		0,	0,	$444
+	dbug	Map_Spike,	id_Spikes,		0,	0,	$51B
+	dbug	Map_Spring,	id_Springs,		0,	0,	$523
+	dbug	Map_Fire,	id_LavaMaker,		0,	0,	$345
+	dbug	Map_Brick,	id_MarbleBrick,		0,	0,	$4000
+	dbug	Map_Geyser,	id_GeyserMaker,		0,	0,	$63A8
+	dbug	Map_LWall,	id_LavaWall,		0,	0,	$63A8
+	dbug	Map_Push,	id_PushBlock,		0,	0,	$42B8
+	dbug	Map_Yad,	id_Yadrin,		0,	0,	$247B
+	dbug	Map_Smab,	id_SmashBlock,		0,	0,	$42B8
+	dbug	Map_MBlock,	id_MovingBlock,		0,	0,	$2B8
+	dbug	Map_CFlo,	id_CollapseFloor, 	0,	0,	$62B8
+	dbug	Map_LTag,	id_LavaTag,		0,	0,	$8680
+	dbug	Map_Bas,	id_Basaran,		0,	0,	$4B8
+	dbug	Map_Cat,	id_Caterkiller,		0,	0,	$24FF
+	dbug	Map_Lamp,	id_Lamppost,		1,	0,	$7A0
+	dbug	Map_Smash,	id_SmashWall,		0,	3,	$42B8
         @MZend:
 
 @SLZ:
