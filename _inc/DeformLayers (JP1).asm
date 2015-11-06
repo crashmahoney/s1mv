@@ -113,33 +113,6 @@ loc_630A:
 		neg.w	d0
 		swap.w	d0                            ; put foreground scroll in upper word
 
-	;	lea	(v_lvllayout+$8).w,a2
-	;	addi.l	#$10000,(a2)+         ; speed of top row of clouds   ($1.0000 default)
-	;	addi.l	#$C000,(a2)+          ; speed of 2nd row of clouds   ($0.C000 default)
-	;	addi.l	#$8000,(a2)+          ; speed of 3rd row of clouds   ($0.8000 default)
-
-    ; position of sky (always 0)
-    	move.w  #0,d0
-		move.w	#$6C,d1              ; height of far mountains ($2F default)
-		sub.w	d4,d1                 ; subtract rows of pixels offscreen from rows to write to scrolltable	
-		move.w	($FFFFF718).w,d0     ; add speed of scrollblock5
-		neg.w	d0
-@mountainloop:
-		move.l	d0,(a1)+
-		dbra	d1,@mountainloop
-
-        ; (doing the lake part of the screen now)
-		move.w	($FFFFF710).w,d0     ; set to speed of scrollblock4
-		move.w	(v_screenposx).w,d2
-		sub.w	d0,d2
-		ext.l	d2
-		asl.l	#8,d2                ; multiply by $100 (256)
-		divs.w	#$ff,d2              ; the lower this value is, the more pronounced the parallax efect on the water (default $68)
-		ext.l	d2
-		asl.l	#8,d2                ; multiply by $100 (256)
-		moveq	#0,d3
-		move.w	d0,d3
-
 ; setup water ripple
 		move.b	(v_vbla_byte).w,d1			; get frame count
 		andi.w	#$7,d1						; change every 8 frames
@@ -148,13 +121,49 @@ loc_630A:
 	@loadaddress:
 		move.w	(v_Deform_Temp_Value).w,d6	; ripple data offset
 		lea		(Drown_WobbleData).l,a2		; use values from table for ripple amounts
-		move.w	#$72,d1              		; height of lake
-		add.w	d4,d1                		; adjust loops according to bg y position
+
+; position of sky (always 0)
+    	move.w  #0,d0
+		move.w	#$62,d1              ; lines to move
+		sub.w	d4,d1                ; adjust loops according to bg y position
+		move.w	($FFFFF718).w,d0     ; add speed of scrollblock5
+		neg.w	d0
+@skyloop:
+		move.l	d0,(a1)+
+		dbra	d1,@skyloop
+
+    	move.w  #0,d0
+		move.w	#$4,d1              ; lines to move
+		move.w	($FFFFF718).w,d0     ; add speed of scrollblock5
+		neg.w	d0
+@skyloop2:
+		add.b	#20,d6				 ; advance 4 bytes in ripple table
+		andi.w  #$3F,d6				 ; table bounds check
+		move.b	(a2,d6),d5			 ; get ripple byte
+		ext.w	d5				 	 ; sign extend
+		add.w	d5,d0				 ; add to line position
+		move.l	d0,(a1)+
+		dbra	d1,@skyloop2
+
+        ; (doing the lake part of the screen now)
+		move.w	($FFFFF710).w,d0     ; set to speed of scrollblock4
+		move.w	(v_screenposx).w,d2
+		sub.w	d0,d2
+		ext.l	d2
+		asl.l	#8,d2                ; multiply by $100 (256)
+		divs.w	#$C0,d2              ; the lower this value is, the more pronounced the parallax efect on the water (default $68)
+		ext.l	d2
+		asl.l	#8,d2                ; multiply by $100 (256)
+		moveq	#0,d3
+		move.w	d0,d3
+
+
+		move.w	#$20,d1              		; height of lake
 	; Starting values
 	; d0 = FFFFBBBB (FFFF FG position (Remains unchanged in this section)/BBBB BG position)
 	; d2 = VVVVDDDD (Full add value complete with decimal point remainder)
 	; d3 = DDDDVVVV (The actual position itself with it's decimal point remainder stored on the left word of the register)
-@lakeloop:
+@lakeloop1:
 		move.w	d3,d0                ; move d3's VVVV to d0's BBBB
 		neg.w	d0                   ; BBBB negated
 		add.b	#14,d6				 ; advance 4 bytes in ripple table
@@ -166,7 +175,30 @@ loc_630A:
 		swap.w	d3                   ; d3 = VVVVDDDD
 		add.l	d2,d3                ; add d2's VVVVDDDD to d3's VVVVDDDD
 		swap.w	d3                   ; d3 = DDDDVVVV
-		dbra	d1,@lakeloop          ; repeat
+		dbra	d1,@lakeloop1        ; repeat
+
+		move.w	#$58,d1              ; height of lake
+		add.w	d4,d1                ; adjust loops according to bg y position
+		lsr.w	#2,d1
+@lakeloop2:
+		move.w	d3,d0                ; move d3's VVVV to d0's BBBB
+		neg.w	d0                   ; BBBB negated
+		add.b	#50,d6				 ; advance 4 bytes in ripple table
+		andi.w  #$3F,d6				 ; table bounds check
+		move.b	(a2,d6),d5			 ; get ripple byte
+		ext.w	d5				 	 ; sign extend
+		add.w	d5,d0				 ; add to line position
+		move.l	d0,(a1)+             ; FFFFBBBB passed to scroll buffer
+		move.l	d0,(a1)+             ; FFFFBBBB passed to scroll buffer
+		move.l	d0,(a1)+             ; FFFFBBBB passed to scroll buffer
+		move.l	d0,(a1)+             ; FFFFBBBB passed to scroll buffer
+		swap.w	d3                   ; d3 = VVVVDDDD
+		add.l	d2,d3                ; add d2's VVVVDDDD to d3's VVVVDDDD
+		add.l	d2,d3                ; add d2's VVVVDDDD to d3's VVVVDDDD
+		add.l	d2,d3                ; add d2's VVVVDDDD to d3's VVVVDDDD
+		add.l	d2,d3                ; add d2's VVVVDDDD to d3's VVVVDDDD
+		swap.w	d3                   ; d3 = DDDDVVVV
+		dbra	d1,@lakeloop2          ; repeat	
 		rts                          ; return (finish)
 ; End of function Deform_GHZ
 ; ---------------------------------------------------------------------------
