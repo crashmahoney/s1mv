@@ -48,7 +48,7 @@ Obj54_Index:
 Obj54_Init:
     ; create main ship object
 	move.l	#Map_MTZBoss,obMap(a0)
-	move.w	#$0380,obGfx(a0)
+	move.w	#VRAMloc_MTZBoss/$20,obGfx(a0)
 	ori.b	#4,obRender(a0)
 	move.w	#$180,obTimeFrame(a0)		; use this instead of obPriority, breaks with childsprites
 	move.w	#MTZBscreenX+$A0,obX(a0)                                                                    ;*
@@ -84,7 +84,7 @@ Obj54_Init:
 	move.b	#6,obRoutine(a1)
 	move.b	#$13,obFrame(a1)
 	move.l	#Map_MTZBoss,obMap(a1)
-	move.w	#$0380,obGfx(a1)
+	move.w	#VRAMloc_MTZBoss/$20,obGfx(a1)
 	ori.b	#4,obRender(a1)
 	move.w	#$300,obPriority(a1)		
 	move.w	obX(a0),obX(a1)
@@ -567,10 +567,10 @@ loc_32894:
 ; ===========================================================================
 
 JmpTo60_DeleteObject
-	moveq	#plcid_GHZ,d0
-	jsr		NewPLC		        ; load level object patterns
 	moveq	#plcid_GHZ2,d0
 	jsr		AddPLC		        ; load level object patterns
+	moveq	#plcid_Explode,d0
+	jsr		(AddPLC).l			; load explosion patterns
 	lea     (Pal_GHZ).l,a2
 	lea		(v_pal1_wat+$20).w,a1
  	moveq	#$F,d0                         ; move 16 colours
@@ -670,7 +670,7 @@ Obj53_Init:
 	move.l	MtzBoss_parent(a0),MtzBoss_parent(a1)
 	move.b	#id_MTZBossOrbs,(a1) ; load obj53
 	move.l	#Map_MTZBoss,obMap(a1)
-	move.w	#$0380,obGfx(a1)
+	move.w	#VRAMloc_MTZBoss/$20,obGfx(a1)
 	ori.b	#4,obRender(a1)
 	move.w	#$180,obTimeFrame(a1)
 	addq.b	#2,obRoutine(a1)
@@ -987,7 +987,7 @@ MTZBoss_Lazer_2ndIndex:
 
 MTZBoss_Lazer_Init:
 	move.l	#Map_MTZBoss,obMap(a0)
-	move.w	#$0380,obGfx(a0)
+	move.w	#VRAMloc_MTZBoss/$20,obGfx(a0)
 	ori.b	#4,obRender(a0)
 	move.w	#$280,obTimeFrame(a0)
 	move.b	#$12,obFrame(a0)

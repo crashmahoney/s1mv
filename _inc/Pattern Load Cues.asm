@@ -108,9 +108,18 @@ VRAMloc_MonitorSpinDash =	$D400 ; +++ spin dash icon, overwrites goggles icon
 
 
 PLC_GHZ:	dc.w ((PLC_GHZ2-PLC_GHZ-2)/6)-1
-		plcm	Nem_Island, VRAMloc_Island	; springboard
-		plcm	Nem_Springboard, VRAMloc_Springboard	; springboard
 		plcm	Nem_Splats, 	VRAMloc_Splats	; turtroll enemy
+		plcm	Nem_Island, VRAMloc_Island	; springboard
+		plcm	Nem_SpringPole, 	VRAMloc_SpringPole	
+		plcm	Nem_Swing, 		VRAMloc_Swing	; swinging platform
+		plcm	Nem_Bridge, 	VRAMloc_Bridge	; bridge
+		plcm	Nem_GHZplatform, VRAMloc_GHZplatform	; new platform
+		plcm	Nem_Springboard, VRAMloc_Springboard	; springboard
+		plcm	Nem_PplRock, 	VRAMloc_PplRock	; purple rock
+		plcm	Nem_Leaves, 	VRAMloc_Leaves		; floating leaves
+
+
+PLC_GHZ2:	dc.w ((PLC_GHZ2end-PLC_GHZ2-2)/6)-1
 		plcm	Nem_Turtroll, 	VRAMloc_Turtroll	; turtroll enemy
 		plcm	Nem_Buzz, 		VRAMloc_Buzz	; buzz bomber enemy
 		plcm	Nem_Chopper, 	VRAMloc_Chopper	; chopper enemy
@@ -120,16 +129,7 @@ PLC_GHZ:	dc.w ((PLC_GHZ2-PLC_GHZ-2)/6)-1
 		plcm	Nem_HSpring, 	VRAMloc_HSpring	; horizontal spring
 		plcm	Nem_VSpring, 	VRAMloc_VSpring	; vertical spring
 		plcm    Nem_DSpring, 	VRAMloc_DSpring	; diagonal spring
-		plcm	Nem_GhzWall1, 	VRAMloc_GhzWall1	; breakable wall
-
-PLC_GHZ2:	dc.w ((PLC_GHZ2end-PLC_GHZ2-2)/6)-1
-		plcm	Nem_Swing, 		VRAMloc_Swing	; swinging platform
-		plcm	Nem_Bridge, 	VRAMloc_Bridge	; bridge
-		plcm	Nem_GHZplatform, VRAMloc_GHZplatform	; new platform
-		plcm	Nem_PplRock, 	VRAMloc_PplRock	; purple rock
-		plcm	Nem_Leaves, 	VRAMloc_Leaves		; floating leaves
-		plcm	Nem_SpringPole, 	VRAMloc_SpringPole	
-;		plcm	Nem_GhzWall2, 	VRAMloc_GhzWall2	; normal wall
+		plcm	Nem_GhzWall1, 	VRAMloc_GhzWall1	; breakable wall;		plcm	Nem_GhzWall2, 	VRAMloc_GhzWall2	; normal wall
 		plcm    Nem_MonitorSpinDash, VRAMloc_MonitorSpinDash ; +++ spin dash icon, overwrites goggles icon
 	PLC_GHZ2end:
 ; ---------------------------------------------------------------------------
@@ -425,10 +425,14 @@ PLC_FZBoss:	dc.w ((PLC_FZBossend-PLC_FZBoss-2)/6)-1
 ; ---------------------------------------------------------------------------
 ; Pattern load cues - Metropolis Zone Boss
 ; ---------------------------------------------------------------------------
+VRAMloc_MTZBoss	=	$8000
+VRAMloc_EggpodS2=	$9000
+VRAMloc_EggpodJetsS2=	$9C00
+
 PLC_MTZBoss:	dc.w ((PLC_MTZBossend-PLC_MTZBoss-2)/6)-1
-		plcm	Nem_EggpodS2, $400*$20  ; Sonic 2 Eggman pod graphics   ($60 tiles, $C00 bytes)
-		plcm	Nem_MTZBoss, $380*$20   ; Metropolis Boss Specific Graphics ($7C tiles, $F80 bytes)
-		plcm	Nem_EggpodJetsS2, $460*$20  ; Sonic 2 exhaust flame         ($8 tiles, $100 bytes)
+		plcm	Nem_MTZBoss, VRAMloc_MTZBoss ;originally $380*$20   ; Metropolis Boss Specific Graphics ($7C tiles, $F80 bytes)
+		plcm	Nem_EggpodS2, VRAMloc_EggpodS2  ; Sonic 2 Eggman pod graphics   ($60 tiles, $C00 bytes)
+		plcm	Nem_EggpodJetsS2, VRAMloc_EggpodJetsS2  ; Sonic 2 exhaust flame         ($8 tiles, $100 bytes)
 ; 		plcm	Nem_Prison, $49D*$20    ; prison capsule
 		plcm	Nem_BossExplode, $B400	; boss explosion
 	PLC_MTZBossend:
@@ -436,8 +440,10 @@ PLC_MTZBoss:	dc.w ((PLC_MTZBossend-PLC_MTZBoss-2)/6)-1
 ; ---------------------------------------------------------------------------
 ; Pattern load cues - Wing Fortress Zone Boss
 ; ---------------------------------------------------------------------------
+VRAMloc_WFZBoss	=	$8000
+
 PLC_WFZBoss:	dc.w ((PLC_WFZBossend-PLC_WFZBoss-2)/6)-1
-		plcm	Nem_WFZBoss, $0379*$20
+		plcm	Nem_WFZBoss, VRAMloc_WFZBoss	; originally $6F20
 		plcm	Nem_BossExplode, $B400	; boss explosion
 	PLC_WFZBossend:
 		even

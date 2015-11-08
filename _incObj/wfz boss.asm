@@ -327,10 +327,6 @@ ObjC5_CaseDefeated:
 ; ===========================================================================
 
 ObjC5_End:	; play music and change camera speed
-	moveq	#plcid_GHZ,d0
-	jsr		NewPLC		        ; load level object patterns
-	moveq	#plcid_GHZ2,d0
-	jsr		AddPLC		        ; load level object patterns
 	moveq	#bgm_GHZ,d0
 	jsr		PlaySound
 ;	move.w	#$720,d0
@@ -394,7 +390,15 @@ ObjC5_LaserWallDisplay:
 
 ObjC5_LoadLvlGFXandDelete:
 	moveq	#plcid_GHZ2,d0
-	jsr	NewPLC		        ; load level object patterns
+	jsr		NewPLC		        ; load level object patterns
+	moveq	#plcid_Explode,d0
+	jsr		(AddPLC).l			; load explosion patterns
+	lea     (Pal_GHZ).l,a2
+	lea		(v_pal1_wat+$20).w,a1
+ 	moveq	#$F,d0                         ; move 16 colours
+    @movecolour:
+ 	move.w	(a2)+,(a1)+
+	dbf     d0,@movecolour
 	bra.w   DeleteObject
 ; ===========================================================================
 
@@ -968,17 +972,17 @@ ObjC5_LaserData:
 ; off_3CC80:
 ObjC5_SubObjData:		; Laser Case
 	dc.l ObjC5_MapA                         ; mappings
-        dc.w $0379                                      ; vram     make_art_tile(ArtTile_ArtNem_WFZBoss,0,0)
+        dc.w VRAMloc_WFZBoss/$20                        ; vram     make_art_tile(ArtTile_ArtNem_WFZBoss,0,0)
         dc.b 4,4,$20,0                                  ; renderflags, obPriority, width, collision
 ; off_3CC8A:
 ObjC5_SubObjData2:		; Laser Walls
 	dc.l ObjC5_MapA                         ; mappings
-        dc.w $0379                                      ; vram     make_art_tile(ArtTile_ArtNem_WFZBoss,0,0)
+        dc.w VRAMloc_WFZBoss/$20                        ; vram     make_art_tile(ArtTile_ArtNem_WFZBoss,0,0)
         dc.b 4,1,8,0                                    ; renderflags, obPriority, width, collision
 ; off_3CC94:
 ObjC5_SubObjData3:		; Platforms, platform releaser, laser and laser shooter
 	dc.l ObjC5_MapA                         ; mappings
-        dc.w $0379                                      ; vram     make_art_tile(ArtTile_ArtNem_WFZBoss,0,0)
+        dc.w VRAMloc_WFZBoss/$20                        ; vram     make_art_tile(ArtTile_ArtNem_WFZBoss,0,0)
         dc.b 4,5,$10,0                                  ; renderflags, obPriority, width, collision
 ; off_3CC9E:
 ; ObjC6_SubObjData2:		; Robotnik
