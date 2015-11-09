@@ -53,6 +53,10 @@
       <ArtFile filename="../artnem/8x8 - GHZ1.bin"/>
       <MapFile type="ASM" filename="../_maps/GHZ Edge Walls.asm" frame="12" startpal="2"/>
     </ImageFromMappings>
+    <ImageFromMappings id="img14">
+      <ArtFile filename="../artnem/8x8 - GHZ1.bin"/>
+      <MapFile type="ASM" filename="../_maps/GHZ Edge Walls.asm" frame="13" startpal="2"/>
+    </ImageFromMappings>
   </Images>
   <Subtypes>
     <Subtype id="10" name="Shadow top 1" image="img1"/>
@@ -68,6 +72,7 @@
     <Subtype id="1A" name="Leaves Edge 2" image="img11"/>
     <Subtype id="1B" name="Leaves Edge 3" image="img12"/>
     <Subtype id="1C" name="Leaves Edge 4" image="img13"/>
+    <Subtype id="1D" name="Tree" image="img14"/>
     <Subtype id="00" name="Shadow top 1 (Solid)" image="img1"/>
     <Subtype id="01" name="Side 1 (Solid)" image="img2"/>
     <Subtype id="02" name="Shadow top 2 (Solid)" image="img3"/>
@@ -81,6 +86,7 @@
     <Subtype id="0A" name="Leaves Edge 2 (Solid)" image="img11"/>
     <Subtype id="0B" name="Leaves Edge 3 (Solid)" image="img12"/>
     <Subtype id="0C" name="Leaves Edge 4 (Solid)" image="img13"/>
+    <Subtype id="0D" name="Tree (Solid)" image="img14"/>
   </Subtypes>
   <Properties>
     <BitsProperty name="Art" type="EdgeType" startbit="0" length="4"/>
@@ -101,6 +107,7 @@
       <EnumMember name="Leaves Edge 2"/>
       <EnumMember name="Leaves Edge 3"/>
       <EnumMember name="Leaves Edge 4"/>
+      <EnumMember name="Tree"/>
     </Enum>
   </Enums>
   <Display>
@@ -155,6 +162,10 @@
     <DisplayOption>
       <Condition property="Art" value="Leaves Edge 4"/>
       <ImageRef image="img13"/>
+    </DisplayOption>
+    <DisplayOption>
+      <Condition property="Art" value="Tree"/>
+      <ImageRef image="img14"/>
     </DisplayOption>
   </Display>
 </ObjDef>
