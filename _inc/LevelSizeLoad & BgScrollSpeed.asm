@@ -121,7 +121,7 @@ LoopTileNums:
 
 ; 		loop	loop	tunnel	tunnel
 
-	dc.b	$B5,	$7F,	$1F,	$20	; Green Hill
+	dc.b	$7F,	$7F,	$7F,	$7F	; Green Hill
 	dc.b	$7F,	$7F,	$7F,	$7F	; Labyrinth
 	dc.b	$7F,	$7F,	$7F,	$7F	; Marble
 	dc.b	$AA,	$B4,	$7F,	$7F	; Star Light

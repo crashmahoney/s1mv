@@ -6,6 +6,7 @@
 
 
 Sonic_Loops:				; XREF: Obj01_Control
+		rts
 	;	cmpi.b	#id_SLZ,(v_zone).w ; is level SLZ ?   ; MJ: Commented out, we don't want SLZ having any rolling chunks =P
 	;	beq.s	@isstarlight	; if yes, branch
 		tst.b	(v_zone).w	; is level GHZ ?

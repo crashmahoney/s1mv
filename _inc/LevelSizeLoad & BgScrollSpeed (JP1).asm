@@ -118,16 +118,17 @@ SetScreen:
 		moveq	#0,d0
 		move.b	(v_zone).w,d0
 		lsl.b	#2,d0
-;		move.l	LoopTileNums(pc,d0.w),(v_256loop1).w      ;
+;		lea		LoopTileNums,a0
+;		move.l	(a0,d0.w),(v_256loop1).w      ;
 		move.w	#0000,(v_limitleft2).w ; +++ move left boundary to far left, this is a hack because the limit was in the wrong place when transitioning between acts from the top or bottom
-                rts
+        rts
+
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
 ; Sonic	start location array
 ; ---------------------------------------------------------------------------
 StartLocArray:	incbin	"misc\Start Location Array - Levels.bin"
 		even
-
 ; ---------------------------------------------------------------------------
 ; Which	256x256	tiles contain loops or roll-tunnels
 ; ---------------------------------------------------------------------------
@@ -136,7 +137,7 @@ LoopTileNums:
 
 ; 		loop	loop	tunnel	tunnel
 
-	dc.b	$B5,	$7F,	$1F,	$20	; Green Hill
+	dc.b	$7F,	$7F,	$7F,	$7F	; Green Hill
 	dc.b	$7F,	$7F,	$7F,	$7F	; Labyrinth
 	dc.b	$7F,	$7F,	$7F,	$7F	; Marble
 	dc.b	$AA,	$B4,	$7F,	$7F	; Star Light
