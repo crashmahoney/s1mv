@@ -944,8 +944,7 @@ locret_65B0:
 
 
 MoveScreenHoriz:			; XREF: ScrollHoriz
-	;	move.w	(v_player+obX).w,d0         ; +++ replaced with spindash scroll delay code
-	;	sub.w	(v_screenposx).w,d0 ; Sonic's distance from left edge of screen
+
 		move.w	(v_hscrolldelay).w,d1
 		beq.s	@cont1
 		sub.w	#$100,d1
@@ -954,23 +953,23 @@ MoveScreenHoriz:			; XREF: ScrollHoriz
 		move.b	(v_hscrolldelay).w,d1
 		lsl.b	#2,d1
 		addq.b	#4,d1
-		move.w	($FFFFF7A8).w,d0
+		move.w	(v_trackpos).w,d0
 		sub.b	d1,d0
-		lea	(v_tracksonic).w,a1
+		lea		(v_tracksonic).w,a1
 		move.w	(a1,d0.w),d0
 		and.w	#$3FFF,d0
 		bra.s	@cont2
  
 @cont1:
-		move.w	($FFFFD008).w,d0
+		move.w	(v_player+obX).w,d0
  
 @cont2:
-		sub.w	($FFFFF700).w,d0        ; +++ spindash delay code ends here
+		sub.w	(v_screenposx).w,d0
 
 		subi.w	#144,d0		; is distance less than 144px?
-		bcs.s	SH_BehindMid	; if yes, branch
+		blt.s	SH_BehindMid	; if yes, branch
 		subi.w	#16,d0		; is distance more than 160px?
-		bcc.s	SH_AheadOfMid	; if yes, branch
+		bge.s	SH_AheadOfMid	; if yes, branch
 		clr.w	(v_scrshiftx).w
 		rts	
 ; ===========================================================================
@@ -996,11 +995,11 @@ SH_SetScreen:
 ; ===========================================================================
 
 SH_BehindMid:
-                cmpi.w	#-$10,d0      ; +++ some bug fix
-		bgt.s	@cont         ;
-		move.w	#-$10,d0	;
-                                        ;
-@cont:                                   ;
+        cmpi.w	#-16,d0      
+		bgt.s	@cont         
+		move.w	#-16,d0	
+
+@cont:
 		add.w	(v_screenposx).w,d0
 		cmp.w	(v_limitleft2).w,d0
 		bgt.s	SH_SetScreen
