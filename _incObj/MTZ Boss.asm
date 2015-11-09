@@ -578,15 +578,13 @@ JmpTo60_DeleteObject
  	move.w	(a2)+,(a1)+
 	dbf     d0,@movecolour
 
-	move.w	#$7FF,(v_limitbtm1).w
-	move.w	#$7FF,(v_limitbtm2).w
- 	move.w	#0,(v_limitleft2).w
- 	move.w	#$25E0,(v_limitright1).w
- 	move.w	#$25E0,(v_limitright2).w
 	move.b	#0,(f_lockscreen).w     ; unlock screen
+	move.w	#$7FF,(v_limitbtm1).w
+ 	move.w	#0,(v_limitleft2).w
+ 	move.w	#$24BF,(v_limitright2).w
 	move.b	#0,(v_bossstatus).w
 
-	jmp	(DeleteObject).l
+	jmp		(DeleteObject).l
 ; ===========================================================================
 
 loc_328C0:

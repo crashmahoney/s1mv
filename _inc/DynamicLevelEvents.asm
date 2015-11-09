@@ -73,11 +73,11 @@ DLE_GHZ:				; XREF: DLE_Index
 		move.b	(v_act).w,d0
 		add.w	d0,d0
 		move.w	DLE_GHZx(pc,d0.w),d0
-		jmp	DLE_GHZx(pc,d0.w)
+		jmp		DLE_GHZx(pc,d0.w)
 ; ===========================================================================
 DLE_GHZx:	dc.w DLE_GHZ1-DLE_GHZx
-		dc.w DLE_GHZ2-DLE_GHZx
-		dc.w DLE_GHZ3-DLE_GHZx
+			dc.w DLE_GHZ2-DLE_GHZx
+			dc.w DLE_GHZ3-DLE_GHZx
 ; ===========================================================================
 DLE_GHZ1:
 		cmpi.b  #$04,(v_gamemode).w
@@ -85,45 +85,42 @@ DLE_GHZ1:
 		moveq	#0,d0
 		move.b	(v_dle_routine).w,d0
 		move.w	DLE_GHZ1_Modes(pc,d0.w),d0
-		jmp	DLE_GHZ1_Modes(pc,d0.w)
+		jmp		DLE_GHZ1_Modes(pc,d0.w)
 ; ===========================================================================
 DLE_GHZ1_Modes:	dc.w DLE_GHZ1_Main-DLE_GHZ1_Modes
 				dc.w DLE_GHZ1boss-DLE_GHZ1_Modes
 				dc.w DLE_GHZ1end-DLE_GHZ1_Modes
 ; --------------------------------------------------------------------------
 DLE_GHZ1_Main:
-		cmpi.w	#$1F00,(v_screenposx).w     ; has the camera reached $1780 on x-axis?
+		cmpi.w	#$1E00,(v_screenposx).w     ; has the camera reached $1780 on x-axis?
 		bcs.w	@rts      	            	; if not, branch
- 		addq.b	#2,(v_dle_routine).w
+		cmpi.w	#$110,(v_screenposy).w		; near top of screen?
+        bge.w   @rts						; if not, branch
+ 		moveq	#31,d0						; test act flag 31
+		bsr.w	GetActFlag					; has boss already been beaten?
+		tst.b	d0
+		beq.s   @loadbossart       			; if not, branch
+ 		move.b	#4,(v_dle_routine).w		
 	@rts:
-		rts
+ 		rts
+ 	@loadbossart:
+ 		move.b	#2,(v_dle_routine).w
+		lea     (MTZBoss_Pal).l,a0
+		lea		(v_pal1_wat+$20).w,a1
+		moveq	#$B,d0                         ; move 16 colours
+	@movecolour:
+		move.w	(a0)+,(a1)+                    ; load colour stored in d0
+		dbf     d0,@movecolour
+
+		moveq	#plcid_MTZBoss,d0
+		bra.w	AddPLC							; load boss patterns
 ; --------------------------------------------------------------------------
 DLE_GHZ1boss:
-;		btst    #0,(v_actflags).w       ; has boss already been beaten?
-;		bne.w   GHZBossBeaten             ; if so, skip boss
-		cmpi.w	#$110,(v_screenposy).w
-        ble.w   @loadboss
- 		subq.b	#2,(v_dle_routine).w
-        rts
-
-;loc_6EB0:
-;		move.w	#$400,(v_limitbtm1).w
-;		move.w	#$400,(v_limitbtm2).w
-; 		cmpi.w	#$2940,(v_screenposx).w
-; 		bcc.s	loc_6EB02
-; 		btst    #0,(v_actflags).w       ; has boss already been beaten?
-; 		beq.s   loc_6EB02               ; if not, skip
-; 		moveq	#plcid_GHZ,d0
-; 		bra.w	AddPLC		; reload level patterns
-; 
-; loc_6EB02:
-        @loadboss:
- 		move.w	#MTZBscreenY-$10,(v_limitbtm1).w
- 		move.w	#MTZBscreenY-$10,(v_limitbtm2).w
+ 		move.w	#MTZBscreenY-$10,(v_limitbtm1).w	;set screen limits
 		move.w	#MTZBscreenX,(v_limitright2).w
-; 		move.w	(v_screenposx).w,(v_limitleft2).w
-		cmpi.w	#MTZBscreenX,(v_screenposx).w           ; in middle of the boss arena?
-		bcs.w	@rts
+ 		move.w	(v_screenposx).w,(v_limitleft1).w
+		cmpi.w	#MTZBscreenX,(v_screenposx).w     	; has the camera reached $1780 on x-axis?
+		blt.w	@rts      	            			; if not, branch
 		jsr		FindFreeObj
 		bne.s	@nofreeobj
 		move.b	#id_MTZBoss,0(a1)       ; load GHZ boss	object
@@ -133,29 +130,12 @@ DLE_GHZ1boss:
 		move.b	#1,(f_lockscreen).w ; lock screen
  		move.w	#MTZBscreenX,(v_limitleft2).w
 		addq.b	#2,(v_dle_routine).w
-		lea     (MTZBoss_Pal).l,a0
-		lea		(v_pal1_wat+$20).w,a1
-		moveq	#$B,d0                         ; move 16 colours
-	@movecolour:
-		move.w	(a0)+,(a1)+                    ; load colour stored in d0
-		dbf     d0,@movecolour
-		moveq	#plcid_MTZBoss,d0
-		bra.w	AddPLC		; load boss patterns
 ; --------------------------------------------------------------------------
 @rts:
-                rts
+;		rts
 ; ===========================================================================
 
 DLE_GHZ1end:
-;		move.w	(v_screenposx).w,(v_limitleft2).w
-; 		tst.b	(f_lockscreen).w
-; 		beq.s   @dontunlock
-; 		move.w	#$0,(v_limitleft2).w
-;  		move.w	#$4000,(v_limitright2).w
-;		move.b	#$0,(f_lockscreen).w ; unlock screen position
-; 		move.w	#$800,(v_limitbtm1).w
-; 		move.w	#$400,(v_limitbtm2).w
-        @dontunlock:
 		rts
 		
 ; --------------------------------------------------------------------------
@@ -227,7 +207,7 @@ DLE_GHZ3boss:
 
 loc_6EB0:
 		move.w	#$400,(v_limitbtm1).w
-		move.w	#$400,(v_limitbtm2).w
+;		move.w	#$400,(v_limitbtm2).w
 ; 		cmpi.w	#$2940,(v_screenposx).w
 ; 		bcc.s	loc_6EB02
 ; 		btst    #0,(v_actflags).w       ; has boss already been beaten?
@@ -257,7 +237,7 @@ loc_6ED0:
 		move.b	#1,(f_lockscreen).w ; lock screen
  		move.w	#$2AB0,(v_limitleft2).w
 		move.w	#$400,(v_limitbtm1).w
-		move.w	#$400,(v_limitbtm2).w
+;		move.w	#$400,(v_limitbtm2).w
 		addq.b	#2,(v_dle_routine).w
             
             lea     (MTZBoss_Pal).l,a0
