@@ -66,8 +66,7 @@ DLE_GHZ:				; XREF: DLE_Index
 ;		move.w	#$4EF9,(H_int_jump).w   ;"jmp" in machine code (h-int runs this)
 ;		move.l	#HBlank2,(H_int_addr).w  ; hblank code address to jump to
 ;		move.w	#$8014,($C00004).l	; enable H-interrupts
-;                move.w  #$8a00+90,d0            ; palette change position
-;                sub.w   ($FFFFF618).w,d0        ; subtract bg Y position
+ ;       move.w  #$8a00,d0            ; palette change position
 ;		move.w	d0,(v_hbla_hreg).w      ; set palette change position
         moveq	#0,d0
 		move.b	(v_act).w,d0

@@ -356,7 +356,8 @@ v_homingtimer      = $FFFFFF95    	; frames that sonic can home on an object for
 v_justwalljumped   = $FFFFFF96    	; if just wall jumped, don't run double jump code
 v_Deform_Temp_Value = $FFFFFF98		; GHZ uses this to save last frame's ripple data rom location (2 bytes)
 H_int_jump      = $FFFFFF9A     	; 6 bytes 			; contains an instruction to jump to the H-int handler
-H_int_addr      = $FFFFFFA0     	; long
+H_int_addr      = $FFFFFF9C     	; long
+v_screenYstretch = $FFFFFFA0
 v_teleportin	= $FFFFFFA4			; set when sonic needs to beam into the new level
 
 			; ^^^ can use values between here vvv
