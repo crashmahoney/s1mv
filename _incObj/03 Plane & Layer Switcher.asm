@@ -1,42 +1,43 @@
-; ===========================================================================
-; ---------------------------------------------------------------------------
-; Object 03 - Collision plane/layer switcher (From Sonic 2 [Modified])
-; ---------------------------------------------------------------------------
-
+; ----------------------------------------------------------------------------
+; Object 03 - Collision plane/layer switcher
+; ----------------------------------------------------------------------------
+; Sprite_1FCDC:
 PathSwapper:
 		moveq	#0,d0
 		move.b	obRoutine(a0),d0
-		move.w	Obj03_Index(pc,d0.w),d1
-		jsr	Obj03_Index(pc,d1.w)
+		move.w	PSwapper_Index(pc,d0.w),d1
+		jsr	PSwapper_Index(pc,d1.w)
+	if DebugPathSwappers
+		tst.w	(f_debugcheat).w
+		beq.s	@notdebug
+		jmp		RememberState
+	endif
+@notdebug:
 		obRange	Obj03_MarkChkGone
 		rts
 
 Obj03_MarkChkGone:
-		jmp	Mark_ChkGone
+		jmp		Mark_ChkGone
 ; ===========================================================================
-; ---------------------------------------------------------------------------
-Obj03_Index:	dc.w Obj03_Init-Obj03_Index
-		dc.w Obj03_MainX-Obj03_Index
-		dc.w Obj03_MainY-Obj03_Index
-; ---------------------------------------------------------------------------
+; off_1FCF0:
+PSwapper_Index:
+		dc.w PSwapper_Init-PSwapper_Index	; 0
+		dc.w PSwapper_MainX-PSwapper_Index	; 2
+		dc.w PSwapper_MainY-PSwapper_Index	; 4
 ; ===========================================================================
-; ---------------------------------------------------------------------------
-; Initiation
-; ---------------------------------------------------------------------------
-
-Obj03_Init:
-		addq.b	#2,obRoutine(a0)
-		move.l	#$00000000,obMap(a0)
-		move.w	#$26BC,obGfx(a0)
+; loc_1FCF6:
+PSwapper_Init:
+		addq.b	#2,obRoutine(a0) ; => PSwapper_MainX
+		move.l	#Map_PathSwapper,obMap(a0)
+		move.w	#$27B2,obGfx(a0)
 		ori.b	#4,obRender(a0)
 		move.b	#$10,obActWid(a0)
 		move.w	#$280,obPriority(a0)
 		move.b	obSubtype(a0),d0
 		btst	#2,d0
-		beq.s	Obj03_Init_CheckX
-
-;Obj03_Init_CheckY:
-		addq.b	#2,obRoutine(a0) ; => Obj03_MainY
+		beq.s	PSwapper_Init_CheckX
+;PSwapper_Init_CheckY:
+		addq.b	#2,obRoutine(a0) ; => PSwapper_MainY
 		andi.w	#7,d0
 		move.b	d0,obFrame(a0)
 		andi.w	#3,d0
@@ -45,24 +46,18 @@ Obj03_Init:
 		move.w	obY(a0),d1
 		lea	(v_player).w,a1 ; a1=character
 		cmp.w	obY(a1),d1
-		bcc.s	Obj03_Init_Next
+		bhs.w	PSwapper_MainY
 		move.b	#1,$34(a0)
-Obj03_Init_Next:
-	;	lea	(Sidekick).w,a1 ; a1=character
-	;	cmp.w	$0C(a1),d1
-	;	bcc.s	+
-	;	move.b	#1,$35(a0)
-;+
-		bra.w	Obj03_MainY
+		bra.w	PSwapper_MainY
 ; ===========================================================================
 word_1FD68:
-	dc.w  $020
-	dc.w  $040	; 1
-	dc.w  $080	; 2
+	dc.w   $20
+	dc.w   $40	; 1
+	dc.w   $80	; 2
 	dc.w  $100	; 3
 ; ===========================================================================
 ; loc_1FD70:
-Obj03_Init_CheckX:
+PSwapper_Init_CheckX:
 		andi.w	#3,d0
 		move.b	d0,obFrame(a0)
 		add.w	d0,d0
@@ -70,29 +65,21 @@ Obj03_Init_CheckX:
 		move.w	obX(a0),d1
 		lea	(v_player).w,a1 ; a1=character
 		cmp.w	obX(a1),d1
-		bcc.s	Obj03_Init_CheckX_Next
+		bhs.s	@jump
 		move.b	#1,$34(a0)
-Obj03_Init_CheckX_Next:
-	;	lea	(Sidekick).w,a1 ; a1=character
-	;	cmp.w	$08(a1),d1
-	;	bcc.s	+
-	;	move.b	#1,$35(a0)
-;+
+@jump:
 
-Obj03_MainX:
+; loc_1FDA4:
+PSwapper_MainX:
 		tst.w	(v_debuguse).w
-		bne.w	return_1FEAC
+		bne.w	@locret
 		move.w	obX(a0),d1
 		lea	$34(a0),a2
 		lea	(v_player).w,a1 ; a1=character
-;		bsr.s	+
-;		lea	(Sidekick).w,a1 ; a1=character
-
-;+
 		tst.b	(a2)+
-		bne.s	Obj03_MainX_Alt
+		bne.w	PSwapper_MainX_Alt
 		cmp.w	obX(a1),d1
-		bhi.w	return_1FEAC
+		bhi.s	@locret
 		move.b	#1,-1(a2)
 		move.w	obY(a0),d2
 		move.w	d2,d3
@@ -101,37 +88,42 @@ Obj03_MainX:
 		add.w	d4,d3
 		move.w	obY(a1),d4
 		cmp.w	d2,d4
-		blt.w	return_1FEAC
+		blt.s	@locret
 		cmp.w	d3,d4
-		bge.w	return_1FEAC
+		bge.s	@locret
 		move.b	obSubtype(a0),d0
-		bpl.s	Obj03_ICX_B1
-		btst	#1,$2B(a1)
-		bne.w	return_1FEAC
-
-Obj03_ICX_B1:
+		bpl.s	@jump
+		btst	#1,obStatus(a1)
+		bne.s	@locret
+@jump:
 		btst	#0,obRender(a0)
-		bne.s	Obj03_ICX_B2
-			move.b	#$00,(v_layer).w
-	;	move.b	#$C,$3E(a1)
-	;	move.b	#$D,$3F(a1)
+		bne.s	@jump2
+		move.b	#$00,(v_layer).w
+	;	move.b	#$C,(v_top_solid_bit).w	; MJ: set collision to 1st
+	;	move.b	#$D,(v_lrb_solid_bit).w	; MJ: set collision to 1st
 		btst	#3,d0
-		beq.s	Obj03_ICX_B2
-			move.b	#$01,(v_layer).w
-	;	move.b	#$E,$3E(a1)
-	;	move.b	#$F,$3F(a1)
-
-Obj03_ICX_B2:
+		beq.s	@jump2
+		move.b	#$01,(v_layer).w
+	;	move.b	#$E,(v_top_solid_bit).w	; MJ: set collision to 2nd
+	;	move.b	#$F,(v_lrb_solid_bit).w	; MJ: set collision to 2nd
+@jump2:
 		andi.w	#$7FFF,obGfx(a1)
 		btst	#5,d0
-		beq.s	return_1FEAC
-		ori.w	#$8000,obGfx(a1)
-		bra.s	return_1FEAC
+		beq.s	@jump3
+		ori.w	#(1<<15),obGfx(a1)
+@jump3:
+	if DebugPathSwappers
+		tst.b	(f_debugcheat).w
+		beq.s	@locret
+		sfx	sfx_Lamppost,1,0,1
+	endif
+@locret:
+		rts
 ; ===========================================================================
-
-Obj03_MainX_Alt:
+; loc_1FE38:
+PSwapper_MainX_Alt:
 		cmp.w	obX(a1),d1
-		bls.w	return_1FEAC
+		bls.s	@locret
 		move.b	#0,-1(a2)
 		move.w	obY(a0),d2
 		move.w	d2,d3
@@ -140,51 +132,49 @@ Obj03_MainX_Alt:
 		add.w	d4,d3
 		move.w	obY(a1),d4
 		cmp.w	d2,d4
-		blt.w	return_1FEAC
+		blt.s	@locret
 		cmp.w	d3,d4
-		bge.w	return_1FEAC
+		bge.s	@locret
 		move.b	obSubtype(a0),d0
-		bpl.s	Obj03_MXA_B1
-		btst	#1,$2B(a1)
-		bne.w	return_1FEAC
-
-Obj03_MXA_B1:
-		btst	#0,$01(a0)
-		bne.s	Obj03_MXA_B2
-			move.b	#$00,(v_layer).w
-	;	move.b	#$C,$3E(a1)
-	;	move.b	#$D,$3F(a1)
+		bpl.s	@jump
+		btst	#1,obStatus(a1)
+		bne.s	@locret
+@jump:
+		btst	#0,obRender(a0)
+		bne.s	@jump2
+		move.b	#$00,(v_layer).w
+	;	move.b	#$C,(v_top_solid_bit).w	; MJ: set collision to 1st
+	;	move.b	#$D,(v_lrb_solid_bit).w	; MJ: set collision to 1st
 		btst	#4,d0
-		beq.s	Obj03_MXA_B2
-			move.b	#$01,(v_layer).w
-	;	move.b	#$E,$3E(a1)
-	;	move.b	#$F,$3F(a1)
-
-Obj03_MXA_B2:
+		beq.s	@jump2
+		move.b	#$01,(v_layer).w
+	;	move.b	#$E,(v_top_solid_bit).w	; MJ: set collision to 2nd
+	;	move.b	#$F,(v_lrb_solid_bit).w	; MJ: set collision to 2nd
+@jump2:
 		andi.w	#$7FFF,obGfx(a1)
 		btst	#6,d0
-		beq.s	return_1FEAC
-		ori.w	#$8000,obGfx(a1)
-
-return_1FEAC:
+		beq.s	@jump3
+		ori.w	#(1<<15),obGfx(a1)
+@jump3:
+	if DebugPathSwappers
+		tst.b	(f_debugcheat).w
+		beq.s	@locret
+		sfx	sfx_Lamppost,1,0,1
+	endif
+@locret:
 		rts
-
 ; ===========================================================================
 
-Obj03_MainY:
+PSwapper_MainY:
 		tst.w	(v_debuguse).w
-		bne.w	return_1FFB6
+		bne.w	@locret
 		move.w	obY(a0),d1
 		lea	$34(a0),a2
 		lea	(v_player).w,a1 ; a1=character
-;		bsr.s	+
-;		lea	(Sidekick).w,a1 ; a1=character
-
-;+
 		tst.b	(a2)+
-		bne.s	Obj03_MainY_Alt
+		bne.s	PSwapper_MainY_Alt
 		cmp.w	obY(a1),d1
-		bhi.w	return_1FFB6
+		bhi.s	@locret
 		move.b	#1,-1(a2)
 		move.w	obX(a0),d2
 		move.w	d2,d3
@@ -193,38 +183,42 @@ Obj03_MainY:
 		add.w	d4,d3
 		move.w	obX(a1),d4
 		cmp.w	d2,d4
-		blt.w	return_1FFB6
+		blt.s	@locret
 		cmp.w	d3,d4
-		bge.w	return_1FFB6
+		bge.s	@locret
 		move.b	obSubtype(a0),d0
-		bpl.s	Obj03_MY_B1
-		btst	#1,$2B(a1)
-		bne.w	return_1FFB6
-
-Obj03_MY_B1:
+		bpl.s	@jump
+		btst	#1,obStatus(a1)
+		bne.s	@locret
+@jump:
 		btst	#0,obRender(a0)
-		bne.s	Obj03_MY_B2
-			move.b	#$00,(v_layer).w
-	;	move.b	#$C,$3E(a1)
-	;	move.b	#$D,$3F(a1)
+		bne.s	@jump2
+		move.b	#$00,(v_layer).w
+	;	move.b	#$C,(v_top_solid_bit).w	; MJ: set collision to 1st
+	;	move.b	#$D,(v_lrb_solid_bit).w	; MJ: set collision to 1st
 		btst	#3,d0
-		beq.s	Obj03_MY_B2
-			move.b	#$01,(v_layer).w
-	;	move.b	#$E,$3E(a1)
-	;	move.b	#$F,$3F(a1)
-
-Obj03_MY_B2:
+		beq.s	@jump2
+		move.b	#$01,(v_layer).w
+	;	move.b	#$E,(v_top_solid_bit).w	; MJ: set collision to 2nd
+	;	move.b	#$F,(v_lrb_solid_bit).w	; MJ: set collision to 2nd
+@jump2:
 		andi.w	#$7FFF,obGfx(a1)
 		btst	#5,d0
-		beq.s	return_1FFB6
-		ori.w	#$8000,obGfx(a1)
-		bra.s	return_1FFB6
-
+		beq.s	@jump3
+		ori.w	#(1<<15),obGfx(a1)
+@jump3:
+	if DebugPathSwappers
+		tst.b	(f_debugcheat).w
+		beq.s	@locret
+		sfx	sfx_Lamppost,1,0,1
+	endif
+@locret:
+		rts
 ; ===========================================================================
-
-Obj03_MainY_Alt:
+; loc_1FF42:
+PSwapper_MainY_Alt:
 		cmp.w	obY(a1),d1
-		bls.w	return_1FFB6
+		bls.s	@locret
 		move.b	#0,-1(a2)
 		move.w	obX(a0),d2
 		move.w	d2,d3
@@ -233,33 +227,40 @@ Obj03_MainY_Alt:
 		add.w	d4,d3
 		move.w	obX(a1),d4
 		cmp.w	d2,d4
-		blt.w	return_1FFB6
+		blt.s	@locret
 		cmp.w	d3,d4
-		bge.w	return_1FFB6
+		bge.s	@locret
 		move.b	obSubtype(a0),d0
-		bpl.s	Obj03_MYA_B1
-		btst	#1,$2B(a1)
-		bne.w	return_1FFB6
-
-Obj03_MYA_B1
+		bpl.s	@jump
+		btst	#1,obStatus(a1)
+		bne.s	@locret
+@jump:
 		btst	#0,obRender(a0)
-		bne.s	Obj03_MYA_B2
-			move.b	#$00,(v_layer).w
-	;	move.b	#$C,$3E(a1)
-	;	move.b	#$D,$3F(a1)
+		bne.s	@jump2
+		move.b	#$00,(v_layer).w
+	;	move.b	#$C,(v_top_solid_bit).w	; MJ: set collision to 1st
+	;	move.b	#$D,(v_lrb_solid_bit).w	; MJ: set collision to 1st
 		btst	#4,d0
-		beq.s	Obj03_MYA_B2
-			move.b	#$01,(v_layer).w
-	;	move.b	#$E,$3E(a1)
-	;	move.b	#$F,$3F(a1)
-
-Obj03_MYA_B2:
+		beq.s	@jump2
+		move.b	#$01,(v_layer).w
+	;	move.b	#$E,(v_top_solid_bit).w	; MJ: set collision to 2nd
+	;	move.b	#$F,(v_lrb_solid_bit).w	; MJ: set collision to 2nd
+@jump2:
 		andi.w	#$7FFF,obGfx(a1)
 		btst	#6,d0
-		beq.s	return_1FFB6
-		ori.w	#$8000,obGfx(a1)
-
-return_1FFB6:
+		beq.s	@jump3
+		ori.w	#(1<<15),obGfx(a1)
+@jump3:
+	if DebugPathSwappers
+		tst.b	(f_debugcheat).w
+		beq.s	@locret
+		sfx	sfx_Lamppost,1,0,1
+	endif
+@locret:
 		rts
-
+; ===========================================================================
+; -------------------------------------------------------------------------------
+; sprite mappings
+; -------------------------------------------------------------------------------
+Map_PathSwapper:	include "_maps\Collision Switcher.asm"
 ; ===========================================================================

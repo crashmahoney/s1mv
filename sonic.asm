@@ -16,6 +16,7 @@ PALWait         = 0      ; loop #$700 in vblank?
 PALMusicSpeedup = 1      ; run sound driver twice every 5th frame to fix music speed (68k sound driver only)
 StartupSoundtest= 1      ; enable cheat, hold a b or c before the sega screen appears to go straight to soundtest
 SkipChecksum    = 1      ; skip checksum check at startup
+DebugPathSwappers: = 1
 ; --------------------------------------------------------------------------
 
 	include	"Variables.asm"
@@ -321,6 +322,7 @@ VBlank:					; XREF: Vectors
 		move.w	($C00004).l,d0
 		move.l	#$40000010,($C00004).l
 		move.l	(v_scrposy_dup).w,($C00000).l ; send screen y-axis pos. to VSRAM
+		move.l	(v_scrposy_dup).w,(v_screenYstretch).w ; send screen y-axis pos.
 		move.w	#$8720,($C00004).l	      ; set background colour (line 3, palette entry 0)
     if PALWait=1
 		btst	#6,(v_megadrive).w ; is Megadrive PAL?
@@ -449,15 +451,14 @@ VBla_08:				; XREF: VBla_Index
 
 		writeVRAM	v_scrolltable,$380,vram_hscroll
 		writeVRAM	v_sprites,$280,vram_sprites
-                jsr	(ProcessDMAQueue).l          ; +++ replaced code above, gfx crap
+		jsr	(ProcessDMAQueue).l          ; +++ replaced code above, gfx crap
 ;                 startZ80
 		movem.l	(v_screenposx).w,d0-d7
 		movem.l	d0-d7,($FFFFFF10).w
 		movem.l	(v_bgscroll1).w,d0-d1
 		movem.l	d0-d1,($FFFFFF30).w
-;		move.w  #$E00,(v_waterpos1).w        ; reset palette (for h-int palette gradient)
-;		cmpi.b	#40,(v_hbla_line).w          ; was 96
-;		bcc.s	Demo_Time
+	;	cmpi.b	#40,(v_hbla_line).w          ; was 96
+	;	bcc.s	Demo_Time
 		bra.s	Demo_Time
 		move.b	#1,($FFFFF64F).w
 		addq.l	#4,sp
@@ -672,9 +673,13 @@ HBlank2:        ; background colour gradient
 ; 		move.w  (v_waterpos1).w,($C00000).l   ; send colour to data port
 ;		addi.w  #$21,(v_waterpos1).w
 ; 		movem.l	(sp)+,d0
-		move.w	#$8730,($C00004).l	; set background colour (line 3, palette entry 0)
-		tst.b	($FFFFF64F).w
-		bne.s	loc_119E
+
+;		move.w	#$8730,($C00004).l	; set background colour (line 3, palette entry 0)
+		move.l	#$40000010,($C00004).l
+		add.w	#2,(v_screenYstretch+2).w
+		move.l	(v_screenYstretch).w,($C00000).l ; send screen y-axis pos. to VSRAM		tst.b	($FFFFF64F).w
+	;	tst.b	($FFFFF64F).w
+	;	bne.s	loc_119E
 		rte
 ; ---------------------------------------------------------------------------
 ; Subroutine to	initialise joypads
@@ -2764,10 +2769,11 @@ LoadMonitorSRAM:
 		clr.b	(v_wtr_routine).w ; clear water routine counter
 		clr.b	(f_wtr_state).w	; clear	water state
  		move.b	#1,(f_water).w	; enable water
+
 ; 		move.w	#$4EF9,(H_int_jump).w   ;"jmp" in machine code (h-int runs this)
-; 		move.l	#HBlank2,(H_int_addr).w  ; hblank code address to jump to
-; 		move.w	#$8014,($C00004).l	; enable H-interrupts
-; 		move.w	#$8A00+24,(v_hbla_hreg).w ; set palette change position (for water)
+ ;		move.l	#HBlank2,(H_int_addr).w  ; hblank code address to jump to
+ ;		move.w	#$8014,($C00004).l	; enable H-interrupts
+;		move.w	#$8A00+24,(v_hbla_hreg).w ; set palette change position (for water)
 
 Level_LoadPal:
 		move.w	#30,(v_air).w
