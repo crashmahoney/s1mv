@@ -51,12 +51,23 @@ PCycGHZ_Go:
 		andi.w	#3,d0		; if cycle > 3, reset to 0
 		lsl.w	#3,d0
 		lea		(v_pal1_wat+$58).w,a1
-		move.l	(a0,d0.w),$20(a1)
 		move.l	(a0,d0.w),(a1)+
-		move.l	4(a0,d0.w),$20(a1)	; copy palette data to RAM
 		move.l	4(a0,d0.w),(a1)	; copy palette data to RAM
 
+
+
 PCycGHZ_Skip:
+		move.w	(v_framecount).w,d0
+		lsr.w	#1,d0			; divide by 2
+		move.w	d0,d1			; save result
+		lsr.w	#1,d1			; divide result by 2
+		sub.w	d1,d0			; now we have framecount / 3
+		andi.w	#3,d0
+		lsl.w	#3,d0
+		lea		(v_pal1_wat+$78).w,a1
+		move.l	(a0,d0.w),(a1)+
+		move.l	4(a0,d0.w),(a1)	; copy palette data to RAM
+
 		rts	
 ; End of function PCycle_GHZ
 
@@ -66,13 +77,13 @@ PCycGHZ_Skip:
 
 PCycle_LZ:				; XREF: PCycle_Index
 ; Waterfalls
-                cmpi.b  #0,(v_act).w
-                beq.s   PcycLZ_Skip1
+        ;        cmpi.b  #0,(v_act).w
+         ;       beq.s   PcycLZ_Skip1
 
 		subq.w	#1,(v_pcyc_time).w ; decrement timer
 		bpl.s	PCycLZ_Skip1	; if time remains, branch
 
-		move.w	#4,(v_pcyc_time).w ; reset timer to 2 frames
+		move.w	#2,(v_pcyc_time).w ; reset timer to 2 frames
 		move.w	(v_pcyc_num).w,d0
 		addq.w	#1,(v_pcyc_num).w ; increment cycle number
 		andi.w	#3,d0		; if cycle > 3, reset to 0
@@ -92,12 +103,12 @@ PCycle_LZ:				; XREF: PCycle_Index
 
 PCycLZ_Skip1:
 ;Conveyor belts
-		subq.w	#1,(v_pcyc_time).w ; decrement timer
-		bpl.s	PCycLZ_Skip2	; if time remains, branch
+	;	subq.w	#1,(v_pcyc_time).w ; decrement timer
+	;	bpl.s	PCycLZ_Skip2	; if time remains, branch
 
-		move.w	#4,(v_pcyc_time).w ; reset timer to 2 frames
+	;	move.w	#4,(v_pcyc_time).w ; reset timer to 2 frames
 		move.w	(v_pcyc_num).w,d0
-		addq.w	#1,(v_pcyc_num).w ; increment cycle number
+	;	addq.w	#1,(v_pcyc_num).w ; increment cycle number
 		andi.w	#3,d0		; if cycle > 3, reset to 0
 		lsl.w	#3,d0
 		lea	(Pal_LZCyc4).l,a0

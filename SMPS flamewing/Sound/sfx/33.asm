@@ -4,7 +4,7 @@ Sound_33_Header:
 	smpsHeaderTempoSFX  $01
 	smpsHeaderChanSFX   $01
 
-	smpsHeaderSFXChannel cFM4, Sound_33_FM4,	$00, $05
+	smpsHeaderSFXChannel cFM4, Sound_33_FM4,	$00, $0A
 
 ; FM4 Data
 Sound_33_FM4:

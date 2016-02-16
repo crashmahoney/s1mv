@@ -570,6 +570,11 @@ SH_SetScreen:
 ; ===========================================================================
 
 SH_BehindMid:
+		cmpi.w	#-16,d0		; is Sonic within 16px of middle area?
+		bcc.s	SH_Behind16	; if yes, branch
+		move.w	#-16,d0		; set to 16 if greater
+
+	SH_Behind16:
 		add.w	(v_screenposx).w,d0
 		cmp.w	(v_limitleft2).w,d0
 		bgt.s	SH_SetScreen

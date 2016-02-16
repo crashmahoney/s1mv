@@ -28,12 +28,12 @@ v_homingattackobj = v_objspace+$300
 v_lvlobjspace:	= $FFFFD800		; level object variable space ($1800 bytes)
 
 v_lvllayout:	= $FFFFF000		; layout is read from rom now, this contains pointers to the location of level layouts on ROM now 			; level and background layouts ($400 bytes)
-v_screenposy_last   = $FFFFF060   	; S3K Object manager
-v_screenposx_coarse = $FFFFF064   	;         ''
-v_screenposy_coarse = $FFFFF068   	;         ''
-v_objstate:	= $FFFFF070		; object state list ($300 bytes)
+v_screenposy_last   = $FFFFF090   	; S3K Object manager
+v_screenposx_coarse = $FFFFF094   	;         ''
+v_screenposy_coarse = $FFFFF098   	;         ''
+v_objstate:	= $FFFFF0A0		; object state list ($300 bytes)
 
-v_variables        = $FFFFF370
+v_variables        = $FFFFF3A0
 v_statspeed        = v_variables+$0     ;  speed stat
 v_stataccel        = v_variables+$1     ;  acceleration stat
 v_statjump         = v_variables+$2     ;  jump stat
@@ -374,6 +374,7 @@ v_musicpitch:    = $FFFFFFBE    	; +++ adjust music pitch by this amount
 v_palmuscounter  = $FFFFFFBF    	; +++ counts up to 5 then runs UpdateMusic twice
 v_scorecopy:	= $FFFFFFC0		; score, duplicate (4 bytes)
 v_scorelife:	= $FFFFFFC0		; points required for an extra life (4 bytes) (JP1 only)
+
 f_levselcheat:	= $FFFFFFE0		; level select cheat flag
 f_slomocheat:	= $FFFFFFE1		; slow motion & frame advance cheat flag
 Slow_Motion_Flag      equ $FFFFFFE1

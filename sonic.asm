@@ -16,7 +16,7 @@ PALWait         = 0      ; loop #$700 in vblank?
 PALMusicSpeedup = 1      ; run sound driver twice every 5th frame to fix music speed (68k sound driver only)
 StartupSoundtest= 1      ; enable cheat, hold a b or c before the sega screen appears to go straight to soundtest
 SkipChecksum    = 1      ; skip checksum check at startup
-DebugPathSwappers: = 1
+DebugPathSwappers: = 0
 ; --------------------------------------------------------------------------
 
 	include	"Variables.asm"
@@ -8083,6 +8083,10 @@ loc_1504A:
 ObjHitWallLeft:
 		add.w	obX(a0),d3
 		move.w	obY(a0),d2
+		; Engine bug: colliding with left walls is erratic with this function.
+		; The cause is this: a missing instruction to flip collision on the found
+ 		; 16x16 block; this one:
+ 		eori.w	#$F,d3
 		lea	(v_anglebuffer).w,a4
 		move.b	#0,(a4)
 		movea.w	#-$10,a3

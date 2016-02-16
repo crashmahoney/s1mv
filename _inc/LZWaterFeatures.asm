@@ -47,7 +47,7 @@ LZWaterFeatures:			; XREF: GM_Level
 ; ---------------------------------------------------------------------------
 ; Initial water heights
 ; ---------------------------------------------------------------------------
-WaterHeight:	dc.w $102	; Labyrinth 1
+WaterHeight:	dc.w $182	; Labyrinth 1
 		dc.w $328	; Labyrinth 2
 		dc.w $900	; Labyrinth 3
 		dc.w $228	; Scrap Brain 3
@@ -88,7 +88,7 @@ DynWater_LZ1:				; XREF: DynWater_Index
 ; 		move.w	(v_screenposx).w,d0
 ; 		move.b	(v_wtr_routine).w,d2
 ; 		bne.s	@routine2
-		move.w	#$102,d1		; water height
+		move.w	#$182,d1		; water height
 ; 		cmpi.w	#$600,d0	; has screen reached next position?
 ; 		bcs.s	@setwater	; if not, branch
 ; 		move.w	#$108,d1

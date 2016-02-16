@@ -281,8 +281,9 @@ Menu_Load_Level:
                 moveq   #$00, D0
                 move.w  D0, ($FFFFFF8A).w
                 move.w  D0, ($FFFFFFDC).w
-@end:		move.w	#0,(f_pause).w	; unpause the game
- 		move.w	#1,(f_restart).w                 ; restart the level
+@end:		     move.w	#0,(f_pause).w	; unpause the game
+ 		         move.w	#1,(f_restart).w                 ; restart the level
+                clr.w   (v_levselitem).w
                 rts
 Offset_0x026DEC:
                 move.b  (v_jpadpress1).w, D1
@@ -633,7 +634,7 @@ Menu_Text_Positions:
                 dc.w    $04DC, $061C
 ;-------------------------------------------------------------------------------                          
 Menu_Level_Select_Text: 
-                dc.b    $0E, _G, _R, _E, _E, _N, __, _P, _O, _O, __, __, __, __, __, __
+                dc.b    $0E, _G, _R, _E, _E, _N, __, _H, _I, _L, _L, __, __, __, __, __
                 dc.b    $0E, _M, _A, _R, _B, _L, _E, __, __, __, __, __, __, __, __, __
                 dc.b    $0E, _S, _P, _R, _I, _N, _G, __, _Y, _A, _R, _D, __, __, __, __
                 dc.b    $0E, _L, _A, _B, _Y, _R, _I, _N, _T, _H, __, __, __, __, __, __
