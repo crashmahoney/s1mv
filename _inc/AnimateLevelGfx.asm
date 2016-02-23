@@ -113,7 +113,7 @@ loc_1C134:
 		move.b	d0,(v_lani0_frame).w
 		mulu.w	#$600,d0
 		adda.w	d0,a1
-		locVRAM	$2680
+		locVRAM	$2660
 		move.w	#47,d1
 		bsr.w	LoadTiles
 		rts
@@ -122,6 +122,9 @@ loc_1C134:
 
 
 loc_1C150:
+		rts
+
+		
 		subq.b	#1,(v_lani1_time).w
 		bpl.s	loc_1C1AE
 		move.b	#1,(v_lani1_time).w

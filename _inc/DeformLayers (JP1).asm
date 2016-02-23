@@ -316,6 +316,40 @@ lzloc_63A4:
 
 
 Deform_MZ:				; XREF: Deform_Index
+		
+		move.w	(v_scrshiftx).w,d4
+		ext.l	d4
+		asl.l	#7,d4
+		move.w	($FFFFF73C).w,d5
+		ext.l	d5
+		asl.l	#7,d5
+		bsr.w	ScrollBlock1
+		move.w	($FFFFF70C).w,($FFFFF618).w
+		lea	(v_scrolltable).w,a1
+		move.w	#223,d1
+		move.w	(v_screenposx).w,d0
+		neg.w	d0
+		swap	d0
+		move.w	($FFFFF708).w,d0
+		neg.w	d0
+
+loc_63C6:
+		move.l	d0,(a1)+
+		dbf	d1,loc_63C6
+		move.w	(v_waterpos1).w,d0
+		sub.w	(v_screenposy).w,d0
+		rts	
+
+
+
+
+
+
+
+; old version
+
+
+
 		tst.l   ($FFFFF708).w                 ; is scrollblock 3 = 0
 		bne.s   @sb3not0
                 moveq   #0,d4

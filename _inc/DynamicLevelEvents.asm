@@ -95,6 +95,8 @@ DLE_GHZ1_Main:
 		bcs.w	@rts      	            	; if not, branch
 		cmpi.w	#$110,(v_screenposy).w		; near top of screen?
         bge.w   @rts						; if not, branch
+		cmpi.w	#$2300,(v_screenposx).w     ; is the camera less than $2300 on x-axis?
+		bcc.w	@rts      	            	; if not, branch
  		moveq	#31,d0						; test act flag 31
 		bsr.w	GetActFlag					; has boss already been beaten?
 		tst.b	d0
@@ -112,7 +114,7 @@ DLE_GHZ1_Main:
 		dbf     d0,@movecolour
 
 		moveq	#plcid_MTZBoss,d0
-		bra.w	AddPLC							; load boss patterns
+		jmp		AddPLC							; load boss patterns
 ; --------------------------------------------------------------------------
 DLE_GHZ1boss:
  		move.w	#MTZBscreenY-$10,(v_limitbtm1).w	;set screen limits

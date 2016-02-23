@@ -15,7 +15,7 @@ Bas_Index:	dc.w Bas_Main-Bas_Index
 Bas_Main:	; Routine 0
 		addq.b	#2,obRoutine(a0)
 		move.l	#Map_Bas,obMap(a0)
-		move.w	#$84B8,obGfx(a0)
+		move.w	#$A4B8,obGfx(a0)
 		move.b	#4,obRender(a0)
 		move.b	#$C,obWidth(a0)
 		move.w	#$100,obPriority(a0)

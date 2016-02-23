@@ -292,7 +292,7 @@ sfx_Teleport:	equ $73
 sfx_ChainStomp:	equ $5F
 sfx_Roll:	equ $3C                              ;BE
 sfx_Continue:	equ $AC
-sfx_Basaran:	equ $35
+sfx_Basaran:	equ $A6
 sfx_BreakItem:	equ $3D
 sfx_Warning:	equ $A9
 sfx_GiantRing:	equ $B3

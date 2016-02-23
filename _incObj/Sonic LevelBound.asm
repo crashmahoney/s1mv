@@ -9,19 +9,19 @@ Sonic_LevelBound:			; XREF: Obj01_MdNormal; et al
 		cmpi.b  #$0C,(v_gamemode).w
 		bne.w   @rts
         move.l	obX(a0),d1
-		smi.b	d2				; Set d2 if player on position > 32767
-		add.w	d2,d2			; Move bit up
+;		smi.b	d2				; Set d2 if player on position > 32767
+;		add.w	d2,d2			; Move bit up
 		move.w	obVelX(a0),d0
-		spl.b	d2				; Set if speed is positive
-		add.w	d2,d2			; Move bit up
+;		spl.b	d2				; Set if speed is positive
+;		add.w	d2,d2			; Move bit up
 		ext.l	d0
 		asl.l	#8,d0
 		add.l	d0,d1
-		spl.b	d2				; Set if position+speed is < 32768
-		move.w	(v_limitleft2).w,d0
-		addi.w	#$10,d0
-		tst.w	d2				; If d2 is zero, we had an underflow of position
-		beq.w	@sideslocked
+;		spl.b	d2				; Set if position+speed is < 32768
+;		move.w	(v_limitleft2).w,d0
+;		addi.w	#$10,d0
+;		tst.w	d2				; If d2 is zero, we had an underflow of position
+;		beq.w	@sideslocked
 		swap	d1
 		tst.b	(f_lockscreen).w    ; is screen locked?
 		beq.s	@chkleft            ; if not, branch
