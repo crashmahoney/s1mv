@@ -741,6 +741,7 @@ ObjC5_LaserInit:
 	addi.w	#$10,obY(a0)
 	move.b	#$C,obAniFrame(a0)
 	subq.w	#3,obY(a0)
+	sfx		$53					; play laser timer sound
 	rts
 ; ===========================================================================
 
@@ -792,6 +793,7 @@ ObjC5_LaserShoot:
 	move.b	d0,objoff_2E(a0)
 	move.b	ObjC5_LaserMappingsData(pc,d0.w),obFrame(a0)
 	move.b	ObjC5_LaserCollisionData(pc,d0.w),obColType(a0)
+	sfx		$54				; play laser fire sound
 	rts
 ; ===========================================================================
 
