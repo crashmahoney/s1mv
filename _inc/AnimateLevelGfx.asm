@@ -20,7 +20,7 @@ AnimateLevelGfx:			; XREF: Demo_Time; VBla_0C_NoChg
 		rts	
 
 ; ===========================================================================
-AniArt_Index:	dc.w AniArt_GHZ-AniArt_Index, AniArt_none-AniArt_Index
+AniArt_Index:	dc.w AniArt_GHZ-AniArt_Index, AniArt_LZ-AniArt_Index
 		dc.w AniArt_MZ-AniArt_Index, AniArt_none-AniArt_Index
 		dc.w AniArt_none-AniArt_Index, AniArt_SBZ-AniArt_Index
 		dc.w AniArt_Ending-AniArt_Index, AniArt_MZ-AniArt_Index
@@ -92,11 +92,213 @@ AniArt_GHZ:				; XREF: AniArt_Index
 ; 		rts	
 ; ; ===========================================================================
 ; byte_1C10E:	dc.b 0,	1, 2, 1
+
+
+
+
+; ===========================================================================
+; ---------------------------------------------------------------------------
+; Animated pattern routine - Labyrinth
+; ---------------------------------------------------------------------------
+Vram_LZ_Waterline = $19B*$20
+
+AniArt_LZ:
+AnimateTiles_HCZ1:
+;		tst.b	($FFFFEEE8).w
+;		beq.s	loc_27888
+;		rts
+; ---------------------------------------------------------------------------
+; ---------------------------------------------------------------------------
+; This section determines which	tiles to load at what position to simulate a
+; waterline extending into the background
+; ---------------------------------------------------------------------------
+
+loc_27888:
+		lea	(v_HCZ_tileanim).w,a3		
+
+loc_2788C:
+		moveq	#0,d1
+		move.w	(v_waterline_difference).w,d1
+		cmp.w	(a3),d1
+		beq.w	loc_2797A
+		move.w	d1,(a3)
+		tst.w	d1
+		beq.w	loc_2797E
+		bpl.w	loc_27912
+		addi.w	#$60,d1
+		bcc.w	loc_2797A
+		move.w	d1,d0
+		add.w	d1,d1
+		add.w	d0,d1
+		lsl.w	#5,d1
+		lea	(v_LZ_Waterline_Buffer).l,a4
+		lea	(HCZ_WaterlineScroll_Data).l,a5
+		adda.w	d1,a5
+		move.w	#$5F,d1
+
+loc_278C6:
+		moveq	#0,d0
+		move.b	(a5)+,d0
+		add.w	d0,d0
+		add.w	d0,d0
+		lea	(ArtUnc_AniHCZ1_WaterlineBelow).l,a0
+		adda.w	d0,a0
+		move.l	(a0),(a4)
+		lea	$600(a0),a0
+		lea	$180(a4),a4
+		move.l	(a0),(a4)
+		lea	-$17C(a4),a4
+		dbf	d1,loc_278C6
+		move.l	#v_LZ_Waterline_Buffer,d1
+		move.w	#Vram_LZ_Waterline,d2
+		move.w	#$180,d3
+		jsr	(Add_To_DMA_Queue).l
+		tst.w	2(a3)
+		bmi.s	loc_2790E
+		move.w	#-1,2(a3)
+		bsr.w	AniHCZ_FixLowerBG
+
+loc_2790E:
+		bra.w	loc_2797A
+; ---------------------------------------------------------------------------
+
+loc_27912:
+		neg.w	d1
+		addi.w	#$60,d1
+		bcc.s	loc_2797A
+		move.w	d1,d0
+		add.w	d1,d1
+		add.w	d0,d1
+		lsl.w	#5,d1
+		lea	(v_LZ_Waterline_Buffer).l,a4
+		lea	(HCZ_WaterlineScroll_Data).l,a5
+		adda.w	d1,a5
+		move.w	#$5F,d1
+
+loc_27934:
+		moveq	#0,d0
+		move.b	(a5)+,d0
+		add.w	d0,d0
+		add.w	d0,d0
+		lea	(ArtUnc_AniHCZ1_WaterlineAbove).l,a0
+		adda.w	d0,a0
+		move.l	(a0),(a4)
+		lea	$600(a0),a0
+		lea	$180(a4),a4
+		move.l	(a0),(a4)
+		lea	-$17C(a4),a4
+		dbf	d1,loc_27934
+		move.l	#v_LZ_Waterline_Buffer,d1
+		move.w	#Vram_LZ_Waterline+$300,d2
+		move.w	#$180,d3
+		jsr	(Add_To_DMA_Queue).l
+		tst.w	2(a3)
+		beq.s	loc_2797A
+		move.w	#0,2(a3)
+		bsr.s	AniHCZ_FixUpperBG
+loc_2797A:
+		rts
+;		bra.w	AnimateTiles_DoAniPLC
+; ---------------------------------------------------------------------------
+
+loc_2797E:
+
+		move.w	#1,(a3)
+		bsr.s	AniHCZ_FixLowerBG
+
+; ---------------------------------------------------------------------------
+; When the special waterline goes below	water, this routine loads tiles	to
+; fix the background area that was affected when the waterline was above
+; ---------------------------------------------------------------------------
+
+; =============== S U B R O U T I N E =======================================
+
+
+AniHCZ_FixUpperBG:
+
+		move.l	#ArtUnc_FixHCZ1_UpperBG1,d1
+		move.w	#Vram_LZ_Waterline,d2
+		move.w	#$C0,d3
+		jsr	(Add_To_DMA_Queue).l
+		move.l	#ArtUnc_FixHCZ1_UpperBG2,d1
+		move.w	#Vram_LZ_Waterline+$180,d2
+		move.w	#$C0,d3
+		jmp	(Add_To_DMA_Queue).l
+; End of function AniHCZ_FixUpperBG
+
+; ---------------------------------------------------------------------------
+; When the special waterline goes above	water, this routine loads tiles	to
+; fix the background area that was affected when the waterline was below
+; ---------------------------------------------------------------------------
+
+; =============== S U B R O U T I N E =======================================
+
+
+AniHCZ_FixLowerBG:
+
+		move.l	#ArtUnc_FixHCZ1_LowerBG1,d1
+		move.w	#Vram_LZ_Waterline+$300,d2
+		move.w	#$C0,d3
+		jsr	(Add_To_DMA_Queue).l
+		move.l	#ArtUnc_FixHCZ1_LowerBG2,d1
+		move.w	#Vram_LZ_Waterline+$480,d2
+		move.w	#$C0,d3
+		jmp	(Add_To_DMA_Queue).l
+; End of function AniHCZ_FixLowerBG
+
+
+; =============== S U B R O U T I N E =======================================
+
+
+sub_279D4:
+;		lea	(AniPLC_HCZ1).l,a2
+		lea	(v_HCZ_tileanim).w,a3
+		move.w	(v_waterline_difference).w,d1
+		beq.s	loc_2797E
+		bpl.s	loc_27A1C
+		addi.w	#$60,d1
+		bcc.s	loc_279F2
+		bsr.s	AniHCZ_FixLowerBG
+		bra.w	loc_2788C
+; ---------------------------------------------------------------------------
+
+loc_279F2:
+		bsr.s	AniHCZ_FixLowerBG
+		move.l	#ArtUnc_AniHCZ1_WaterlineBelow,d1
+		move.w	#Vram_LZ_Waterline,d2
+		move.w	#$C0,d3
+		jsr	(Add_To_DMA_Queue).l
+		move.l	#ArtUnc_AniHCZ1_WaterlineBelow2,d1
+		move.w	#Vram_LZ_Waterline+$180,d2
+		move.w	#$C0,d3
+		jmp	(Add_To_DMA_Queue).l
+; ---------------------------------------------------------------------------
+
+loc_27A1C:
+		neg.w	d1
+		addi.w	#$60,d1
+		bcc.s	loc_27A2C
+		bsr.w	AniHCZ_FixUpperBG
+		bra.w	loc_2788C
+; ---------------------------------------------------------------------------
+
+loc_27A2C:
+		bsr.w	AniHCZ_FixUpperBG
+		move.l	#ArtUnc_AniHCZ1_WaterlineAbove,d1
+		move.w	#Vram_LZ_Waterline+$300,d2
+		move.w	#$C0,d3
+		jsr	(Add_To_DMA_Queue).l
+		move.l	#ArtUnc_AniHCZ1_WaterlineAbove2,d1
+		move.w	#Vram_LZ_Waterline+$400,d2
+		move.w	#$C0,d3
+		jmp	(Add_To_DMA_Queue).l
+; End of function sub_279D4
+
+
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
 ; Animated pattern routine - Marble
 ; ---------------------------------------------------------------------------
-
 AniArt_MZ:				; XREF: AniArt_Index
 		subq.b	#1,(v_lani0_time).w
 		bpl.s	loc_1C150
@@ -535,3 +737,4 @@ loc_1C518:
 		bra.w	LoadTiles
 
 ; End of function AniArt_GiantRing
+

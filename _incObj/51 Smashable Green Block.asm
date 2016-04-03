@@ -51,9 +51,12 @@ Smab_Solid:	; Routine 2
 
 @sonic:		= $32		; Sonic's current animation number
 @count:		= $34		; number of blocks hit + previous stuff
+@yspeed		= $36		; remember sonic's y speed
 
-		move.w	(v_itembonus).w,$34(a0)
+		move.w	(v_itembonus).w,@count(a0)
 		move.b	(v_player+obAnim).w,@sonic(a0) ; load Sonic's animation number
+		move.w	(v_player+obVelY).w,@yspeed(a0); remember sonic's y speed
+
 		move.w	#$1B,d1
 		move.w	#$10,d2
 		move.w	#$11,d3
@@ -67,6 +70,12 @@ Smab_Solid:	; Routine 2
 ; ===========================================================================
 
 @smash:
+		cmpi.b	#id_stomp,@sonic(a0) ; is Sonic stomping?
+		bne.s	@chkroll	; if not, branch
+		move.w	@count(a0),(v_itembonus).w
+		move.w	@yspeed(a0),(v_player+obVelY).w
+		bra.s	@cont
+	@chkroll:	
 		cmpi.b	#id_Roll,@sonic(a0) ; is Sonic rolling/jumping?
 		bne.s	@notspinning	; if not, branch
 		move.w	@count(a0),(v_itembonus).w
@@ -75,6 +84,7 @@ Smab_Solid:	; Routine 2
 		move.b	#7,obHeight(a1)
 		move.b	#id_Roll,obAnim(a1) ; make Sonic roll
 		move.w	#-$300,obVelY(a1) ; rebound Sonic
+	@cont:	
 		bset	#1,obStatus(a1)
 		bclr	#3,obStatus(a1)
 		move.b	#2,obRoutine(a1)

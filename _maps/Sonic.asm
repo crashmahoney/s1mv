@@ -242,6 +242,10 @@ ptr_MS_Wait22:	dc.w MS_Wait22-Map_Sonic
 ptr_MS_Wait23:	dc.w MS_Wait23-Map_Sonic
 ptr_MS_Wait24:	dc.w MS_Wait24-Map_Sonic
 ptr_MS_Wait25:	dc.w MS_Wait25-Map_Sonic
+
+ptr_MS_Stomp:	dc.w MS_Stomp-Map_Sonic
+ptr_MS_Crouch:	dc.w MS_Crouch-Map_Sonic
+
 ; --------------------------------------------------------------------------
 
 MS_Null:	dc.b 0
@@ -1217,6 +1221,15 @@ MS_Wait24: dc.b  $2
 MS_Wait25: dc.b  $2
 	dc.b  $F4, $B, $0, $0, $E8
 	dc.b  $4, $5, $0, $C, $0
+
+MS_Stomp:	dc.b $3
+	dc.b $E8, $E, $0, $0, $F0
+	dc.b $F0, $0, $0, $C, $10
+	dc.b $0, $6, $0, $D, $F8
+
+MS_Crouch:	dc.b $1
+	dc.b $F4, $F, $0, $0, $F0
+
 		even
 
 fr_Null:	equ (ptr_MS_Null-Map_Sonic)/2		; 0
@@ -1460,3 +1473,6 @@ fr_Wait22:	equ (ptr_MS_Wait22-Map_Sonic)/2
 fr_Wait23:	equ (ptr_MS_Wait23-Map_Sonic)/2
 fr_Wait24:	equ (ptr_MS_Wait24-Map_Sonic)/2
 fr_Wait25:	equ (ptr_MS_Wait25-Map_Sonic)/2
+
+fr_Stomp:	equ (ptr_MS_Stomp-Map_Sonic)/2
+fr_Crouch:	equ (ptr_MS_Crouch-Map_Sonic)/2

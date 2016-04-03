@@ -9,12 +9,17 @@ SpinDashCount   = $3A
 
 Sonic_SpinDash:
 		btst	#staSpinDash,obStatus2(a0); already Spin Dashing?
-		bne.s	loc2_1AC8E		; if set, branch
-		cmpi.b	#id_Duck,obAnim(a0)	; is anim duck
-		bne.s	@end		        ; if not, return
-; 	        btst    #1,(v_abilities).w      ; is spin dash allowed?
-                tst.b   (v_abil_spindash).w     ; is spin dash allowed?
-		beq.s   @end                    ; +++ if you can't spin dash, return
+		bne.s	loc2_1AC8E				; if set, branch
+		tst.b   (v_abil_spindash).w     ; is spin dash allowed?
+		beq.s   @end                    ; if you can't spin dash, return
+		cmpi.b	#id_Duck,obAnim(a0)		; is anim duck
+		beq.s	@ckhbuttons		        ; if so, continue
+		cmpi.b	#id_Crouch,obAnim(a0)	; is anim crouch
+		bne.s   @end                    ; if not, branch
+		move.b	(v_jpadhold2).w,d0		; read controller
+		andi.b	#btnDn,d0				; pressing down ?
+		beq.w	@end        			; if not, return
+	@ckhbuttons:
 		move.b	(v_jpadpress2).w,d0	; read controller
 		andi.b	#btnABC,d0		; pressing A/B/C ?
 		beq.w	@end        		; if not, return

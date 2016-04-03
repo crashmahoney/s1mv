@@ -51,6 +51,8 @@ ptr_BalanceBack:	dc.w SonAni_BalanceBack-Ani_Sonic
 ptr_BalanceFar:	dc.w SonAni_BalanceFar-Ani_Sonic
 ptr_Hang3:	dc.w SonAni_Hang3-Ani_Sonic
 ptr_Wait2:	dc.w SonAni_Wait2-Ani_Sonic
+ptr_Stomp:	dc.w SonAni_Stomp-Ani_Sonic
+ptr_Crouch:	dc.w SonAni_Crouch-Ani_Sonic
 
 
 SonAni_Walk:	dc.b $FF, fr_walk13, fr_walk14,	fr_walk15, fr_walk16, fr_walk11, fr_walk12, afEnd, afEnd, afEnd
@@ -154,6 +156,11 @@ SonAni_DashCharge:	dc.b 0,  fr_walk13, fr_walk13, fr_walk13, fr_walk13, fr_walk1
 		dc.b	fr_dash11,  fr_dash12,  fr_dash13,  fr_dash14, afBack, 4
 		even
 
+SonAni_Stomp:	dc.b 3,	fr_Stomp, afEnd
+		even
+SonAni_Crouch:	dc.b 3,	fr_Crouch, afEnd
+		even
+
 SonAni_Transform:       dc.b   2, fr_Transform1, fr_Transform1, fr_Transform2, fr_Transform2, fr_Transform3, fr_Transform4
                         dc.b   fr_Transform5, fr_Transform4, fr_Transform5, fr_Transform4, fr_Transform5, fr_Transform4, fr_Transform5, afChange, id_Walk
                 even
@@ -216,6 +223,8 @@ id_BalanceBack:	equ (ptr_BalanceBack-Ani_Sonic)/2;$2A
 id_BalanceFar:	equ (ptr_BalanceFar-Ani_Sonic)/2 ;$2B
 id_Hang3:		equ (ptr_Hang3-Ani_Sonic)/2 ;$2C
 id_Wait2:	equ (ptr_Wait2-Ani_Sonic)/2	; 2D
+id_Stomp:	equ (ptr_Stomp-Ani_Sonic)/2	; 2E
+id_Crouch:	equ (ptr_Crouch-Ani_Sonic)/2	; 2F
 ; ===========================================================================
 ; Super Sonic Animation Set
 ; ===========================================================================
@@ -270,3 +279,5 @@ Ani_SuperSonic:
         dc.w Sonani_SupBalance-Ani_Sonic
 	dc.w SonAni_Hang3-Ani_Sonic
 	dc.w SonAni_SupStand-Ani_SuperSonic
+	dc.w SonAni_Stomp-Ani_Sonic
+	dc.w SonAni_Crouch-Ani_Sonic

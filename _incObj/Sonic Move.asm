@@ -30,7 +30,10 @@ Sonic_Move:				; XREF: Obj01_MdNormal
 		tst.w	obInertia(a0)	; is Sonic moving?
 		bne.w	Sonic_ResetScr	; if yes, branch
 		bclr	#5,obStatus(a0)
+		cmpi.b	#id_Crouch,obAnim(a0) 
+		beq.s	@stomping		
 		move.b	#id_Wait2,obAnim(a0) ; use "standing" animation
+	@stomping:	
 		btst	#3,obStatus(a0)
 		beq.w	Sonic_Balance
 		moveq	#0,d0
@@ -223,7 +226,10 @@ Sonic_LookUp:
 Sonic_Duck:
 		btst	#bitDn,(v_jpadhold2).w  ; is down being pressed?
 		beq.s	Sonic_ResetScr	        ; if not, branch
+		cmpi.b	#id_Crouch,obAnim(a0) 
+		beq.s	@stomping		
 		move.b	#id_Duck,obAnim(a0)	; use "ducking"	animation
+	@stomping:			
 		addq.b	#1,(v_vscrolldelay).w
 		cmpi.b	#$78,(v_vscrolldelay).w
 		bcs.s	Sonic_ResetScr_Part2

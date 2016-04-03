@@ -60,7 +60,7 @@ loc_1361E:
 		add.w	d1,obY(a0)
 		move.b	d3,obAngle(a0)
 		bsr.w	Sonic_ResetOnFloor
-		move.b	#id_Walk,obAnim(a0)
+	;	move.b	#id_Walk,obAnim(a0)
 		move.b	d3,d0
 		addi.b	#$20,d0
 		andi.b	#$40,d0
@@ -127,7 +127,7 @@ loc_136B4:
 		add.w	d1,obY(a0)
 		move.b	d3,obAngle(a0)
 		bsr.w	Sonic_ResetOnFloor
-		move.b	#id_Walk,obAnim(a0)
+	;	move.b	#id_Walk,obAnim(a0)
 		move.w	#0,obVelY(a0)
 		move.w	obVelX(a0),obInertia(a0)
 
@@ -216,7 +216,7 @@ loc_13772:
 		add.w	d1,obY(a0)
 		move.b	d3,obAngle(a0)
 		bsr.w	Sonic_ResetOnFloor
-		move.b	#id_Walk,obAnim(a0)
+	;	move.b	#id_Walk,obAnim(a0)
 		move.w	#0,obVelY(a0)
 		move.w	obVelX(a0),obInertia(a0)
 

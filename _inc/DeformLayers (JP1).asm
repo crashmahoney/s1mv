@@ -209,6 +209,8 @@ loc_630A:
 
 
 Deform_LZ:				; XREF: Deform_Index
+
+
 		move.w	(v_scrshiftx).w,d4            ; will put 0600 in d4                    scroll distant mountains horizontally
 		ext.l	d4             ; sign extend,                       |       d4 is the speed that the block moves at
 		asl.l	#5,d4                         ;                     |       was 5        fine control over scroll speed
@@ -224,8 +226,13 @@ Deform_LZ:				; XREF: Deform_Index
 ;		asl.l	#1,d4                         ;                     |       was 1        coarse control over scroll speed
 		add.l	d1,d4                         ;                     |
 		moveq	#0,d6                         ;                     |
-                bsr	ScrollBlock4                  ;                     V
+        bsr	ScrollBlock4                  ;                     V
 		lea	(v_scrolltable).w,a1
+		
+	;	bra.s	HCZ_Deformation
+
+
+; the old Y bg movement
 		move.w	(v_screenposy).w,d0
 		andi.w	#$7FF,d0
 		lsr.w	#5,d0
@@ -236,6 +243,20 @@ Deform_LZ:				; XREF: Deform_Index
 lzloc_62F6:
 		move.w	d0,d4
 		move.w	d0,(v_bgposy_dup).w
+
+HCZ_Deformation:
+		move.w	(v_screenposy).w,d0		; Get the BG camera Y position
+		subi.w	#$182,d0				; Get the difference between that and the water line equilibrium point    $610 in s3
+		move.w	d0,d1
+		asr.w	#2,d0
+		move.w	d0,d2
+		addi.w	#$90,d0					; $190 in s3
+	;	move.w	d0,d4
+		move.w	d0,(v_bgposy_dup).w		; The effective BG Y is negative when the BG is above the water line, positive when otherwise
+		sub.w	d1,d2					; The difference between the effective BG Y and the actual BG Y difference is what's used to calculate how the water line should be drawn
+		move.w	d2,(v_waterline_difference).w
+
+
 		move.w	(v_screenposx).w,d0
  		cmpi.b	#id_Title,($FFFFF600).w       ; if at title screen
  		bne.s	lzloc_630A

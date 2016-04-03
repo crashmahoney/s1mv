@@ -11,9 +11,10 @@ Sprite_1DD20:				; DATA XREF: ROM:0001600C?o
 		jmp	Dust_OffsetTable(pc,d1.w)
 ; ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
 Dust_OffsetTable: dc SD_Dust_Init-Dust_OffsetTable; 0 ; DATA XREF: h+6DBA?o h+6DBC?o ...
-		dc SD_Dust_Main-Dust_OffsetTable; 1
-		dc SD_Dust_BranchTo16_DeleteObject-Dust_OffsetTable; 2
-		dc SD_Dust_CheckSkid-Dust_OffsetTable; 3
+		dc SD_Dust_Main-Dust_OffsetTable; 2
+		dc SD_Dust_BranchTo16_DeleteObject-Dust_OffsetTable; 4
+		dc SD_Dust_CheckSkid-Dust_OffsetTable; 6
+		dc SD_Dust_CheckStomp-Dust_OffsetTable; 6
 ; ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
  
 SD_Dust_Init:				; DATA XREF: h+6DBA?o
@@ -50,6 +51,7 @@ SD_Dust_DisplayModes:	dc SD_Dust_Display-SD_Dust_DisplayModes; 0 ; DATA XREF: h+
 		dc SD_Dust_DisplayDust-SD_Dust_DisplayModes; 2
 		dc SD_Dust_DisplaySkidDust-SD_Dust_DisplayModes; 3
 		dc SD_Dust_DisplayWaterSpray-SD_Dust_DisplayModes; 4
+		dc SD_Dust_DisplaySkidDust-SD_Dust_DisplayModes; 5	(STOMP SHOCKWAVE)
 ; ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
 
 SD_Dust_DisplaySplash:				; DATA XREF: h+6E30?o
@@ -229,19 +231,62 @@ SD_Dust_LoadArt:				; CODE XREF: h+6EC0?p h+6F6C?p
 @return:				; CODE XREF: h+6F7A?j h+6F90?j
 		rts
                 
+
+
+SD_Dust_CheckStomp:
+	movea.w	$3E(a0),a2         ; move sonic's address to a2
+	moveq	#$10,d1
+	cmp.b	#id_Stomp,obAnim(a2)
+	beq.s	SD_Dust_Stomp
+	move.b	#2,obRoutine(a0)
+	rts
+; ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ 
+SD_Dust_Stomp:				; CODE XREF: h+6EE0?j
+
+		jsr	(FindFreeObj).l ; was SingleObjLoad, I think it was renamed to this
+		bne.s	@loadart
+		move.b	0(a0),0(a1)             ; load dust obj
+		move	obX(a2),obX(a1)
+		move	obY(a2),obY(a1)
+		add	d1,obY(a1)
+		move.b	#0,obStatus(a1)
+		move.b	#5,obAnim(a1)
+		addq.b	#2,obRoutine(a1)
+		move.l	obMap(a0),obMap(a1)
+		move.b	obRender(a0),obRender(a1)
+		move.w	#$180,obPriority(a1)
+		move.b	#4,obActWid(a1)
+		move	obGfx(a0),obGfx(a1)
+		move	$3E(a0),$3E(a1)
+		and	#$7FFF,obGfx(a1)
+		tst	obGfx(a2)
+		bpl.s	@loadart
+		or	#-$8000,obGfx(a1)
+ 
+@loadart:				; CODE XREF: h+6EF4?j h+6F00?j ...
+		bsr.w	SD_Dust_LoadArt
+		rts	
+; ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ 
+
                 even
+
+
+
 ; ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
 SD_Dust_Animations:	dc SD_Dust_AnimNull-SD_Dust_Animations; 0 ; DATA XREF: h+6EB4?o h+6FC4?o ...                     ; blank animation
 		dc SD_Dust_AnimSplash-SD_Dust_Animations; 1                                                        ; water splash animation
 		dc SD_Dust_AnimDash-SD_Dust_Animations; 2                                                        ; spin dash animation
                 dc SD_Dust_AnimSkid-SD_Dust_Animations; 3
-                dc SD_Dust_AnimSpray-SD_Dust_Animations; 3
+                dc SD_Dust_AnimSpray-SD_Dust_Animations; 4
+                dc SD_Dust_AnimStomp-SD_Dust_Animations; 5
 SD_Dust_AnimNull:	        dc.b $1F,  0,$FF                                      ; blank animation frames
 SD_Dust_AnimSplash:	        dc.b   3,  1,  2,  3,  4,  5,  6,  7,  8,  9,$FD,  0  ; water splash animation frames
 SD_Dust_AnimDash:	        dc.b   1, $A, $B, $C, $D, $E, $F,$10,$FF              ; spin dash animation frames
 SD_Dust_AnimSkid:	        dc.b   3,$11,$12,$13,$14,$FC                          ; skid dust animation frames
 ;SD_Dust_AnimSpray:	        dc.b   1, $A, $B, $C, $D, $E, $F,$10,$FF                 ; spin dash animation frames
 SD_Dust_AnimSpray:	        dc.b   2, $16, $17, $18, $19, $1A, $FF                ; Water spray animation frames
+SD_Dust_AnimStomp:		dc.b   1, $1B, $1C, $1D, $1E, $FC
                 even
 ; -------------------------------------------------------------------------------
 ; Sprite Mappings
@@ -268,12 +313,17 @@ SD_MapUnc:
 	dc SD_Skid2-SD_MapUnc; 18 12
 	dc SD_Skid3-SD_MapUnc; 19 13
 	dc SD_Skid4-SD_MapUnc; 20 14
-     	dc SD_Null-SD_MapUnc; 21
+	dc SD_Null-SD_MapUnc; 21  15
 	dc SD_MapUnc_A-SD_MapUnc ; 16
-        dc SD_MapUnc_18-SD_MapUnc ; 17
+	dc SD_MapUnc_18-SD_MapUnc ; 17
 	dc SD_MapUnc_26-SD_MapUnc  ;18
-        dc SD_MapUnc_34-SD_MapUnc  ; 19
-	dc SD_MapUnc_42-SD_MapUnc   ;20
+	dc SD_MapUnc_34-SD_MapUnc  ; 19
+	dc SD_MapUnc_42-SD_MapUnc   ;1A
+	dc SD_Stomp1-SD_MapUnc   ;1B
+	dc SD_Stomp2-SD_MapUnc   ;1C
+	dc SD_Stomp3-SD_MapUnc   ;1D
+	dc SD_Stomp4-SD_MapUnc   ;1E
+	dc SD_Null-SD_MapUnc	; 1F
 	even
 SD_Null:	dc.b 0
 SD_Splash1:	dc.b 1
@@ -335,7 +385,19 @@ SD_MapUnc_34:	dc.b 2
 SD_MapUnc_42:	dc.b 2
 		dc.b $4, $D, $80, $0, $C0
 		dc.b $4, 5, $80, $8, $E0
-	dc.b 0
+SD_Stomp1:		dc.b $2
+		dc.b $0, $5, $A0, $0, $F0
+		dc.b $0, $5, $A8, $0, $0
+SD_Stomp2:		dc.b $2
+		dc.b $0, $5, $20, $4, $F0
+		dc.b $0, $5, $28, $4, $0
+SD_Stomp3:	dc.b $2
+		dc.b $0, $5, $20, $8, $F0
+		dc.b $0, $5, $28, $8, $0
+SD_Stomp4:	dc.b $2
+		dc.b $0, $5, $20, $C, $F0
+		dc.b $0, $5, $28, $C, $0
+
 	even
 ; -------------------------------------------------------------------------------
 ; dynamic pattern loading cues
@@ -363,10 +425,15 @@ SD_DynPLC:	dc SDPLC_Null-SD_DynPLC; 0
 	dc SDPLC_Skid-SD_DynPLC; 20
 	dc SDPLC_Null2-SD_DynPLC; 21
 	dc SDPLC_MapUnc_A-SD_DynPLC ; 15
-        dc SDPLC_MapUnc_18-SD_DynPLC ; 16
+	dc SDPLC_MapUnc_18-SD_DynPLC ; 16
 	dc SDPLC_MapUnc_26-SD_DynPLC  ;17
-        dc SDPLC_MapUnc_34-SD_DynPLC  ; 18
+	dc SDPLC_MapUnc_34-SD_DynPLC  ; 18
 	dc SDPLC_MapUnc_42-SD_DynPLC   ;19
+	dc SDPLC_Skid-SD_DynPLC; 17
+	dc SDPLC_Skid-SD_DynPLC; 17
+	dc SDPLC_Skid-SD_DynPLC; 17
+	dc SDPLC_Skid-SD_DynPLC; 17
+	dc SDPLC_Null3-SD_DynPLC; 21
 	even
 SDPLC_Null:	dc 0
 SDPLC_Splash1:	dc 1
@@ -423,4 +490,5 @@ SDPLC_MapUnc_34:	dc 2
 SDPLC_MapUnc_42:	dc 2
 	dc $70FA
 	dc $3102
-	even
+SDPLC_Null3:	dc 1
+	dc $F106	even

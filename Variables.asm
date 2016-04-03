@@ -8,7 +8,7 @@ v_errortype:	= $FFFFFC48		; error type
 
 v_256x256:	=   $FF0000		; 256x256 tile mappings ($A400 bytes)
 
-
+v_LZ_Waterline_Buffer: = $FFFF9900	; $300 bytes, dma buffer for lz waterline, used in LZ only
 Kos_decomp_buffer =  $FFFF9C00  	; $1000 bytes	; each module in a KosM archive is decompressed here and then DMAed to VRAM
 
 v_spritequeue:	= $FFFFAC00		; sprite display queue, in order of priority ($400 bytes)
@@ -359,7 +359,8 @@ H_int_jump      = $FFFFFF9A     	; 6 bytes 			; contains an instruction to jump 
 H_int_addr      = $FFFFFF9C     	; long
 v_screenYstretch = $FFFFFFA0
 v_teleportin	= $FFFFFFA4			; set when sonic needs to beam into the new level
-
+v_waterline_difference = $FFFFFFA6  ; 2 bytes; The difference between the effective BG Y and the actual BG Y difference is what's used to calculate how the water line should be drawn
+v_HCZ_tileanim	=	$FFFFFFA8		; 4 bytes; some part of an animation array from s3???
 			; ^^^ can use values between here vvv
 
 v_lamp_xspeed:   = $FFFFFFB2    	; +++ saved x speed when moving between acts     (2 bytes)

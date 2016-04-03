@@ -241,6 +241,10 @@ SonicDynPLC:	dc.w SonPLC_Null-SonicDynPLC
 		dc.w SonPLC_Wait24-SonicDynPLC
 		dc.w SonPLC_Wait25-SonicDynPLC
 
+		dc.w SonPLC_Stomp-SonicDynPLC
+		dc.w SonPLC_Crouch-SonicDynPLC
+
+
 SonPLC_Null:	dc.b 0
 SonPLC_Stand:	dc.b 4,	$20, 0,	$70, 3,	$20, $B, $20, $E
 SonPLC_Wait1:	dc.b 3,	$50, $11, $50, $17, $20, $1D
@@ -531,6 +535,12 @@ SonPLC_Wait25: dc.b  $2
 	DynPLC  $C, $32, Art_SonicIdle-Art_Sonic
 	DynPLC  $4, $42, Art_SonicIdle-Art_Sonic
 
+SonPLC_Stomp: dc.b  $3
+	DynPLC  $C, $0, Art_SonicStomp-Art_Sonic
+	DynPLC  $1, $C, Art_SonicStomp-Art_Sonic
+	DynPLC  $6, $D, Art_SonicStomp-Art_Sonic
+SonPLC_Crouch: dc.b  $1
+	DynPLC  $10, $13, Art_SonicStomp-Art_Sonic
 ; ===========================================================================
 
 SSonPLC_Transform1: dc.b   1

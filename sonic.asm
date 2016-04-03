@@ -7343,41 +7343,14 @@ Sonic_MdNormal:				; XREF: Sonic_Modes
 ; ===========================================================================
 Sonic_MdJump:				; XREF: Sonic_Modes
 		clr.b	$39(a0)		; +++ spindash bug fix
-; BossWFZ_Hit:
-;                 cmpi.b  #$16,$25(a1)            ; is it firing the lazer?
-;                 bne.s   @WFZ_NoLazer            ; if no, branch
-;                 clr.w   $2A(a1)                 ; clear lazer timer
-;                 move.b  #1,($FFFFFF40).w        ; RFG: MegaMove hit boss flag
-;                 bra     Hit_Boss_Cont
-;         @WFZ_NoLazer:
-;                 cmpi.b  #$02,$24(a1)            ; is it the case?
-;                 bne.s   DE_NextObject           ; if not, branch
-;                 cmpi.b  #$1E,$25(a1)            ; is it defeated?
-;                 beq.s   DE_NextObject           ; if yes, branch
-;                 move.b  #1,($FFFFFF40).w        ; RFG: MegaMove hit boss flag
-;                 bra     Hit_Boss_Cont
-;  
-; BossNoFZ:
-;                 ;other stuff here
-;                 ...
-;                 ...
-;                 bne     DE_NextObject           ; if yes, branch
-; Hit_Boss_Cont:
-;                 clr.b   $20(a1)                 ; hit the boss one time
-;                 subq.b  #1,$21(a1)              ; decrease hit counter
-;                 bne     DE_NextObject           ; if hits remain, branch
-;                 bset    #7,$22(a1)              ; set boss defeated flag
-;                 bra     DE_NextObject
-
-                      
                 bclr	#staDash,obStatus2(a0)	; clear Mercury's Dash flag
 		bsr.w	Sonic_JumpHeight
 		bsr.w	Sonic_JumpDirection
 		bsr.w	Sonic_LevelBound
+		bsr.w   Sonic_DownAttack      ; +++ downwards attack
 		bsr.w   Sonic_DoubleJump      ; +++ double jump
 		bsr.w   Sonic_JumpDash        ; +++ jump dash / homing attack
 		bsr.w   Sonic_LightDash       ; +++ light dash
-		bsr.w   Sonic_DownAttack      ; +++ downwards attack
 		jsr	ObjectFall
 	;Mercury Wall Jump
 		clr.b   (v_justwalljumped).w
@@ -7419,11 +7392,12 @@ Sonic_MdJump2:				; XREF: Sonic_Modes
 		bsr.w	Sonic_JumpHeight
 		bsr.w	Sonic_JumpDirection
 		bsr.w	Sonic_LevelBound
+		bsr.w   Sonic_DownAttack      ; +++ downwards attack
 		bsr.w   Sonic_DoubleJump      ; +++ double jump
 		bsr.w   Sonic_JumpDash        ; +++ jump dash
 		bsr.w   Sonic_LightDash       ; +++ light dash
-		bsr.w   Sonic_DownAttack      ; +++ downwards attack
 		bsr.w   Sonic_InstaShield     ; +++ instashield
+Sonic_Skip_Jumpmoves:		
 		jsr	ObjectFall
 	;Mercury Wall Jump
 		clr.b   (v_justwalljumped).w
@@ -9231,6 +9205,8 @@ Art_SonicHang:	incbin	"artunc\Sonic Hanging.bin"	; Sonic
 		even
 Art_SonicIdle:	incbin	"artunc\Sonic Extra Idle Frames.bin"	; Sonic
 		even
+Art_SonicStomp:	incbin	"artunc\Sonic Stomp.bin"	; Sonic CD 
+		even
 
 Art_InstaShield:incbin  "artunc\Instashield.bin"
                 even
@@ -9779,6 +9755,36 @@ Art_MzLava2:	incbin	"artunc\MZ Lava.bin"
 Art_MzTorch:	incbin	"artunc\MZ Background Torch.bin"
 		even
 Art_SbzSmoke:	incbin	"artunc\SBZ Background Smoke.bin"
+		even
+
+ArtUnc_AniHCZ1_WaterlineBelow:
+		incbin "artunc\Act1 Water Below 1.bin"
+		even
+ArtUnc_FixHCZ1_UpperBG1:
+		incbin "artunc\Act1 Upper BG 1.bin"
+		even
+ArtUnc_AniHCZ1_WaterlineAbove:
+		incbin "artunc\Act1 Water Above 1.bin"
+		even
+
+ArtUnc_FixHCZ1_LowerBG1:	
+		incbin "artunc\Act1 Lower BG 1.bin"
+		even
+ArtUnc_AniHCZ1_WaterlineBelow2:
+		incbin "artunc\Act1 Water Below 2.bin"
+		even
+ArtUnc_FixHCZ1_UpperBG2:
+		incbin "artunc\Act1 Upper BG 2.bin"
+		even
+ArtUnc_AniHCZ1_WaterlineAbove2:
+		incbin "artunc\Act1 Water Above 2.bin"
+		even
+ArtUnc_FixHCZ1_LowerBG2:
+		incbin "artunc\Act1 Lower BG 2.bin"
+		even
+
+HCZ_WaterlineScroll_Data:
+		incbin "misc\HCZ Waterline Scroll Data.bin"
 		even
 
 ; ---------------------------------------------------------------------------

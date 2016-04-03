@@ -644,7 +644,7 @@ ObjC5_PlatformExplode:
 	move.b	#id_ExplosionBomb,(a0) ; load 0bj58 (explosion)
 	clr.b	obRoutine(a0)
 	movea.w	objoff_3C(a0),a1 ; a1=object (invisible hurting thing)
-	bsr.w	DeleteChild
+	jsr		DeleteChild
 	addq.w	#4,sp
 	rts
 ; ===========================================================================
@@ -670,7 +670,7 @@ ObjC5_PlatformHurtCollision:
 ObjC5_PlatformHurtFollowPlatform:
 	movea.w	objoff_2C(a0),a1 ; a1=object (platform)
 	btst	#5,obStatus(a1)
-	bne.w	DeleteObject
+	bne.w	ObjC5_jmp_delete
 	move.w	obX(a1),obX(a0)
 	move.w	obY(a1),d0
 	addi.w	#$C,d0
@@ -682,7 +682,7 @@ ObjC5_PlatformHurtFollowPlatform:
 ObjC5_LaserShooter:      ; Routine $C
 	movea.w	objoff_2C(a0),a1 ; a1=object (laser case)
 	btst	#5,obStatus(a1)
-	bne.w	DeleteObject
+	bne.s	ObjC5_jmp_delete
 	moveq	#0,d0
 	move.b	ob2ndRout(a0),d0
 	move.w	ObjC5_LaserShooterIndex(pc,d0.w),d1
@@ -697,26 +697,26 @@ ObjC5_LaserShooterIndex:
 ObjC5_LaserShooterInit:
 	addq.b	#2,ob2ndRout(a0)
 	move.b	#4,obFrame(a0)
-	bra.w	DisplaySprite
+	jmp	DisplaySprite
 ; ===========================================================================
 
 ObjC5_LaserShooterFollow:
 	movea.w	objoff_2C(a0),a1 ; a1=object (laser case)
 	move.w	obX(a1),obX(a0)
 	move.w	obY(a1),obY(a0)
-	bra.w	DisplaySprite
+	jmp	DisplaySprite
 ; ===========================================================================
 
 ObjC5_LaserShooterDown:
 	movea.w	objoff_2C(a0),a1 ; a1=object (laser case)
 	move.w	obX(a1),obX(a0)
-	bra.w	DisplaySprite
+	jmp		DisplaySprite
 ; ===========================================================================
 
 ObjC5_Laser:
 	movea.w	objoff_2C(a0),a1 ; a1=object
 	btst	#5,obStatus(a1)
-	bne.w	DeleteObject
+	bne.s	ObjC5_jmp_delete
 	moveq	#0,d0
 	move.b	ob2ndRout(a0),d0
 	move.w	ObjC5_LaserIndex(pc,d0.w),d1
@@ -724,6 +724,8 @@ ObjC5_Laser:
 	bchg	#0,objoff_2F(a0)
 	bne.w	ObjC5_rts
 	jmp		DisplaySprite
+ObjC5_jmp_delete:
+	jmp		DeleteObject
 ; ===========================================================================
 ObjC5_LaserIndex:
 	dc.w ObjC5_LaserInit-ObjC5_LaserIndex	        ; 0 - Loads mappings and collision and such

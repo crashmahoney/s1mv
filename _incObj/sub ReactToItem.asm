@@ -178,6 +178,8 @@ React_Monitor:
 ; ===========================================================================
 
 @movingdown:
+		cmpi.b	#id_Stomp,obAnim(a0) ; is Sonic stomping?
+		beq.s	@notjumpdashing
 		cmpi.b	#id_Roll,obAnim(a0) ; is Sonic rolling/jumping?
 		bne.s	@donothing
 		neg.w	obVelY(a0)	; reverse Sonic's y-motion
@@ -199,6 +201,9 @@ React_Enemy:
 
 		cmpi.b	#id_SpinDash,obAnim(a0)	; +++ is Sonic Spin Dashing?
 		beq.w	@donthurtsonic	; +++ if yes, branch
+
+		cmpi.b	#id_Stomp,obAnim(a0)	; +++ is Sonic stomping?
+		beq.w	@donthurtsonic			; +++ if yes, branch
 
 		cmpi.b	#id_Roll,obAnim(a0) ; is Sonic rolling/jumping?
 		bne.w	React_ChkHurt	; if not, branch
@@ -258,6 +263,11 @@ Touch_KillEnemy: ; TESTING, added this label from the older disassembly, don't k
 		bsr.w	AddPoints
 		move.b	#id_ExplosionItem,0(a1) ; change object to explosion
 		move.b	#0,obRoutine(a1)
+		cmpi.b	#id_Stomp,obAnim(a0)	; +++ is Sonic stomping?
+		bne.w	@bounce			; +++ if yes, branch
+		rts
+
+	@bounce:	
 		tst.w	obVelY(a0)
 		bmi.s	@bouncedown
 		move.w	obY(a0),d0
