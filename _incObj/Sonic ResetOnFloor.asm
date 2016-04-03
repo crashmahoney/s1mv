@@ -18,7 +18,6 @@ loc_137AE:
 		bne.s	@notstomping
 		sfx	$5F
 		move.b	#id_Crouch,d1
-		move.w	#$1F,obLRLock(a0)	; don't let him turn around for a few frames
 
 	@notstomping:		
 		bclr	#5,obStatus(a0)

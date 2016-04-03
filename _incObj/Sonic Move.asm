@@ -50,8 +50,8 @@ Sonic_Move:				; XREF: Obj01_MdNormal
 		subq.w	#2,d2
 		add.w	obX(a0),d1
 		sub.w	obX(a1),d1
-	        tst.b	(f_supersonic).w
-	        bne.w	SuperSonic_Balance
+		tst.b	(f_supersonic).w
+		bne.w	SuperSonic_Balance
 		cmpi.w	#2,d1
 		blt.s	Sonic_BalanceOnObjLeft
 		cmp.w	d2,d1
@@ -179,36 +179,8 @@ SuperSonic_BalanceOnObjLeft:
 loc_1A57C:
 	        move.b	#id_BalanceForward,obAnim(a0)
 	        bra.s	Sonic_ResetScr
-; ---------------------------------------------------------------------------; ===========================================================================
-
-; Sonic_LookUp:
-; 		btst	#bitUp,(v_jpadhold2).w ; is up being pressed?
-; 		beq.s	Sonic_Duck	; if not, branch
-; 		move.b	#id_LookUp,obAnim(a0) ; use "looking up" animation
-; 		cmpi.w	#$C8,(v_lookshift).w
-; 		beq.s	loc_12FC2
-; 		addq.w	#2,(v_lookshift).w
-; 		bra.s	loc_12FC2
-; ; ===========================================================================
-; 
-; Sonic_Duck:
-; 		btst	#bitDn,(v_jpadhold2).w ; is down being pressed?
-; 		beq.s	Sonic_ResetScr	; if not, branch
-; 		move.b	#id_Duck,obAnim(a0) ; use "ducking" animation
-; 		cmpi.w	#8,(v_lookshift).w
-; 		beq.s	loc_12FC2
-; 		subq.w	#2,(v_lookshift).w
-; 		bra.s	loc_12FC2
-; ; ===========================================================================
-; 
-; Sonic_ResetScr:
-; 		cmpi.w	#$60,(v_lookshift).w ; is screen in its default position?
-; 		beq.s	loc_12FC2	; if yes, branch
-; 		bcc.s	loc_12FBE
-; 		addq.w	#4,(v_lookshift).w ; move screen back to default
-; 
-; loc_12FBE:
-; 		subq.w	#2,(v_lookshift).w ; move screen back to default
+; ---------------------------------------------------------------------------
+; ===========================================================================
 Sonic_LookUp:
 		btst	#bitUp,(v_jpadhold2).w  ; is up being pressed?
 		beq.s	Sonic_Duck	        ; if not, branch

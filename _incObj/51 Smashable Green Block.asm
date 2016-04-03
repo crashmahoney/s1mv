@@ -74,6 +74,7 @@ Smab_Solid:	; Routine 2
 		bne.s	@chkroll	; if not, branch
 		move.w	@count(a0),(v_itembonus).w
 		move.w	@yspeed(a0),(v_player+obVelY).w
+		move.b	#id_stomp,(v_player+obAnim).w
 		bra.s	@cont
 	@chkroll:	
 		cmpi.b	#id_Roll,@sonic(a0) ; is Sonic rolling/jumping?

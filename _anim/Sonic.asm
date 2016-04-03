@@ -280,4 +280,4 @@ Ani_SuperSonic:
 	dc.w SonAni_Hang3-Ani_Sonic
 	dc.w SonAni_SupStand-Ani_SuperSonic
 	dc.w SonAni_Stomp-Ani_Sonic
-	dc.w SonAni_Crouch-Ani_Sonic
+	dc.w SonAni_SupDuck-Ani_SuperSonic
