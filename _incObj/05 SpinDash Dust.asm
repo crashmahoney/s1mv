@@ -10,11 +10,11 @@ Sprite_1DD20:				; DATA XREF: ROM:0001600C?o
 		move	Dust_OffsetTable(pc,d0.w),d1
 		jmp	Dust_OffsetTable(pc,d1.w)
 ; ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
-Dust_OffsetTable: dc SD_Dust_Init-Dust_OffsetTable; 0 ; DATA XREF: h+6DBA?o h+6DBC?o ...
-		dc SD_Dust_Main-Dust_OffsetTable; 2
-		dc SD_Dust_BranchTo16_DeleteObject-Dust_OffsetTable; 4
-		dc SD_Dust_CheckSkid-Dust_OffsetTable; 6
-		dc SD_Dust_CheckStomp-Dust_OffsetTable; 6
+Dust_OffsetTable: dc.w SD_Dust_Init-Dust_OffsetTable; 0 ; DATA XREF: h+6DBA?o h+6DBC?o ...
+		dc.w SD_Dust_Main-Dust_OffsetTable; 2
+		dc.w SD_Dust_BranchTo16_DeleteObject-Dust_OffsetTable; 4
+		dc.w SD_Dust_CheckSkid-Dust_OffsetTable; 6
+		dc.w SD_Dust_CheckStomp-Dust_OffsetTable; 8
 ; ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
  
 SD_Dust_Init:				; DATA XREF: h+6DBA?o
@@ -23,35 +23,24 @@ SD_Dust_Init:				; DATA XREF: h+6DBA?o
 		or.b	#4,obRender(a0)              ; set render flags
 		move.w	#$80,obPriority(a0)            ; set object priority (to back, i think)
 		move.b	#$10,obActWid(a0)            ; set width
-		move	#$7A0,obGfx(a0)              ; is this in s2 diasm: move.w	#make_art_tile(ArtTile_ArtNem_SonicDust,0,0),art_tile(a0)
-		move	#-$3000,$3E(a0)              ; move.w	#MainCharacter,parent(a0)
-		move	#$F400,$3C(a0)               ; move.w	#tiles_to_bytes(ArtTile_ArtNem_SonicDust),objoff_3C(a0)
-		cmp	#-$2E40,a0                   ; cmpa.w	#Sonic_Dust,a0
-		beq.s	loc_1DD8C
-		move.b	#1,$34(a0)
-;		cmp	#2,($FFFFFF70).w
-;		beq.s	loc_1DD8C
-;		move	#$48C,obGfx(a0)              ; these lines are for s2, for tails' dust
-;		move	#-$4FC0,$3E(a0)
-;		move	#-$6E80,$3C(a0)
- 
-loc_1DD8C:				; CODE XREF: h+6DF6?j h+6E04?j
-;		bsr.w	sub_16D6E
- 
+		move.w	#$7A0,obGfx(a0)              ; is this in s2 diasm: move.w	#make_art_tile(ArtTile_ArtNem_SonicDust,0,0),art_tile(a0)
+		move.w	#-$3000,$3E(a0)              ; move.w	#MainCharacter,parent(a0)
+		move.w	#$F400,$3C(a0)               ; move.w	#tiles_to_bytes(ArtTile_ArtNem_SonicDust),objoff_3C(a0)
+; ---------------------------------------------------------------------------
 SD_Dust_Main:				; DATA XREF: h+6DBA?o
 		movea.w	$3E(a0),a2                   ; puts sonic's address in a2 (i think)
 		moveq	#0,d0
 		move.b	obAnim(a0),d0                ; use current animation as a secondary routine counter
-		add	d0,d0
-		move	SD_Dust_DisplayModes(pc,d0.w),d1
+		add.w	d0,d0
+		move.w	SD_Dust_DisplayModes(pc,d0.w),d1
 		jmp	SD_Dust_DisplayModes(pc,d1.w)
 ; ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
-SD_Dust_DisplayModes:	dc SD_Dust_Display-SD_Dust_DisplayModes; 0 ; DATA XREF: h+6E30?o h+6E32?o ...
-		dc SD_Dust_DisplaySplash-SD_Dust_DisplayModes; 1
-		dc SD_Dust_DisplayDust-SD_Dust_DisplayModes; 2
-		dc SD_Dust_DisplaySkidDust-SD_Dust_DisplayModes; 3
-		dc SD_Dust_DisplayWaterSpray-SD_Dust_DisplayModes; 4
-		dc SD_Dust_DisplaySkidDust-SD_Dust_DisplayModes; 5	(STOMP SHOCKWAVE)
+SD_Dust_DisplayModes:	dc.w SD_Dust_Display-SD_Dust_DisplayModes; 0 ; DATA XREF: h+6E30?o h+6E32?o ...
+			dc.w SD_Dust_DisplaySplash-SD_Dust_DisplayModes; 1
+			dc.w SD_Dust_DisplayDust-SD_Dust_DisplayModes; 2
+			dc.w SD_Dust_DisplaySkidDust-SD_Dust_DisplayModes; 3
+			dc.w SD_Dust_DisplayWaterSpray-SD_Dust_DisplayModes; 4
+			dc.w SD_Dust_DisplayStomp-SD_Dust_DisplayModes; 5	(STOMP SHOCKWAVE)
 ; ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
 
 SD_Dust_DisplaySplash:				; DATA XREF: h+6E30?o
@@ -91,10 +80,10 @@ SD_Dust_DisplayDust:				; DATA XREF: h+6E30?o
 loc_1DE06:				; CODE XREF: h+6E8A?j
 		tst.b	obNextAni(a0)
 		bne.w	SD_Dust_Display
-		and	#$7FFF,obGfx(a0)
-		tst	obGfx(a2)
+		and.w	#$7FFF,obGfx(a0)
+		tst.w	obGfx(a2)
 		bpl.s	SD_Dust_Display
-		or	#-$8000,obGfx(a0)
+		or.w	#-$8000,obGfx(a0)
 ; ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
  
 SD_Dust_DisplaySkidDust:				; DATA XREF: h+6E30?o
@@ -226,7 +215,6 @@ SD_Dust_LoadArt:				; CODE XREF: h+6EC0?p h+6F6C?p
 		add	d3,d4
 		jsr	(QueueDMATransfer).l   ; +++ replaced line jsr	(DMA_68KtoVRAM).l
 		dbf	d5,@loadartloop
-    rts
  
 @return:				; CODE XREF: h+6F7A?j h+6F90?j
 		rts
@@ -243,32 +231,49 @@ SD_Dust_CheckStomp:
 ; ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
  
 SD_Dust_Stomp:				; CODE XREF: h+6EE0?j
-
+;		subq.b	#1,$32(a0)
+;		bpl.s	@loadart
+;		move.b	#1,$32(a0)
 		jsr	(FindFreeObj).l ; was SingleObjLoad, I think it was renamed to this
 		bne.s	@loadart
 		move.b	0(a0),0(a1)             ; load dust obj
-		move	obX(a2),obX(a1)
-		move	obY(a2),obY(a1)
-		add	d1,obY(a1)
+		move.w	obX(a2),obX(a1)
+		move.w	obY(a2),obY(a1)
+		add.w	d1,obY(a1)
 		move.b	#0,obStatus(a1)
 		move.b	#5,obAnim(a1)
-		addq.b	#2,obRoutine(a1)
+		move.b	#$2,obRoutine(a1)
 		move.l	obMap(a0),obMap(a1)
 		move.b	obRender(a0),obRender(a1)
-		move.w	#$180,obPriority(a1)
+		move.w	#$80,obPriority(a1)
 		move.b	#4,obActWid(a1)
-		move	obGfx(a0),obGfx(a1)
-		move	$3E(a0),$3E(a1)
-		and	#$7FFF,obGfx(a1)
-		tst	obGfx(a2)
+		move.w	obGfx(a0),obGfx(a1)
+		move.w	$3E(a0),$3E(a1)
+		and.w	#$7FFF,obGfx(a1)
+		tst.w	obGfx(a2)
 		bpl.s	@loadart
-		or	#-$8000,obGfx(a1)
+		or.w	#-$8000,obGfx(a1)
  
 @loadart:				; CODE XREF: h+6EF4?j h+6F00?j ...
 		bsr.w	SD_Dust_LoadArt
 		rts	
 ; ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ 
+SD_Dust_DisplayStomp:
+		moveq	#0,d0
+		move.b	obAniFrame(a0),d0
+		cmpi.b	#fr_Stomp,obFrame(a2)			; is sonic still in air?
+		beq.s	@changepriority				; if yes, branch
+		cmpi.b	#4,d0					; last frame of shockwave?
+		blt.w	SD_Dust_BranchTo16_DeleteObject		; if not, delete so it doesn't leave afterimage under sonic
 
+	@changepriority:
+		add.w	d0,d0
+		move.w	Stomp_Priorities(pc,d0.w),obPriority(a0)
+		bra.w	SD_Dust_Display
+
+
+Stomp_Priorities:
+		dc.w	$80, $80, $200, $280, $280, $280, $280, $280
                 even
 
 
@@ -284,9 +289,8 @@ SD_Dust_AnimNull:	        dc.b $1F,  0,$FF                                      
 SD_Dust_AnimSplash:	        dc.b   3,  1,  2,  3,  4,  5,  6,  7,  8,  9,$FD,  0  ; water splash animation frames
 SD_Dust_AnimDash:	        dc.b   1, $A, $B, $C, $D, $E, $F,$10,$FF              ; spin dash animation frames
 SD_Dust_AnimSkid:	        dc.b   3,$11,$12,$13,$14,$FC                          ; skid dust animation frames
-;SD_Dust_AnimSpray:	        dc.b   1, $A, $B, $C, $D, $E, $F,$10,$FF                 ; spin dash animation frames
 SD_Dust_AnimSpray:	        dc.b   2, $16, $17, $18, $19, $1A, $FF                ; Water spray animation frames
-SD_Dust_AnimStomp:		dc.b   1, $1B, $1C, $1D, $1E, $FC
+SD_Dust_AnimStomp:		dc.b   0, $1B, $1C, $1D, $1D, $1D, $1D, $1D, $FC
                 even
 ; -------------------------------------------------------------------------------
 ; Sprite Mappings
@@ -322,8 +326,7 @@ SD_MapUnc:
 	dc SD_Stomp1-SD_MapUnc   ;1B
 	dc SD_Stomp2-SD_MapUnc   ;1C
 	dc SD_Stomp3-SD_MapUnc   ;1D
-	dc SD_Stomp4-SD_MapUnc   ;1E
-	dc SD_Null-SD_MapUnc	; 1F
+	dc SD_Null-SD_MapUnc	; 1E
 	even
 SD_Null:	dc.b 0
 SD_Splash1:	dc.b 1
@@ -388,15 +391,14 @@ SD_MapUnc_42:	dc.b 2
 SD_Stomp1:		dc.b $2
 		dc.b $0, $5, $A0, $0, $F0
 		dc.b $0, $5, $A8, $0, $0
-SD_Stomp2:		dc.b $2
-		dc.b $0, $5, $20, $4, $F0
-		dc.b $0, $5, $28, $4, $0
-SD_Stomp3:	dc.b $2
-		dc.b $0, $5, $20, $8, $F0
-		dc.b $0, $5, $28, $8, $0
-SD_Stomp4:	dc.b $2
-		dc.b $0, $5, $20, $C, $F0
-		dc.b $0, $5, $28, $C, $0
+SD_Stomp2:		
+	dc.b $4
+	dc.b $0, $1, $20, $0, $F0
+	dc.b $0, $1, $20, $4, $F8
+	dc.b $0, $1, $28, $0, $8
+	dc.b $0, $1, $28, $4, $0
+SD_Stomp3:	dc.b $1
+		dc.b $0, $E, $20, $6, $F0
 
 	even
 ; -------------------------------------------------------------------------------
@@ -429,7 +431,6 @@ SD_DynPLC:	dc SDPLC_Null-SD_DynPLC; 0
 	dc SDPLC_MapUnc_26-SD_DynPLC  ;17
 	dc SDPLC_MapUnc_34-SD_DynPLC  ; 18
 	dc SDPLC_MapUnc_42-SD_DynPLC   ;19
-	dc SDPLC_Skid-SD_DynPLC; 17
 	dc SDPLC_Skid-SD_DynPLC; 17
 	dc SDPLC_Skid-SD_DynPLC; 17
 	dc SDPLC_Skid-SD_DynPLC; 17
@@ -490,5 +491,7 @@ SDPLC_MapUnc_34:	dc 2
 SDPLC_MapUnc_42:	dc 2
 	dc $70FA
 	dc $3102
-SDPLC_Null3:	dc 1
-	dc $F106	even
+SDPLC_Null3:	dc 2
+	dc $F106
+	dc $1116
+	even

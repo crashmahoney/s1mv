@@ -31,7 +31,7 @@ Sonic_DownAttack:
                 move.w  #$900,obVelY(a0)
                 move.b	#id_Stomp,obAnim(a0) ; use "stomp" animation
                 move.b  #8,(v_dustobj+obRoutine).w     ; skid dust
-                move.b  #$1F,(v_dustobj+obFrame).w     ; skid dust
+                move.b  #$1E,(v_dustobj+obFrame).w     ; skid dust
 ; if not rolling (ie. sonic was going over the attack speed but wasn't attacking)
         @skipothermoves:
         	adda.w	#4,sp			; forget the bsr that got us here
