@@ -17,6 +17,7 @@ PALMusicSpeedup = 1      ; run sound driver twice every 5th frame to fix music s
 StartupSoundtest= 1      ; enable cheat, hold a b or c before the sega screen appears to go straight to soundtest
 SkipChecksum    = 1      ; skip checksum check at startup
 DebugPathSwappers: = 0
+VladDebug 		= 0		; 0 for flamewing debugger. 1 for vladikcomper
 ; --------------------------------------------------------------------------
 
 	include	"Variables.asm"
@@ -36,6 +37,8 @@ Revision:	= 1	; change to 1 for JP1 revision
 ; ===========================================================================
 
 StartOfRom:
+
+	if VladDebug = 0
 Vectors:	dc.l $FFFE00, EntryPoint, BusError, AddressError
                 dc.l IllegalInstrError, ZeroDivideError, CHKExceptionError, TRAPVError
                 dc.l PrivilegeViolation, TraceError, LineAEmulation, LineFEmulation
@@ -52,6 +55,24 @@ Vectors:	dc.l $FFFE00, EntryPoint, BusError, AddressError
                 dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
                 dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
                 dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
+    else
+Vectors:    dc.l $FFFE00, EntryPoint, BusError, AddressError
+        dc.l IllegalInstr, ZeroDivide, ChkInstr, TrapvInstr
+        dc.l PrivilegeViol, Trace, Line1010Emu, Line1111Emu
+        dc.l ErrorExcept, ErrorExcept, ErrorExcept, ErrorExcept
+        dc.l ErrorExcept, ErrorExcept, ErrorExcept, ErrorExcept
+        dc.l ErrorExcept, ErrorExcept, ErrorExcept, ErrorExcept
+        dc.l ErrorExcept, ErrorTrap, ErrorTrap, ErrorTrap
+        dc.l H_int_jump, ErrorTrap, VBlank, ErrorTrap
+        dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
+        dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
+        dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
+        dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
+        dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
+        dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
+        dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
+        dc.l ErrorTrap, ErrorTrap, ErrorTrap, ErrorTrap
+    endif
 Console:		dc.b "SEGA MEGA DRIVE " ; Hardware system ID
 ReleaseDate:	dc.b "(C)SEGA 1991.APR" ; Release date
 Title_Local:	dc.b "Sonic the Hedgehog Metroidvania, by Crash       " ; Domestic name
@@ -74,11 +95,13 @@ Notes:			dc.b "                                                    "
 Region:			dc.b "JUE             " ; Region
 
 ; ===========================================================================
-
-; ErrorTrap:
-; 		nop	
-; 		nop	
-; 		bra.s	ErrorTrap
+	if VladDebug = 0
+	else
+ ErrorTrap:
+ 		nop	
+ 		nop	
+ 		bra.s	ErrorTrap
+ 	endif	
 ; ===========================================================================
 
 EntryPoint:
@@ -876,7 +899,10 @@ SoundDriverLoad:			; XREF: GameClrRAM; GM_Title
 		nop
 		stopZ80
 		resetZ80
-		lea	(SoundDriverASM).l,a0   ; this is endofrom, the sounddriver is tacked on the end by the AS assembler after asm68k compiles he main rom
+		lea		(RomEndLoc).l,a0
+		move.l	(a0),d0
+		addq.l	#1,d0
+		movea.l	d0,a0
 		lea	($A00000).l,a1
 		bsr.w   KosDec
 ; 		lea	(DriverResetData).l,a0
@@ -10166,86 +10192,19 @@ Art_MapTiles:	incbin "artunc\maptiles.bin"
                 include "_inc\WorldMap.asm"
                 even
 
+	if VladDebug = 0
          include "_debugger\DebuggerBlob.asm"
+	else
+         include "_debug_vlad\Error Handler.asm"
+	endif
+
                 even
+
+
 ; =========================================================================
 ; Sound Driver
 ; =========================================================================
 SoundDriverASM:
- if z80SoundDriver=0
-                include "_inc\SMPS 68k Main.asm"
-                even
-
-; S1HL DAC samples banks: (max bank size $8000)
-                align $108000
-DAC1:           incbin "sound/samps/81 Sonic 3 Bass.dac"
-DAC1_End:       even
-DAC2:           incbin "sound/samps/82 Sonic 3 Snare.dac"
-DAC2_End:       even
-DAC3:           incbin "sound/samps/83 Sonic 3 Timpani.dac"
-DAC3_End:       even
-DAC4:           incbin "sound/samps/84 Sonic 3 Crash.dac"
-DAC4_End:       even
-DAC5:           incbin "sound/samps/85snareloud.dac"
-DAC5_End:       even
-DAC6:           incbin "sound/samps/86snareq.dac"
-DAC6_End:       even
-DAC7:           incbin "sound/samps/8C-8F Sonic 3 Toms.dac"
-DAC7_End:       even
-DAC8:           incbin "sound/samps/87bassloud.dac"
-DAC8_End:       even
-DAC9:           incbin "sound/samps/91 808 Bass.dac"
-DAC9_End:       even
-DAC10:          incbin "sound/samps/92 808 Snare.dac"
-DAC10_End:      even
-DAC11:          incbin "sound/samps/94 808 Crash.dac"
-DAC11_End:      even
-
-                align $118000
-DAC12:          incbin "sound/samps/A1 Sonic 1 Bass.dac"
-DAC12_End:      even
-DAC13:          incbin "sound/samps/A2 Sonic 1 Snare.dac"
-DAC13_End:      even
-DAC14:          incbin "sound/samps/A4 Sonic 1 Timpani.dac"
-DAC14_End:      even
-DAC15:          incbin "sound/samps/Chaotix/81.pwm"
-DAC15_End:      even
-DAC16:          incbin "sound/samps/Chaotix/82.pwm"
-DAC16_End:      even
-DAC17:          incbin "sound/samps/C1 Hybrid Front Bass.dac"
-DAC17_End:      even
-DAC18:          incbin "sound/samps/C2 Hybrid Front Snare.dac"
-DAC18_End:      even
-DAC19:          incbin "sound/samps/Chaotix/89.pwm"
-DAC19_End:      even
-DAC20:          incbin "sound/samps/Chaotix/94-95.pwm"
-DAC20_End:      even
-
-                align $128000
-DAC21:          incbin "sound/samps/D1 Bass.dac"
-DAC21_End:      even
-DAC22:          incbin "sound/samps/D2 Snare.dac"
-DAC22_End:      even
-DAC23:          incbin "sound/samps/D6 Snare Ghost.dac"
-DAC23_End:      even
-DAC24:          incbin "sound/samps/D4 Crash.dac"
-DAC24_End:      even
-DAC25:          incbin "sound/samps/D3 Hi Hat.dac"
-DAC25_End:      even
-DAC26:          incbin "sound/samps/D7 Bass Light.dac"
-DAC26_End:      even
-DAC27:          incbin "sound/samps/E1 Crackers Bass.dac"
-DAC27_End:      even
-DAC28:          incbin "sound/samps/E2 Crackers Snare.dac"
-DAC28_End:      even
-DAC29:          incbin "sound/samps/E3 Crackers Tom.dac"
-DAC29_End:      even
-DAC30:          incbin "sound/samps/A5 Sonic 2 Toms.dac"
-DAC30_End:      even
-DAC31:          incbin "sound/samps/83 Clap.dac"
-DAC31_End:      even
-         endif
-
 
 ; end of 'ROM'
          even

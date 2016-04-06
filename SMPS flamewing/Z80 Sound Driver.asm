@@ -4992,3 +4992,8 @@ Snd_Drown:			include	"Sound/Music/Countdown.asm"
 	shared Sound_C0,Sound_C1,Sound_C2,Sound_C3,Sound_C4,Sound_C5,Sound_C6,Sound_C7,Sound_C8,Sound_C9,Sound_CA,Sound_CB,Sound_CC,Sound_CD,Sound_CE,Sound_CF
 	shared Sound_D0,Sound_D1,Sound_D2,Sound_D3,Sound_D4,Sound_D5,Sound_D6,Sound_D7,Sound_D8,Sound_D9,Sound_DA,Sound_DB
 
+
+
+
+	!org	$000001A4				; write to RomEndLoc pointer in rom header
+	dc.l	z80_SoundDriver-1
