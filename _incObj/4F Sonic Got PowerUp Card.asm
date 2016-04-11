@@ -39,6 +39,7 @@ FindExplosionObj:
 ; ===========================================================================
 
 GotPowUp_Main:
+		move.b	#8,(v_vbla_routine).w       		; vblank routune without loadtilesasyoumove         
                 writeVRAM Art_BigFont, $1000, $B000
 ; --------------------------------------------------------------------------
 ; Draw tilemap
@@ -77,7 +78,7 @@ GotPowUp_Main:
 ; --------------------------------------------------------------------------
 		movea.l	a0,a1
 		lea	(GotPowUp_Config).l,a2
-		moveq	#1,d1         ; +++ was 6     the number of items to move (0=sonic got, 1=powerup name 2=oval)
+		moveq	#2,d1         ; +++ was 6     the number of items to move (0=sonic got, 1=powerup name 2=oval)
 
 GotPowUp_Loop:
 		move.b	#id_GotPowUpCard,0(a1)
@@ -95,13 +96,13 @@ GotPowUp_Loop:
 		move.b	(a2)+,obRoutine(a1)
 		move.b	(a2)+,d0
 		
-                cmpi.b	#2,d0    ;+++    if powerup name is being drawn
-		bne.s	GotPowUp_MakeSprite
-		add.b	(v_zone).w,d0	; add zone number to frame number
+                cmpi.b	#0,d0    		; is this object "sonic got"
+		beq.s	GotPowUp_MakeSprite	; if so, branch
+		add.b	obSubtype(a0),d0	; add to frame number
 
 	GotPowUp_MakeSprite:
 		move.b	d0,obFrame(a1)
-		move.l	#Map_GotPowUp,obMap(a1)
+		move.l	#Map_PowerUpCard,obMap(a1)
 		move.w	#$8580,obGfx(a1)
 		move.b	#$78,obActWid(a1)
 		move.b	#0,obRender(a1)
@@ -214,9 +215,9 @@ dontloadgfx:
 GotPowUp_Config:dc.w 0,	$110, $B2	; x-start, x-main, y-main                     ;sonic got
 		dc.b 2,	0		; routine number, frame	number (changes)
 		dc.w $210, $130, $C6                                                 ; powerup name
-		dc.b 2,	2
-		dc.w $20C, $14C, $CC                                                  ; oval
 		dc.b 2,	1
+		dc.w $210, $120, $11C                                                  ; instruction text
+		dc.b 2,	$1B
 ; --------------------------------------------------------------------------
 DrawStrip:
 ; Draw strip across screen
@@ -257,14 +258,14 @@ DrawStrip:
 		dbf	d3,@Tilemap_Cell
                 rts
 ; --------------------------------------------------------------------------
-PowerupTilemap1:dc.w $A127,$B927,$A127,$B927,$A127,$B927,$A127,$B927,$A127,$B927,$A127,$B927,$A127,$B927,$A127,$B927
-                dc.w $A127,$B927,$A127,$B927,$A127,$B927,$A127,$B927,$A127,$B927,$A127,$B927,$A127,$B927,$A127,$B927
-                dc.w $A127,$B927,$A127,$B927,$A127,$B927,$A127,$B927,$A127,$B927,$A127,$B927,$A127,$B927,$A127,$B927
-                dc.w $A127,$B927,$A127,$B927,$A127,$B927,$A127,$B927,$A127,$B927,$A127,$B927,$A127,$B927,$A127,$B927
-PowerupTilemap2:dc.w $A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128
-                dc.w $A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128
-                dc.w $A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128
-                dc.w $A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128
+PowerupTilemap1:dc.w $A5F9,$BDF9,$A5F9,$BDF9,$A5F9,$BDF9,$A5F9,$BDF9,$A5F9,$BDF9,$A5F9,$BDF9,$A5F9,$BDF9,$A5F9,$BDF9
+                dc.w $A5F9,$BDF9,$A5F9,$BDF9,$A5F9,$BDF9,$A5F9,$BDF9,$A5F9,$BDF9,$A5F9,$BDF9,$A5F9,$BDF9,$A5F9,$BDF9
+                dc.w $A5F9,$BDF9,$A5F9,$BDF9,$A5F9,$BDF9,$A5F9,$BDF9,$A5F9,$BDF9,$A5F9,$BDF9,$A5F9,$BDF9,$A5F9,$BDF9
+                dc.w $A5F9,$BDF9,$A5F9,$BDF9,$A5F9,$BDF9,$A5F9,$BDF9,$A5F9,$BDF9,$A5F9,$BDF9,$A5F9,$BDF9,$A5F9,$BDF9
+PowerupTilemap2:dc.w $A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB
+                dc.w $A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB
+                dc.w $A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB
+                dc.w $A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB,$A5FB
                 even
 ; copyTilemap:	macro source,loc,width,height
 ; 		lea	(source).l,a1
@@ -273,3 +274,7 @@ PowerupTilemap2:dc.w $A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128,$A128
 ; 		moveq	#height,d2
 ; 		bsr.w	TilemapToVRAM
 ; 		endm
+
+
+		include "_maps/PowerUp Card.asm"
+		even

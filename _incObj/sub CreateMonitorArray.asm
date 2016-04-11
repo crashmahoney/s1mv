@@ -11,8 +11,11 @@ CreateMonitorArray:
 	@loop:
 		cmp.w   #$FFFF,(a0)            ; end of object list?
 		beq.w   @end
+		cmp.b   #$19,4(a0)             ; is this object a powerup?
+		beq.s   @powerup		
 		cmp.b   #$26,4(a0)             ; is this object a monitor?
 		bne.s   @nextobject
+	@powerup:	
 		move.w  (a0),d1
 		cmp.w   -2(a1),d1              ; is this monitor's x position the same as the last one added to the list?
 		bne.s   @addtolist

@@ -56,7 +56,7 @@ Spark_Delete:
 ; end of object
 ; ---------------------------------------------------------------------------
 
-
+	even
 
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -67,11 +67,14 @@ Map_Spark:
 		dc.w SparkSmall-Map_Spark
 		dc.w SparkLarge-Map_Spark	
 		dc.w SparkBlank-Map_Spark 	
+		dc.w SparkMid-Map_Spark 	
 SparkSmall:	dc.b 1
 		dc.b $FC, 0, 0, $D, $FC
 SparkLarge:	dc.b 1	
 		dc.b $F8, 5, 0, $8, $F8	
 SparkBlank:	dc.b 0
+SparkMid:	dc.b 1
+		dc.b $FC, 0, 0, $C, $FC
 		even
 
 
@@ -83,7 +86,10 @@ SparkBlank:	dc.b 0
 ; ---------------------------------------------------------------------------
 Spark_Animation:
 		dc.w Spark_Ani_1-Spark_Animation
+		dc.w Spark_Ani_2-Spark_Animation ; Power up sparkles
 
 Spark_Ani_1:	dc.b    0, $0, $1, $2, $0, $1, $2, $0, $1, $2, $0, $1, $2
 		    	dc.b   $0, $1, $2, $0, $1, $2, $0, $1, $FC, $FF
+
+Spark_Ani_2:	dc.b    0, 1,3,1,3,1,3,1,3,1,3,0,3,0,3,0,3,0,3,0,3,0,2,0,2,0,2, $FC, $FF
 		even

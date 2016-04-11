@@ -113,6 +113,8 @@ Pow_Goggles: ;The Goggles monitor changes depending on the zone.
 ;		move.w	#btnNone<<8,(v_jpadhold2).w ; make Sonic stop
 		music   bgm_extralife
 		move.b	#id_GotPowUpCard,(v_objspace+$5C0).w   ; load PowerUp Card
+		move.b	#$04,obRender(a0)		; put powerup behind card
+
 		rts
 ; ===========================================================================
 Collectable_Index:

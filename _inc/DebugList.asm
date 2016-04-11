@@ -44,7 +44,7 @@ dbug:	macro map,object,subtype,frame,vram
 	dbug	Map_Springboard,id_Springboard,		0,	0,	VRAMloc_Springboard/$20	
 	dbug	Map_Springpole,	id_Springpole,		0,	0,	(VRAMloc_SpringPole/$20)+$2000	
 	dbug	Map_Edge,	id_EdgeWalls,		0,	0,	$4000
-	dbug	Map_GBall,	id_Obj19,		0,	0,	$43AA
+	dbug	Map_GBall,	id_PowerUp2,		0,	0,	$43AA
 	dbug	Map_Lamp,	id_Lamppost,		1,	0,	$D800/$20
 	dbug	Map_GRing,	id_GiantRing,		0,	0,	$2580
         @GHZend:
@@ -264,7 +264,7 @@ dbug:	macro map,object,subtype,frame,vram
 	dbug	Map_Spring,	id_Springs,	0,	0,	$523
 	dbug	Map_Newt,	id_Newtron,	0,	0,	$249B
 	dbug	Map_Edge,	id_EdgeWalls,	0,	0,	$434C
-	dbug	Map_GBall,	id_Obj19,	0,	0,	$43AA
+	dbug	Map_GBall,	id_PowerUp2,	0,	0,	$43AA
 	dbug	Map_Lamp,	id_Lamppost,	1,	0,	$7A0
 	dbug	Map_GRing,	id_GiantRing,	0,	0,	$2400
 	dbug	Map_Bonus,	id_HiddenBonus,	1,	1,	$84B6

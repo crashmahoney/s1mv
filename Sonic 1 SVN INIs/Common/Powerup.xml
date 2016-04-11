@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<ObjDef xmlns="http://www.sonicretro.org" Name="Power Up" Image="powerup" DefaultSubtype="00">
+  <Images>
+    <ImageFromMappings id="powerup">
+      <ArtFile filename="Common/Power Ups.bin"/>
+      <MapFile type="ASM" filename="Common/Power Up.asm" frame="0" startpal="0"/>
+    </ImageFromMappings>
+  </Images>
+  <Subtypes>
+    <Subtype id="00" name="Spindash" image="powerup"/>
+    <Subtype id="01" name="doublejump" image="powerup"/>
+    <Subtype id="02" name="jumpdash" image="powerup"/>
+    <Subtype id="03" name="homing attack" image="powerup"/>
+    <Subtype id="04" name="light dash" image="powerup"/>
+    <Subtype id="05" name="instashield" image="powerup"/>
+    <Subtype id="06" name="stomp" image="powerup"/>
+    <Subtype id="07" name="peelout" image="powerup"/>
+  </Subtypes>
+</ObjDef>

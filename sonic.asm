@@ -3108,12 +3108,12 @@ PowerupCardLoop:
 ; --------------------------------------------------------------------------
 @scrolling:
         ; first make sure it starts scrolling on the tile boundary
-                move.w  (v_screenposy).w,d0
- 	        andi.w	#$7,d0               ; round down
+		move.w  (v_screenposy).w,d0
+		andi.w	#$7,d0               ; round down
 		neg.w	d0
 		addi.w	#$8,d0
- 	        asl.w   #2,d0                ; double because table is stored as planes a,b,a,b,etc
-                add.w   #$80,d0              ; how far down the screen to start scrolling  (4 more tile rows * 8px per row * 2 because of the two planes)
+		asl.w   #2,d0                ; double because table is stored as planes a,b,a,b,etc
+		add.w   #$80,d0              ; how far down the screen to start scrolling  (4 more tile rows * 8px per row * 2 because of the two planes)
 		lea	(v_scrolltable).w,a1
 		adda.w	d0,a1
 		moveq   #$1B,d1              ; lines to scroll
@@ -6274,99 +6274,6 @@ M_Got_RBonus:	dc.b 7			; RING BONUS
 		dc.b $F8, $D, $FF, $F8,	$28
 		dc.b $F8, 1, 1,	$70, $48
 		even
-		
-; ---------------------------------------------------------------------------
-; Sprite mappings - "SONIC GOT POWERUP" title
-; ---------------------------------------------------------------------------
-
-; Letter offsets
-cA:      equ    $0
-cB:      equ    $4
-cC:      equ    $8
-cD:      equ    $C
-cE:      equ    $10
-cF:      equ    $14
-cG:      equ    $18
-cH:      equ    $1C
-cI:      equ    $20
-cJ:      equ    $22
-cK:      equ    $26
-cL:      equ    $2A
-cM:      equ    $2E
-cN:      equ    $32
-cO:      equ    $36
-cP:      equ    $3A
-cQ:      equ    $3E
-cR:      equ    $42
-cS:      equ    $46
-cT:      equ    $4A
-cU:      equ    $4E
-cV:      equ    $52
-cW:      equ    $56
-cX:      equ    $5A
-cY:      equ    $5E
-cZ:      equ    $62
-
-Map_GotPowUp:	dc.w M_GotPowUp_SonicGot-Map_GotPowUp
-		dc.w M_Card_Oval-Map_GotPowUp
-		dc.w M_GotPowUp_SpinDash-Map_GotPowUp      ; ghz
-		dc.w M_GotPowUp_Goggles-Map_GotPowUp         ; lz
-		dc.w M_GotPowUp_DJump-Map_GotPowUp        ; mz
-; SpriteMap macro usage
-; l = left coordinate
-; t = top coordinate
-; w = width (in tiles)
-; h = height (in tiles)
-; x = horizontal mirroring 1=yes 0=no
-; y = vertical mirroring 1=yes 0=no
-; pri = priority 1=always on top
-; pal = palette index (0...3)
-; ind = starting tile index
-M_GotPowUp_SonicGot:	dc.b 8	;   SONIC GOT
-
-	SpriteMap	$B1, $F8, 2, 2, 0, 0, 0, 0, cS
-	SpriteMap	$C0, $F8, 2, 2, 0, 0, 0, 0, cO
-	SpriteMap	$D0, $F8, 2, 2, 0, 0, 0, 0, cN
-	SpriteMap	$E0, $F8, 1, 2, 0, 0, 0, 0, cI
-	SpriteMap	$E8, $F8, 2, 2, 0, 0, 0, 0, cC
-	SpriteMap	 $8, $F8, 2, 2, 0, 0, 0, 0, cG
-	SpriteMap	$18, $F8, 2, 2, 0, 0, 0, 0, cO
-	SpriteMap	$28, $F8, 2, 2, 0, 0, 0, 0, cT
-                even
-
-M_GotPowUp_SpinDash:	dc.b 8	;  PASSED | SPIN DASH
-	SpriteMap	$B1, $F8, 2, 2, 0, 0, 0, 0, cS
-	SpriteMap	$C0, $F8, 2, 2, 0, 0, 0, 0, cP
-	SpriteMap	$D0, $F8, 1, 2, 0, 0, 0, 0, cI
-	SpriteMap	$D8, $F8, 2, 2, 0, 0, 0, 0, cN
-	SpriteMap	$F8, $F8, 2, 2, 0, 0, 0, 0, cD
-	SpriteMap	 $8, $F8, 2, 2, 0, 0, 0, 0, cA
-	SpriteMap	$18, $F8, 2, 2, 0, 0, 0, 0, cS
-	SpriteMap	$27, $F8, 2, 2, 0, 0, 0, 0, cH
-                even
-M_GotPowUp_Goggles:	dc.b 1	;  blank |
-		dc.b 7	;  PASSED | GOGGLES
-		dc.b $F8, 5, 0, $18, $C8	; G
-		dc.b $F8, 5, 0, $32, $D8	; O
-		dc.b $F8, 5, 0, $18, $E8	; G
-		dc.b $F8, 5, 0, $18, $F8	; G
-		dc.b $F8, 5, 0, $26, $8	; L
-		dc.b $F8, 5, 0, $10, $18	; E
-		dc.b $F8, 5, 0, $3E, $28	; S
-		even
-M_GotPowUp_DJump:    dc.b 10	;  DOUBLE JUMP
-	SpriteMap	$B0, $F8, 2, 2, 0, 0, 0, 0, cD
-	SpriteMap	$C0, $F8, 2, 2, 0, 0, 0, 0, cO
-	SpriteMap	$D0, $F8, 2, 2, 0, 0, 0, 0, cU
-	SpriteMap	$E0, $F8, 2, 2, 0, 0, 0, 0, cB
-	SpriteMap	$F0, $F8, 2, 2, 0, 0, 0, 0, cL
-	SpriteMap	$FE, $F8, 2, 2, 0, 0, 0, 0, cE
-	SpriteMap	$20, $F8, 2, 2, 0, 0, 0, 0, cJ
-	SpriteMap	$2D, $F8, 2, 2, 0, 0, 0, 0, cU
-	SpriteMap	$3D, $F8, 2, 2, 0, 0, 0, 0, cM
-	SpriteMap	$4E, $F8, 2, 2, 0, 0, 0, 0, cP
-		even
-
 
 ; ---------------------------------------------------------------------------
 ; Sprite mappings - special stage results screen
@@ -8151,6 +8058,9 @@ word_16516:	dc.w $10, $1C80, $1C14,	$5E0, $1CEF, $572, $1CEF, $5B0,	$1C14, $61E
 		include	"_maps\Lamppost.asm"
 		include	"_incObj\7D Hidden Bonuses.asm"
 		include	"_maps\Hidden Bonuses.asm"
+
+		include	"_incObj\19 Power Up.asm"
+
 
 		include	"_incObj\8A Credits.asm"
 		include	"_maps\Credits.asm"
@@ -10191,6 +10101,9 @@ Art_MapTiles:	incbin "artunc\maptiles.bin"
 				even
                 include "_inc\WorldMap.asm"
                 even
+Art_PowerUps:	incbin "artunc\Power Ups.bin"					; floating pickup icons
+				even
+
 
 	if VladDebug = 0
          include "_debugger\DebuggerBlob.asm"
