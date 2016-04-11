@@ -912,10 +912,9 @@ SoundDriverLoad:			; XREF: GameClrRAM; GM_Title
 ;DriverResetDataLoadLoop:
 ;		move.b	(a0)+,(a1)+
 ;		dbf	d0,DriverResetDataLoadLoop
-		btst	#6,(v_megadrive).w
-		beq.s	@notpal
-		move.b	#1,($A01C8A).l          					; set PAL mode flag 
-	@notpal:
+	btst	#0,($C00005).l	; check video mode
+		sne		($A01C02).l          					; set PAL mode flag 
+
 		resetZ80a
 		nop
 		nop	
