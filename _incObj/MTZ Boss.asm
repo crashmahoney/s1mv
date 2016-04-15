@@ -525,6 +525,8 @@ loc_32820:
 	lea		(Boss_AnimationArray).w,a1
 	move.b	#3,2(a1)
 	music	bgm_GHZ
+	moveq	#31,d0				; act flag 31
+	jsr		SetActFlag			; remember boss had been beaten
 ;	bsr.w	JmpTo7_PlayLevelMusic
 
 loc_32846:

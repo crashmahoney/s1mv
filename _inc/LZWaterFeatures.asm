@@ -460,6 +460,8 @@ GrindRails:				; XREF: LZWaterFeatures
 		lea	(v_player).w,a1
 		btst	#1,obStatus(a1)	; is Sonic jumping?
 		bne.s	loc_3F6A2	; if so, branch
+		tst.b	(v_layer).w	; on layer 0?
+		beq.s	loc_3F6A2	; if so, branch
 		move.w	obY(a1),d0				; MJ: Load Y position
 		move.w	obX(a1),d1				; MJ: Load X position
 		and.w	#$0780,d0				; MJ: keep Y position within 800 pixels (in multiples of 80)
@@ -488,11 +490,12 @@ locret_3F7A2:
 		rts	
 ; ===========================================================================
 Grind_Move:
-		cmpi.w	#3,d1
-		bcc.s	loc_3F842
-		nop	
-
-loc_3F842:
+		cmpi.b	#id_Roll,obAnim(a1)
+		bne.s	@notrolling
+		move.b	#$13,obWidth(a1)
+		move.b	#9,obHeight(a1)
+		subq.w	#5,obY(a1)
+	@notrolling:
 		bclr	#0,obStatus(a1)
 		add.w	d1,d1
 		move.w	Grind_001(pc,d1.w),d0                 ; MJ
@@ -501,23 +504,22 @@ loc_3F842:
 		bset	#0,obStatus(a1)
 
 loc_3F9A2:
-	;	clr.b	obInertia+1(a1)
 		move.b	#id_Grind1,obAnim(a1) ; use Sonic's "sliding" animation
-		cmpi.b	#$8,obAngle(a1)
+		move.b	obAngle(a1),d0
+		bpl.s	@angleok
+		neg.b	d0
+	@angleok:	
+		cmpi.b	#$8,d0
 		bcs.s	@animok
 		add.b	#1,obAnim(a1)
-		cmpi.b	#$10,obAngle(a1)
+		cmpi.b	#$10,d0
 		bcs.s	@animok
 		add.b	#1,obAnim(a1)
 	@animok:
          	move.b	#6,(v_dustobj+obRoutine).w     ; grind sparks
 	        move.b	#$1F,(v_dustobj+obFrame).w     ; grind sparks	
 		move.b	#1,(f_jumponly).w ; lock controls (except jumping)
-	;	move.b	(v_vbla_byte).w,d0
-	;	andi.b	#$1F,d0
-	;	bne.s	locret_3FBE2
 		sfx	$D1	; play water sound
-	;	sfx	sfx_WaterRunning	 ; play splash sound
 
 
 locret_3FBE2:
@@ -528,14 +530,14 @@ locret_3FBE2:
 Grind_001:	dc.w		    $F5
 		dc.w	$F4,$F4,$F4,$F4
 		dc.w	$F5,$F5,$F5,$F5
-		dc.w	$0B,$0B,$0B,$0B
+		dc.w	$0000,$000A,$001A,$002A
 		dc.w	$000A,$000A,$000A,$001A
 		dc.w	$002A,$002A,$001A,$000A				; MJ: Values for speed, format XX00 = Speed in $14(a-)
 		even
 ; ---------------------------------------------------------------------------
-Grind_002:	dc.b	$A4,$A5,$A6,$A7				; MJ: Chunks to read (128x128 ID's)
-		dc.b	$A8,$A9,$AA,$AB
-		dc.b	$FF,$FF,$FF,$FF
+Grind_002:	dc.b	$A5,$A6,$A7,$A8				; MJ: Chunks to read (128x128 ID's)
+		dc.b	$A9,$AA,$AB,$AC
+		dc.b	$AF,$B0,$B3,$FF
 		dc.b	$FF,$FF,$FF,$FF
 		dc.b	$FF,$FF,$FF,$FF
 		dc.b	$FF
