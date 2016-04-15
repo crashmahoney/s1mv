@@ -3054,6 +3054,7 @@ Level_MainLoop:
 ;		move.w	#$8C81,($C00004).l	; H res 40 cells, no interlace, S/H disabled
 ;		bsr.w	MoveSonicInDemo
 		bsr.w	LZWaterFeatures
+		bsr.w	GrindRails		
 		jsr		ExecuteObjects
 
 		tst.w   (f_restart).w                        ; is restart flag set?
@@ -5413,7 +5414,7 @@ LevelDataLoad:				; XREF: GM_Level; GM_Ending
 		moveq	#0,d0
 		move.b	(a2),d0
 		beq.s	@skipPLC	; if 2nd PLC is 0 (i.e. the ending sequence), branch
-		bsr.w	AddPLC		; load pattern load cues
+		jsr	AddPLC		; load pattern load cues
 
 	@skipPLC:
 		rts	
@@ -9142,7 +9143,8 @@ Art_SonicIdle:	incbin	"artunc\Sonic Extra Idle Frames.bin"	; Sonic
 		even
 Art_SonicStomp:	incbin	"artunc\Sonic Stomp.bin"	; Sonic CD 
 		even
-
+Art_SonicGrind:	incbin	"artunc\Sonic Grind.bin"	; Sonic
+		even
 Art_InstaShield:incbin  "artunc\Instashield.bin"
                 even
 Art_FireShield: incbin  "artunc\Fire Shield.bin"

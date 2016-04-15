@@ -141,9 +141,20 @@ SD_Dust_BranchTo16_DeleteObject:				; DATA XREF: h+6DBA?o
  
 SD_Dust_CheckSkid:
 	movea.w	$3E(a0),a2         ; move sonic's address to a2
-	moveq	#$10,d1
+	moveq	#$10,d1		; y offset of new object
+	moveq	#0,d2		; x offset of new object
 	cmp.b	#id_Stop,obAnim(a2)
 	beq.s	SD_Dust_SkidDust
+
+	cmp.b	#id_Grind1,obAnim(a2)
+	beq.s	SD_Dust_SkidDust
+	cmp.b	#id_Grind2,obAnim(a2)
+	beq.s	SD_Dust_SkidDust
+	;addq.w	#4,d1		; add to y pos
+	subq.w	#8,d2		; add to x pos
+	cmp.b	#id_Grind3,obAnim(a2)
+	beq.s	SD_Dust_SkidDust
+
 	moveq	#$6,d1
 	cmp.b	#$3,obColProp(a2)
 	beq.s	SD_Dust_SkidDust   ; if not, branch
@@ -159,14 +170,15 @@ SD_Dust_SkidDust:				; CODE XREF: h+6EE0?j
 		jsr	(FindFreeObj).l ; was SingleObjLoad, I think it was renamed to this
 		bne.s	loc_1DEE0
 		move.b	0(a0),0(a1)             ; load dust obj
-		move	obX(a2),obX(a1)
-		move	obY(a2),obY(a1)
+		move.w	obX(a2),obX(a1)
+		move.w	obY(a2),obY(a1)
 		tst.b	$34(a0)
 		beq.s	loc_1DE9A
-		sub	#4,d1
+		sub.w	#4,d1
  
 loc_1DE9A:				; CODE XREF: h+6F1E?j
-		add	d1,obY(a1)
+		add.w	d1,obY(a1)
+		add.w	d2,obX(a1)
 		move.b	#0,obStatus(a1)
 		move.b	#3,obAnim(a1)
 		addq.b	#2,obRoutine(a1)
@@ -317,7 +329,7 @@ SD_MapUnc:
 	dc SD_Skid2-SD_MapUnc; 18 12
 	dc SD_Skid3-SD_MapUnc; 19 13
 	dc SD_Skid4-SD_MapUnc; 20 14
-	dc SD_Null-SD_MapUnc; 21  15
+	dc SD_Null-SD_MapUnc; 21  15			; skid dust gfx load
 	dc SD_MapUnc_A-SD_MapUnc ; 16
 	dc SD_MapUnc_18-SD_MapUnc ; 17
 	dc SD_MapUnc_26-SD_MapUnc  ;18
@@ -326,7 +338,8 @@ SD_MapUnc:
 	dc SD_Stomp1-SD_MapUnc   ;1B
 	dc SD_Stomp2-SD_MapUnc   ;1C
 	dc SD_Stomp3-SD_MapUnc   ;1D
-	dc SD_Null-SD_MapUnc	; 1E
+	dc SD_Null-SD_MapUnc	; 1E			; stomp gfx load
+	dc SD_Null-SD_MapUnc	; 1F			; grind spark gfx load
 	even
 SD_Null:	dc.b 0
 SD_Splash1:	dc.b 1
@@ -435,6 +448,7 @@ SD_DynPLC:	dc SDPLC_Null-SD_DynPLC; 0
 	dc SDPLC_Skid-SD_DynPLC; 17
 	dc SDPLC_Skid-SD_DynPLC; 17
 	dc SDPLC_Null3-SD_DynPLC; 21
+	dc SDPLC_SparkGFX-SD_DynPLC; 21
 	even
 SDPLC_Null:	dc 0
 SDPLC_Splash1:	dc 1
@@ -494,4 +508,9 @@ SDPLC_MapUnc_42:	dc 2
 SDPLC_Null3:	dc 2
 	dc $F106
 	dc $1116
+SDPLC_SparkGFX:	dc.w 4
+	dc.b $31, $18
+	dc.b $31, $1C
+	dc.b $31, $20
+	dc.b $31, $24
 	even

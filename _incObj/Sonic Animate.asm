@@ -37,7 +37,7 @@ Sonic_Animate:				; XREF: Obj01_Control; et al
 		move.b	obAniFrame(a0),d1 ; load current frame number
 		move.b	1(a1,d1.w),d0	; read sprite number from script
 ;		bmi.s	@end_FF		; if animation is complete, branch
-                cmpi.b	#$F0,d0		; +++ changed to increase animation frames allowed
+		cmpi.b	#$F0,d0		; +++ changed to increase animation frames allowed
 		bcc.s	@end_FF	        ; +++ if animation is complete, branch
 
 	@next:

@@ -377,81 +377,62 @@ LZWind_Data:	dc.w $A80, $300, $C10,  $380 ; act 1 values (set 1)
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
-
 LZWaterSlides:				; XREF: LZWaterFeatures
-; 		lea	(v_player).w,a1
-; 		btst	#1,obStatus(a1)	; is Sonic jumping?
-; 		bne.s	loc_3F6A	; if not, branch
-; ; 		move.w	obY(a1),d0
-; ; 		lsr.w	#1,d0
-; ; 		andi.w	#$380,d0
-; ; 		move.b	obX(a1),d1
-; ; 		andi.w	#$7F,d1
-; ; 		add.w	d1,d0
-; ; 		lea	(v_lvllayout).w,a2
-; ; 		move.b	(a2,d0.w),d0
-; ; 		lea	byte_3FCF(pc),a2
-; ; 		moveq	#6,d1
-; ; 
-; ; loc_3F62:
-; ; 		cmp.b	-(a2),d0
-; 		move.w	$0C(a1),d0				; MJ: Load Y position
-; 		move.w	$08(a1),d1				; MJ: Load X position
-; 		and.w	#$0780,d0				; MJ: keep Y position within 800 pixels (in multiples of 80)
-; 		lsl.w	#$01,d0					; MJ: multiply by 2 (Because every 80 bytes switch from FG to BG..)
-; 		lsr.w	#$07,d1					; MJ: divide X position by 80 (00 = 0, 80 = 1, etc)
-; 		and.b	#$7F,d1					; MJ: keep within 4000 pixels (4000 / 80 = 80)
-; 		add.w	d1,d0					; MJ: add together
-; 		movea.l	($FFFFA400).w,a2			; MJ: Load address of layout
-; 		move.b	(a2,d0.w),d0				; MJ: collect correct chunk ID based on the position of Sonic
-; 		lea	Slide_002(pc),a2
-; 		moveq	#$14,d1					; MJ: repeat times
-; 
-; loc_3F62:
-; 		cmp.b	(a2)+,d0
-; 		dbeq	d1,loc_3F62
-; 		beq.s	LZSlide_Move
-; 
-; loc_3F6A:
-; 		tst.b	(f_jumponly).w
-; 		beq.s	locret_3F7A
-; 		move.w	#5,$3E(a1)
-; 		clr.b	(f_jumponly).w
-; 
-; locret_3F7A:
-; 		rts	
-; ; ===========================================================================
-; 
-; LZSlide_Move:
-; 		cmpi.w	#3,d1
-; 		bcc.s	loc_3F84
-; 		nop	
-; 
-; loc_3F84:
-; 		bclr	#0,obStatus(a1)
-; 	;	move.b	byte_3FC0(pc,d1.w),d0
-; 		move.b	Slide_001(pc,d1.w),d0                 ; MJ
-; 		move.b	d0,obInertia(a1)
-; 		bpl.s	loc_3F9A
-; 		bset	#0,obStatus(a1)
-; 
-; loc_3F9A:
-; 		clr.b	obInertia+1(a1)
-; 		move.b	#id_WaterSlide,obAnim(a1) ; use Sonic's "sliding" animation
-; 		move.b	#1,(f_jumponly).w ; lock controls (except jumping)
-; 		move.b	(v_vbla_byte).w,d0
-; 		andi.b	#$1F,d0
-; 		bne.s	locret_3FBE
-; 		sfx	sfx_Waterfall	; play water sound
-; 
-; locret_3FBE:
+		lea	(v_player).w,a1
+		btst	#1,obStatus(a1)	; is Sonic jumping?
+		bne.s	loc_3F6A	; if not, branch
+		move.w	$0C(a1),d0				; MJ: Load Y position
+		move.w	$08(a1),d1				; MJ: Load X position
+		and.w	#$0780,d0				; MJ: keep Y position within 800 pixels (in multiples of 80)
+		lsl.w	#$01,d0					; MJ: multiply by 2 (Because every 80 bytes switch from FG to BG..)
+		lsr.w	#$07,d1					; MJ: divide X position by 80 (00 = 0, 80 = 1, etc)
+		and.b	#$7F,d1					; MJ: keep within 4000 pixels (4000 / 80 = 80)
+		add.w	d1,d0					; MJ: add together
+		movea.l	(v_lvllayout).w,a2			; MJ: Load address of layout
+		move.b	(a2,d0.w),d0				; MJ: collect correct chunk ID based on the position of Sonic
+		lea	Slide_002(pc),a2
+		moveq	#$14,d1					; MJ: repeat times
+
+loc_3F62:
+ 		cmp.b	(a2)+,d0
+ 		dbeq	d1,loc_3F62
+		beq.s	LZSlide_Move
+
+loc_3F6A:
+		tst.b	(f_jumponly).w
+		beq.s	locret_3F7A
+		move.w	#5,$3E(a1)
+		clr.b	(f_jumponly).w
+
+locret_3F7A:
+		rts	
+; ===========================================================================
+LZSlide_Move:
+		cmpi.w	#3,d1
+		bcc.s	loc_3F84
+		nop	
+
+loc_3F84:
+		bclr	#0,obStatus(a1)
+		move.b	Slide_001(pc,d1.w),d0                 ; MJ
+		move.b	d0,obInertia(a1)
+		bpl.s	loc_3F9A
+		bset	#0,obStatus(a1)
+
+loc_3F9A:
+		clr.b	obInertia+1(a1)
+		move.b	#id_WaterSlide,obAnim(a1) ; use Sonic's "sliding" animation
+		move.b	#1,(f_jumponly).w ; lock controls (except jumping)
+		move.b	(v_vbla_byte).w,d0
+		andi.b	#$1F,d0
+		bne.s	locret_3FBE
+		sfx	sfx_Waterfall	; play water sound
+
+locret_3FBE:
 		rts
 ; End of function LZWaterSlides
 
 ; ===========================================================================
-; byte_3FC0:	dc.b $A, $F5, $A, $F6, $F5, $F4, $B, 0,	2, 7, 3, $4C, $4B, 8, 4
-; byte_3FCF:	dc.b 0			; XREF: LZWaterSlides
-; 		even
 Slide_001:	dc.b		    $F5
 		dc.b	$F4,$F4,$F4,$F4
 		dc.b	$F5,$F5,$F5,$F5
@@ -460,12 +441,104 @@ Slide_001:	dc.b		    $F5
 		dc.b	$0A,$0A,$0A,$0A				; MJ: Values for speed, format XX00 = Speed in $14(a-)
 		even
 ; ---------------------------------------------------------------------------
-Slide_002:	dc.b	$05,$06,$09,$0A				; MJ: Chunks to read (128x128 ID's)
-		dc.b	$FA,$FB,$FC,$FD
-		dc.b	$0B,$0C,$0D,$0E
-		dc.b	$15,$16,$F8,$F9
-		dc.b	$19,$1A,$1B,$1C
-		dc.b	$17
+Slide_002:	dc.b	$A4,$A5,$A6,$FF				; MJ: Chunks to read (128x128 ID's)
+		dc.b	$FF,$FF,$FF,$FF
+		dc.b	$FF,$FF,$FF,$FF
+		dc.b	$FF,$FF,$FF,$FF
+		dc.b	$FF,$FF,$FF,$FF
+		dc.b	$FF
+		even
+; ---------------------------------------------------------------------------
+; ===========================================================================
+; ---------------------------------------------------------------------------
+; Labyrinth Zone water slide subroutine
+; ---------------------------------------------------------------------------
+
+; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
+
+GrindRails:				; XREF: LZWaterFeatures
+		lea	(v_player).w,a1
+		btst	#1,obStatus(a1)	; is Sonic jumping?
+		bne.s	loc_3F6A2	; if so, branch
+		move.w	obY(a1),d0				; MJ: Load Y position
+		move.w	obX(a1),d1				; MJ: Load X position
+		and.w	#$0780,d0				; MJ: keep Y position within 800 pixels (in multiples of 80)
+		lsl.w	#$01,d0					; MJ: multiply by 2 (Because every 80 bytes switch from FG to BG..)
+		lsr.w	#$07,d1					; MJ: divide X position by 80 (00 = 0, 80 = 1, etc)
+		and.b	#$7F,d1					; MJ: keep within 4000 pixels (4000 / 80 = 80)
+		add.w	d1,d0					; MJ: add together
+		movea.l	(v_lvllayout).w,a2			; MJ: Load address of layout
+		move.b	(a2,d0.w),d0				; MJ: collect correct chunk ID based on the position of Sonic
+		lea	Grind_002(pc),a2
+		moveq	#$14,d1					; MJ: repeat times
+
+loc_3F622:
+ 		cmp.b	(a2)+,d0
+ 		dbeq	d1,loc_3F622
+		beq.s	Grind_Move
+
+loc_3F6A2:
+		tst.b	(f_jumponly).w
+		beq.s	locret_3F7A2
+		move.w	#5,obLRLock(a1)
+		move.b	#$00,(v_layer).w
+		clr.b	(f_jumponly).w
+
+locret_3F7A2:
+		rts	
+; ===========================================================================
+Grind_Move:
+		cmpi.w	#3,d1
+		bcc.s	loc_3F842
+		nop	
+
+loc_3F842:
+		bclr	#0,obStatus(a1)
+		add.w	d1,d1
+		move.w	Grind_001(pc,d1.w),d0                 ; MJ
+		add.w	d0,obInertia(a1)
+		bpl.s	loc_3F9A2
+		bset	#0,obStatus(a1)
+
+loc_3F9A2:
+	;	clr.b	obInertia+1(a1)
+		move.b	#id_Grind1,obAnim(a1) ; use Sonic's "sliding" animation
+		cmpi.b	#$8,obAngle(a1)
+		bcs.s	@animok
+		add.b	#1,obAnim(a1)
+		cmpi.b	#$10,obAngle(a1)
+		bcs.s	@animok
+		add.b	#1,obAnim(a1)
+	@animok:
+         	move.b	#6,(v_dustobj+obRoutine).w     ; grind sparks
+	        move.b	#$1F,(v_dustobj+obFrame).w     ; grind sparks	
+		move.b	#1,(f_jumponly).w ; lock controls (except jumping)
+	;	move.b	(v_vbla_byte).w,d0
+	;	andi.b	#$1F,d0
+	;	bne.s	locret_3FBE2
+		sfx	$D1	; play water sound
+	;	sfx	sfx_WaterRunning	 ; play splash sound
+
+
+locret_3FBE2:
+		rts
+; End of function LZWaterSlides
+
+; ===========================================================================
+Grind_001:	dc.w		    $F5
+		dc.w	$F4,$F4,$F4,$F4
+		dc.w	$F5,$F5,$F5,$F5
+		dc.w	$0B,$0B,$0B,$0B
+		dc.w	$000A,$000A,$000A,$001A
+		dc.w	$002A,$002A,$001A,$000A				; MJ: Values for speed, format XX00 = Speed in $14(a-)
+		even
+; ---------------------------------------------------------------------------
+Grind_002:	dc.b	$A4,$A5,$A6,$A7				; MJ: Chunks to read (128x128 ID's)
+		dc.b	$A8,$A9,$AA,$AB
+		dc.b	$FF,$FF,$FF,$FF
+		dc.b	$FF,$FF,$FF,$FF
+		dc.b	$FF,$FF,$FF,$FF
+		dc.b	$FF
 		even
 ; ---------------------------------------------------------------------------
 ; ===========================================================================

@@ -244,6 +244,10 @@ SonicDynPLC:	dc.w SonPLC_Null-SonicDynPLC
 		dc.w SonPLC_Stomp-SonicDynPLC
 		dc.w SonPLC_Crouch-SonicDynPLC
 
+		dc.w SonPLC_Grind1-SonicDynPLC
+		dc.w SonPLC_Grind2-SonicDynPLC
+		dc.w SonPLC_Grind3-SonicDynPLC
+
 
 SonPLC_Null:	dc.b 0
 SonPLC_Stand:	dc.b 4,	$20, 0,	$70, 3,	$20, $B, $20, $E
@@ -541,6 +545,18 @@ SonPLC_Stomp: dc.b  $3
 	DynPLC  $6, $D, Art_SonicStomp-Art_Sonic
 SonPLC_Crouch: dc.b  $1
 	DynPLC  $10, $13, Art_SonicStomp-Art_Sonic
+
+SonPLC_Grind1: dc.b  $2
+	DynPLC  $C, $0, Art_SonicGrind-Art_Sonic
+	DynPLC  $8, $C, Art_SonicGrind-Art_Sonic
+SonPLC_Grind2: dc.b  $2
+	DynPLC  $8, $14, Art_SonicGrind-Art_Sonic
+	DynPLC  $C, $0, Art_SonicGrind-Art_Sonic
+SonPLC_Grind3: dc.b  $3
+	DynPLC  $10, $1C, Art_SonicGrind-Art_Sonic
+	DynPLC  $3, $2C, Art_SonicGrind-Art_Sonic
+	DynPLC  $3, $2F, Art_SonicGrind-Art_Sonic
+
 ; ===========================================================================
 
 SSonPLC_Transform1: dc.b   1

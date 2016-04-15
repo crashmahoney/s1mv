@@ -246,6 +246,10 @@ ptr_MS_Wait25:	dc.w MS_Wait25-Map_Sonic
 ptr_MS_Stomp:	dc.w MS_Stomp-Map_Sonic
 ptr_MS_Crouch:	dc.w MS_Crouch-Map_Sonic
 
+ptr_MS_Grind1:	dc.w MS_Grind1-Map_Sonic
+ptr_MS_Grind2:	dc.w MS_Grind2-Map_Sonic
+ptr_MS_Grind3:	dc.w MS_Grind3-Map_Sonic
+
 ; --------------------------------------------------------------------------
 
 MS_Null:	dc.b 0
@@ -1230,6 +1234,17 @@ MS_Stomp:	dc.b $3
 MS_Crouch:	dc.b $1
 	dc.b $F4, $F, $0, $0, $F0
 
+MS_Grind1: dc.b  $2
+	dc.b  $EF, $E, $0, $0, $F0
+	dc.b  $7, $D, $0, $C, $F0
+MS_Grind2: dc.b  $2
+	dc.b  $8, $D, $0, $0, $F0
+	dc.b  $F0, $E, $0, $8, $F0
+MS_Grind3: dc.b  $3
+	dc.b  $F2, $F, $0, $0, $F5
+	dc.b  $FA, $2, $0, $10, $ED
+	dc.b  $12, $8, $0, $13, $F5
+
 		even
 
 fr_Null:	equ (ptr_MS_Null-Map_Sonic)/2		; 0
@@ -1476,3 +1491,7 @@ fr_Wait25:	equ (ptr_MS_Wait25-Map_Sonic)/2
 
 fr_Stomp:	equ (ptr_MS_Stomp-Map_Sonic)/2
 fr_Crouch:	equ (ptr_MS_Crouch-Map_Sonic)/2
+
+fr_Grind1:	equ (ptr_MS_Grind1-Map_Sonic)/2
+fr_Grind2:	equ (ptr_MS_Grind2-Map_Sonic)/2
+fr_Grind3:	equ (ptr_MS_Grind3-Map_Sonic)/2
