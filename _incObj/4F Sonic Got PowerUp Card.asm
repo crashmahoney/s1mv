@@ -14,32 +14,18 @@ GotPowUp_Index:	dc.w GotPowUp_ChkPLC-GotPowUp_Index         ;0
 
 gotPowUp_mainX:	= $30		; position for card to display on
 gotPowUp_finalX:= $32		; position for card to finish on
-gotPowUp_loadTimer = 60
 powup_bgtilesize= $34
 ; ===========================================================================
 
 GotPowUp_ChkPLC:	; Routine 0
-	;	tst.l	(v_plc_buffer).w ; are the pattern load cues empty?
-	;	beq.s	GotPowUp_Main	; if yes, branch
-	;	subq.w	#1,gotPowUp_loadTimer(a1) ; subtract 1 from time delay
-	;       cmpi.w	#0,gotPowUp_loadTimer(a1)	; is time remaining zero?
-	;	bne.w	GotPowUp_Main	; if no, branch
-; --------------------------------------------------------------------------
-FindExplosionObj:
-		lea	(v_objspace+$800).w,a1 ; start address for object RAM
-		move.w	#$5F,d0
+		tst.l	(v_plc_buffer).w ; are the pattern load cues empty?
+		beq.s	GotPowUp_Main	; if yes, branch
+		move.b	#$1A,(v_vbla_routine).w       		; vblank routune without loadtilesasyoumove         
+		jsr	WaitForVBla
 
-	FExp_Loop:
-		cmpi.b	#id_ExplosionItem,(a1)	; is object 27 (Explosion)?
-		bne.s	@continue	; if no, branch
-		rts
-        @continue:
-                lea	$40(a1),a1	; goto next object RAM slot
-		dbf	d0,FExp_Loop	; repeat $5F times
 ; ===========================================================================
 
 GotPowUp_Main:
-		move.b	#8,(v_vbla_routine).w       		; vblank routune without loadtilesasyoumove         
                 writeVRAM Art_BigFont, $1000, $B000
 ; --------------------------------------------------------------------------
 ; Draw tilemap
@@ -207,7 +193,9 @@ GotPowUp_ChangeArt:
 		moveq	#plcid_Explode,d0
 		jsr	(AddPLC).l	; load explosion patterns
 		jsr	(LoadAnimalPLC).l ; load animal patterns
+		move.w	#$2700,sr
 		jsr     LoadTilesFromStart
+		move.w	#$2300,sr
 
 dontloadgfx:
                 rts

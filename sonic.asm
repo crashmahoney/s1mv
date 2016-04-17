@@ -3084,7 +3084,7 @@ Level_MainLoop:
 		rts
 ; ===========================================================================
 PowerupCardLoop:
-		move.b	#8,(v_vbla_routine).w                
+		move.b	#$1A,(v_vbla_routine).w       		; vblank routune without loadtilesasyoumove         
 		bsr.w	WaitForVBla
 		addq.w	#1,(v_framecount).w                  ; add 1 to level timer
 
