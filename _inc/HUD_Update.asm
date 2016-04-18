@@ -9,8 +9,8 @@ icons_loc   =  $DA80
 HUD_Update:
 		tst.w	(f_debugmode).w	; is debug mode	on?
 		bne.w	HudDebug	; if yes, branch
-;		tst.b	(f_scorecount).w ; does the score need updating?
-;		beq.s	@chkrings	; if not, branch
+		tst.b	(f_scorecount).w ; does the score need updating?
+		beq.s	@chkrings	; if not, branch
 ; 		clr.b	(f_scorecount).w
 ; 		move.l	#$5C800003,d0	; set VRAM address
 ; 		move.l	(v_score).w,d1	; load score

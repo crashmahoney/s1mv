@@ -248,7 +248,7 @@ Solid_SideAir:
 	;Mercury Wall Jump
 		move.l	a0,-(sp)
 		movea.l	a1,a0
-		bsr.w	WallJump
+		jsr	WallJump
 		movea.l	(sp)+,a0
 		
 Solid_SideAir2:

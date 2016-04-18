@@ -5,6 +5,7 @@
 Obj11_child1		equ objoff_30	; pointer to first set of bridge segments
 Obj11_child2		equ objoff_34	; pointer to second set of bridge segments, if applicable
 Obj11_baseYpos		equ	objoff_3C	; resting y position of bridge
+Obj11_Sonanim		equ $3E
 
 
 Bridge:					; XREF: Obj_Index
@@ -13,7 +14,7 @@ Bridge:					; XREF: Obj_Index
 		moveq	#0,d0
 		move.b	obRoutine(a0),d0
 		move.w	Bri_Index(pc,d0.w),d1
-		jmp		Bri_Index(pc,d1.w)
+		jmp	Bri_Index(pc,d1.w)
 ; ===========================================================================
 @child:	; child sprite objects only need to be drawn
 		move.w	#$180,d0
@@ -25,6 +26,7 @@ Bri_Index:	dc.w 	Bri_Main-Bri_Index
  			dc.w	Bri_Delete-Bri_Index
  			dc.w	Bri_Delete-Bri_Index
 		 	dc.w	Bri_Display-Bri_Index
+		 	dc.w	Bri_Collapse-Bri_Index
 ; ===========================================================================
 
 Bri_Main:	; Routine 0
@@ -118,6 +120,8 @@ Bri_Solid:
 		addq.w	#8,d1
 		add.w	d2,d2
 		lea	(v_player).w,a1
+		move.b	obAnim(a1),obAnim(a0) 	; remember sonic's animation
+		move.w	obVelY(a1),obVelY(a0) 	; remember sonic's y speed		
 		tst.w	obVelY(a1)
 		bmi.w	Plat_Exit
 		move.w	obX(a1),d0
@@ -157,6 +161,16 @@ Bri_Display:
 ; ===========================================================================
 
 Bri_Platform:	; Routine 4
+		cmpi.b	#id_stomp,obAnim(a0) 		; is Sonic stomping?
+		bne.s	@bend
+		move.b	#$C,obRoutine(a0)		; go to collapsing routine
+		lea	(v_player).w,a1
+		bclr	#3,obStatus(a1)
+		bclr	#3,obStatus(a0)
+		move.b	#id_stomp,obAnim(a1) 	
+		move.w	obVelY(a0),obVelY(a1) 		; restore sonic's y speed		
+		bra.w	Bri_Collapse
+	@bend:	
 		bsr.w	Bri_Bend
 		bsr.s	Bri_WalkOff
 	;	bsr.w	DisplaySprite
@@ -171,6 +185,7 @@ Bri_Platform:	; Routine 4
 
 
 Bri_WalkOff:				; XREF: Bri_Platform
+		lea	(v_player).w,a1
 		moveq	#0,d1
 		move.b	obSubtype(a0),d1
 		lsl.w	#3,d1
@@ -225,7 +240,7 @@ Bri_Bend:
 	move.b	objoff_3E(a0),d0
 	bsr.w	CalcSine
 	move.w	d0,d4
-	lea		(byte_FB28).l,a4
+	lea	(byte_FB28).l,a4
 	moveq	#0,d0
 	move.b	obSubtype(a0),d0
 	lsl.w	#4,d0
@@ -234,14 +249,14 @@ Bri_Bend:
 	move.w	d3,d2
 	add.w	d0,d3
 	moveq	#0,d5
-	lea		(Obj11_DepressionOffsets-$80).l,a5
+	lea	(Obj11_DepressionOffsets-$80).l,a5
 	move.b	(a5,d3.w),d5
 	andi.w	#$F,d3
 	lsl.w	#4,d3
-	lea		(a4,d3.w),a3
+	lea	(a4,d3.w),a3
 	movea.l	Obj11_child1(a0),a1
-	lea		sub9_y_pos+next_subspr(a1),a2
-	lea		sub2_y_pos(a1),a1
+	lea	sub9_y_pos+next_subspr(a1),a2
+	lea	sub2_y_pos(a1),a1
 
 @set_piece_y:
 	moveq	#0,d0
@@ -256,9 +271,9 @@ Bri_Bend:
 	cmpa.w	a2,a1
 	bne.s	@next_piece
 	movea.l	Obj11_child2(a0),a1 ; a1=object
-	lea		sub2_y_pos(a1),a1
+	lea	sub2_y_pos(a1),a1
 @next_piece:
-	dbf		d2,@set_piece_y
+	dbf	d2,@set_piece_y
 
 	moveq	#0,d0
 	move.b	obSubtype(a0),d0
@@ -288,9 +303,9 @@ Bri_Bend:
 	cmpa.w	a2,a1
 	bne.s	@next_piece2
 	movea.l	Obj11_child2(a0),a1 ; a1=object
-	lea		sub2_y_pos(a1),a1
+	lea	sub2_y_pos(a1),a1
 @next_piece2:
-	dbf		d2,@set_piece_y2
+	dbf	d2,@set_piece_y2
 @rts:
 	rts
 ; ===========================================================================
@@ -339,5 +354,39 @@ PlatformObj_Bridge:
 		bmi.w	Plat_Exit
 		cmp.w	d2,d0
 		bcc.w	Plat_Exit
-		bra.s	Plat_NoXCheck
+		bra.w	Plat_NoXCheck
 ; End of function Bri_Solid
+
+; ===========================================================================
+Bri_Collapse:
+	movea.l	Obj11_child1(a0),a1	
+	lea	sub2_y_pos(a1),a2	; load first childsprite y pos
+	lea	(Bri_Piece_Speed).l,a3	; load peice speeds
+	moveq	#8-1,d1			; move first 8 childsprites
+@child1_yfall:
+	move.w	(a3)+,d0		; add to childsprite y pos
+	add.w	d0,(a2)
+	adda.l	#6,a2			; advance to next piece
+	dbf	d1,@child1_yfall
+
+	moveq	#0,d1
+	move.b	obSubtype(a0),d1	; retrieve subtype
+	subq.w	#8,d1
+	bls.s	@finish			; branch, if subtype <= 8 (bridge has no more than 8 logs)
+		
+	movea.l	Obj11_child2(a0),a1	
+	lea	sub2_y_pos(a1),a2	; load first childsprite y pos
+@child2_yfall:
+	move.w	(a3)+,d0		; add to childsprite y pos
+	add.w	d0,(a2)
+	adda.l	#6,a2			; advance to next piece
+	dbf	d1,@child2_yfall
+
+@finish:
+		bra.w	Bri_ChkDel
+
+
+
+Bri_Piece_Speed:
+	dc.w	$03,$02,$05,$04,$03,$05,$02,$04,$06,$05,$02,$03,$04,$02,$05,$02
+	even

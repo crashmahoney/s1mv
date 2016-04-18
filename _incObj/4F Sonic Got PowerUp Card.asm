@@ -190,9 +190,7 @@ FindCardObj:                                  ; check to see if the card is left
                 lea	$40(a1),a1	; goto next object RAM slot
 		dbf	d0,FCard_Loop	; repeat $80 times
 GotPowUp_ChangeArt:
-		moveq	#plcid_Explode,d0
-		jsr	(AddPLC).l	; load explosion patterns
-		jsr	(LoadAnimalPLC).l ; load animal patterns
+		jsr	(LoadAnimalExplosion).l ; load animal patterns
 		move.w	#$2700,sr
 		jsr     LoadTilesFromStart
 		move.w	#$2300,sr

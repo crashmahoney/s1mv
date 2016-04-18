@@ -13,7 +13,6 @@ Pause_Menu:
 		lea	($C00000).l,a6
 		move.w	#0,(f_hbla_pal).w
 ;		move.w	#$8004,(a6)	; disable H-interrupts
-
 ;===============================================================================
 ; ClearScreen partial copy
 ;=============================
@@ -79,89 +78,103 @@ WaitForPLC:
  		tst.l	(v_plc_buffer).w ; are there any items in the pattern load cue?
  		bne.s	WaitForPLC ; if yes, branch
 ; ---------------------------------------------------------------------------
-; DMA uncompressed menu GFX
-; ---------------------------------------------------------------------------
-		writeVRAM Art_MenuFont, $74*$20, $0000
-
-; ---------------------------------------------------------------------------
 ; Create Map Screen
 ; ---------------------------------------------------------------------------
 ; first buffer map graphics to ram
-		lea		(v_worldmap).w,a0				; table of revealed tiles
-		lea		WorldMap,a1						; 4 x 4 tile mappings
-		lea		Art_MapTiles,a2					; 5 x 5 tile graphics
-		lea		(v_mapbuffer).l,a3				; temp ram to write graphics to
-		moveq	#34,d3							; number of 5x5 rows to draw
+		lea	(v_worldmap).w,a0		; table of revealed tiles
+		lea	WorldMap,a1			; 4 x 4 tile mappings
+		lea	Art_MapTiles,a2			; 5 x 5 tile graphics
+		lea	(v_mapbuffer).l,a3		; temp ram to write graphics to
+		moveq	#34,d3				; number of 5x5 rows to draw
 
 @dorow:
-		move.w	#79,d2							; number of 5x5 tiles to draw
-		moveq	#0,d4							; bit to check
+		move.w	#79,d2				; number of 5x5 tiles to draw
+		moveq	#0,d4				; bit to check
 @dotile:	
 		moveq	#0,d0
-		move.b	(a1)+,d0						; get tile id to draw
-	;	beq.s	@nexttile						; if blank tile, skip
+		move.b	(a1)+,d0			; get tile id to draw
+	;	beq.s	@nexttile			; if blank tile, skip
 
-		btst	d4,(a0)							; test current bit
-		beq.s	@nexttile						; if 0, branch
+		btst	d4,(a0)				; test current bit
+		beq.s	@nexttile			; if 0, branch
 
-		lsl.w	#5,d0							; multiply d0 by 16 (size of an 8x8 tile)
-		lea		(a2,d0.w),a4					; get tile gfx start
-		movea.l	a3,a5							; copy tile ram start
+		lsl.w	#5,d0				; multiply d0 by 16 (size of an 8x8 tile)
+		lea	(a2,d0.w),a4			; get tile gfx start
+		movea.l	a3,a5				; copy tile ram start
 
-		moveq	#4,d1							; draw 5 rows of pixels
+		moveq	#4,d1				; draw 5 rows of pixels
 	@buffertile:
 		move.l	(a5),d0	
 		andi.l	#$FFF,d0
 		add.l	(a4)+,d0
 		move.l	d0,(a5)
-		lea		160(a5),a5						; next line
-		dbf		d1,@buffertile
+		lea	160(a5),a5			; next line
+		dbf	d1,@buffertile
 
 	@nexttile:
-		addq.w	#1,d4							; add 1 to bit to check
+		addq.w	#1,d4				; add 1 to bit to check
 		cmpi.w	#8,d4							
 		bne.s	@ok
-		moveq	#0,d4							; set bit to check to 0
-		adda.w	#1,a0							; add 1 to byte to check
+		moveq	#0,d4				; set bit to check to 0
+		adda.w	#1,a0				; add 1 to byte to check
 	@ok:	
-		lea		2(a3),a3						; get next tile ram location
-		dbf		d2,@dotile
+		lea	2(a3),a3			; get next tile ram location
+		dbf	d2,@dotile
 
-		lea		480(a3),a3						; start of next row ram 			
-		dbf		d3,@dorow
+		lea	480(a3),a3			; start of next row ram 			
+		dbf	d3,@dorow
 
 ; now send it to Vram
-		lea		($C00000).l,a6
+		lea	($C00000).l,a6
 		locVRAM	$00A0*$20
-		lea		(v_mapbuffer).l,a0 
+		lea	(v_mapbuffer).l,a0 
 
 		moveq	#17,d2
 @transferrow:
-		moveq	#39,d1							; number of 8x8 tiles to transfer
+		moveq	#39,d1				; number of 8x8 tiles to transfer
 	@transfertile:
 		movea.l	a0,a1
 		move.l	(a1),(a6)
-		lea		160(a1),a1						
+		lea	160(a1),a1						
 		move.l	(a1),(a6)
-		lea		160(a1),a1				
+		lea	160(a1),a1				
 		move.l	(a1),(a6)
-		lea		160(a1),a1						
+		lea	160(a1),a1						
 		move.l	(a1),(a6)
-		lea		160(a1),a1					
+		lea	160(a1),a1					
 		move.l	(a1),(a6)
-		lea		160(a1),a1					
+		lea	160(a1),a1					
 		move.l	(a1),(a6)
-		lea		160(a1),a1					
+		lea	160(a1),a1					
 		move.l	(a1),(a6)
-		lea		160(a1),a1					
+		lea	160(a1),a1					
 		move.l	(a1),(a6)
-		lea		4(a0),a0
-		dbf		d1,@transfertile
+		lea	4(a0),a0
+		dbf	d1,@transfertile
 
-		lea		$460(a0),a0						; start of next row ram
-		dbf		d2,@transferrow
+		lea	$460(a0),a0			; start of next row ram
+		dbf	d2,@transferrow
 
-		bsr.w   RedrawFullMenu           ; Draw the menu
+
+; ---------------------------------------------------------------------------
+; decompress and DMA KosM menu GFX
+; ---------------------------------------------------------------------------
+		jsr	InitDMAQueue
+	;	writeVRAM Art_MenuFont, $74*$20, $0000
+		lea	(KosM_MenuFont).l,a1
+		moveq	#$0000,d2
+		jsr	(Queue_Kos_Module).l
+
+@loadgfx:
+		move.b  #$1A, (v_vbla_routine).w
+		jsr	(Process_Kos_Queue).l
+		jsr     WaitForVBla
+		jsr	(Process_Kos_Module_Queue).l
+		tst.b	(Kos_modules_left).w
+		bne.s	@loadgfx
+
+
+		bsr.w   RedrawFullMenu           	; Draw the menu
 		jsr     PaletteFadeInFast
 
 ;========================================================================================================================
@@ -171,27 +184,28 @@ WaitForPLC:
 ;========================================================================================================================
 
 PauseMenu_Main_Loop:
-                moveq   #$00, D3                      ; d3 is used in calculating the VDP command for changing the palette of the highlighted item
-                bsr     HighlightItem                 ; clear highlight
-                bsr     MenuButtonHandling
-                move.w  #$6000, D3                    ; palette line 3 will be set
-                bsr     HighlightItem                 ; highlight item
-                cmpi.b  #$4,(v_levselpage).w          ; viewing sound test?
-                bne.s   @notsoundtest                 ; if not, branch
-                bsr     DrawSoundTest
-       @notsoundtest:
+		move.b  #$1A, (v_vbla_routine).w
+		jsr	(Process_Kos_Queue).l	
+		jsr     WaitForVBla 
+		moveq   #$00, D3                      ; d3 is used in calculating the VDP command for changing the palette of the highlighted item
+		bsr     HighlightItem                 ; clear highlight
+		bsr     MenuButtonHandling
+		move.w  #$6000, D3                    ; palette line 3 will be set
+		bsr     HighlightItem                 ; highlight item
+		cmpi.b  #$4,(v_levselpage).w          ; viewing sound test?
+		bne.s   @notsoundtest                 ; if not, branch
+		bsr     DrawSoundTest
+	@notsoundtest:
 		lea	(v_objspace).w,a0 ; set address for object RAM
+		bsr.w	MapPointerObject			  ; run 'you are here' object
+		jsr	BuildSprites
+		bsr.w   PauseMenu_DeformLayers
+		jsr	(Process_Kos_Module_Queue).l
 
-       			bsr.w	MapPointerObject			  ; run 'you are here' object
-				jsr		BuildSprites
-                bsr.w   PauseMenu_DeformLayers
-                move.b  #$1A, (v_vbla_routine).w
-                jsr     WaitForVBla
-                move    #$2300, SR                    ; interrupt mask level 3
-                move.b  (v_jpadpress1).w, D0
+		move.b  (v_jpadpress1).w, D0
 		andi.b	#btnStart,d0	              ; is start pressed?
-                bne.s   @startpressed
-                bra     PauseMenu_Main_Loop
+		bne.s   @startpressed
+		bra     PauseMenu_Main_Loop
 ;========================================================================================================================
 		include	"_inc\menu\Button Handling.asm"
 		include	"_inc\menu\Highlight Item.asm"

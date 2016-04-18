@@ -571,8 +571,7 @@ loc_32894:
 JmpTo60_DeleteObject
 	moveq	#plcid_GHZ2,d0
 	jsr		AddPLC		        ; load level object patterns
-	moveq	#plcid_Explode,d0
-	jsr		(AddPLC).l			; load explosion patterns
+	jsr		(LoadAnimalExplosion).l			; load explosion patterns
 	lea     (Pal_GHZ).l,a2
 	lea		(v_pal1_wat+$20).w,a1
  	moveq	#$F,d0                         ; move 16 colours

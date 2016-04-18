@@ -5,7 +5,6 @@ ArtLoadCues:
 
 ptr_PLC_Main:		dc.w PLC_Main-ArtLoadCues
 ptr_PLC_Main2:		dc.w PLC_Main2-ArtLoadCues
-ptr_PLC_Explode:	dc.w PLC_Explode-ArtLoadCues
 ptr_PLC_GameOver:	dc.w PLC_GameOver-ArtLoadCues
 ptr_PLC_GHZ:		dc.w PLC_GHZ-ArtLoadCues
 ptr_PLC_GHZ2:		dc.w PLC_GHZ2-ArtLoadCues
@@ -30,15 +29,6 @@ ptr_PLC_Boss:		dc.w PLC_Boss-ArtLoadCues
 ptr_PLC_Signpost:	dc.w PLC_Signpost-ArtLoadCues
 ptr_PLC_Warp:		dc.w PLC_Warp-ArtLoadCues
 ptr_PLC_SpecialStage:	dc.w PLC_SpecialStage-ArtLoadCues
-ptr_PLC_GHZAnimals:	dc.w PLC_GHZAnimals-ArtLoadCues
-ptr_PLC_LZAnimals:	dc.w PLC_LZAnimals-ArtLoadCues
-ptr_PLC_MZAnimals:	dc.w PLC_MZAnimals-ArtLoadCues
-ptr_PLC_SLZAnimals:	dc.w PLC_SLZAnimals-ArtLoadCues
-ptr_PLC_SYZAnimals:	dc.w PLC_SYZAnimals-ArtLoadCues
-ptr_PLC_SBZAnimals:	dc.w PLC_SBZAnimals-ArtLoadCues
-ptr_PLC_HUBZAnimals:	dc.w PLC_HUBZAnimals-ArtLoadCues
-ptr_PLC_IntroZAnimals:	dc.w PLC_IntroZAnimals-ArtLoadCues
-ptr_PLC_TropicAnimals:	dc.w PLC_TropicAnimals-ArtLoadCues
 ptr_PLC_SSResult:	dc.w PLC_SSResult-ArtLoadCues
 ptr_PLC_Ending:		dc.w PLC_Ending-ArtLoadCues
 ptr_PLC_TryAgain:	dc.w PLC_TryAgain-ArtLoadCues
@@ -71,12 +61,6 @@ PLC_Main2:	dc.w ((PLC_Main2end-PLC_Main2-2)/6)-1
 		plcm	Nem_Monitors, $D000	; monitors
 	PLC_Main2end:
 ; ---------------------------------------------------------------------------
-; Pattern load cues - explosion
-; ---------------------------------------------------------------------------
-PLC_Explode:	dc.w ((PLC_Explodeend-PLC_Explode-2)/6)-1
-		plcm	Nem_Explode, $B400	; explosion
-	PLC_Explodeend:
-; ---------------------------------------------------------------------------
 ; Pattern load cues - game/time	over
 ; ---------------------------------------------------------------------------
 PLC_GameOver:	dc.w ((PLC_GameOverend-PLC_GameOver-2)/6)-1
@@ -105,6 +89,7 @@ VRAMloc_VSpring		=	$A5C0
 VRAMloc_DSpring		=	$A720
 VRAMloc_GhzWall1 	=	$A1E0	; breakable wall
 VRAMloc_MonitorSpinDash =	$D400 ; +++ spin dash icon, overwrites goggles icon
+VRAMloc_Teleporter	=	$B000
 
 
 PLC_GHZ:	dc.w ((PLC_GHZ2-PLC_GHZ-2)/6)-1
@@ -325,48 +310,6 @@ PLC_SpecialStage:	dc.w ((PLC_SpeStageend-PLC_SpecialStage-2)/6)-1
 		plcm	Nem_SSZone5, $F400	; ZONE 5 block
 		plcm	Nem_SSZone6, $F520	; ZONE 6 block
 ; ---------------------------------------------------------------------------
-; Pattern load cues - GHZ animals
-; ---------------------------------------------------------------------------
-PLC_GHZAnimals:	dc.w ((PLC_GHZAnimalsend-PLC_GHZAnimals-2)/6)-1
-		plcm	Nem_Rabbit, $B000	; rabbit
-		plcm	Nem_Flicky, $B240	; flicky
-	PLC_GHZAnimalsend:
-; ---------------------------------------------------------------------------
-; Pattern load cues - LZ animals
-; ---------------------------------------------------------------------------
-PLC_LZAnimals:	dc.w ((PLC_LZAnimalsend-PLC_LZAnimals-2)/6)-1
-		plcm	Nem_BlackBird, $B000	; blackbird
-		plcm	Nem_Seal, $B240		; seal
-	PLC_LZAnimalsend:
-; ---------------------------------------------------------------------------
-; Pattern load cues - MZ animals
-; ---------------------------------------------------------------------------
-PLC_MZAnimals:	dc.w ((PLC_MZAnimalsend-PLC_MZAnimals-2)/6)-1
-		plcm	Nem_Squirrel, $B000	; squirrel
-		plcm	Nem_Seal, $B240		; seal
-	PLC_MZAnimalsend:
-; ---------------------------------------------------------------------------
-; Pattern load cues - SLZ animals
-; ---------------------------------------------------------------------------
-PLC_SLZAnimals:	dc.w ((PLC_SLZAnimalsend-PLC_SLZAnimals-2)/6)-1
-		plcm	Nem_Pig, $B000		; pig
-		plcm	Nem_Flicky, $B240	; flicky
-	PLC_SLZAnimalsend:
-; ---------------------------------------------------------------------------
-; Pattern load cues - SYZ animals
-; ---------------------------------------------------------------------------
-PLC_SYZAnimals:	dc.w ((PLC_SYZAnimalsend-PLC_SYZAnimals-2)/6)-1
-		plcm	Nem_Pig, $B000		; pig
-		plcm	Nem_Chicken, $B240	; chicken
-	PLC_SYZAnimalsend:
-; ---------------------------------------------------------------------------
-; Pattern load cues - SBZ animals
-; ---------------------------------------------------------------------------
-PLC_SBZAnimals:	dc.w ((PLC_SBZAnimalsend-PLC_SBZAnimals-2)/6)-1
-		plcm	Nem_Rabbit, $B000		; rabbit
-		plcm	Nem_Chicken, $B240	; chicken
-	PLC_SBZAnimalsend:
-; ---------------------------------------------------------------------------
 ; Pattern load cues - special stage results screen
 ; ---------------------------------------------------------------------------
 PLC_SSResult:dc.w ((PLC_SpeStResultend-PLC_SSResult-2)/6)-1
@@ -386,13 +329,13 @@ PLC_Ending:	dc.w ((PLC_Endingend-PLC_Ending-2)/6)-1
 		plcm	Nem_EndEggman, $A480	; Eggman's death ((unused)
 		else
 		endc
-		plcm	Nem_Rabbit, $AA60	; rabbit
-		plcm	Nem_Chicken, $ACA0	; chicken
-		plcm	Nem_BlackBird, $AE60	; blackbird
-		plcm	Nem_Seal, $B0A0		; seal
-		plcm	Nem_Pig, $B260		; pig
-		plcm	Nem_Flicky, $B4A0	; flicky
-		plcm	Nem_Squirrel, $B660	; squirrel
+	;	plcm	Nem_Rabbit, $AA60	; rabbit
+	;	plcm	Nem_Chicken, $ACA0	; chicken
+	;	plcm	Nem_BlackBird, $AE60	; blackbird
+	;	plcm	Nem_Seal, $B0A0		; seal
+	;	plcm	Nem_Pig, $B260		; pig
+	;	plcm	Nem_Flicky, $B4A0	; flicky
+	;	plcm	Nem_Squirrel, $B660	; squirrel
 		plcm	Nem_EndStH, $B8A0	; "SONIC THE HEDGEHOG"
 	PLC_Endingend:
 ; ---------------------------------------------------------------------------
@@ -470,28 +413,6 @@ PLC_HUBZ2:	dc.w ((PLC_HUBZ2end-PLC_HUBZ2-2)/6)-1
 ;		plcm    Nem_MonitorDJump, $D400 ; +++ double jump icon, overwrites goggles icon
 	PLC_HUBZ2end:
 ; ---------------------------------------------------------------------------
-; Pattern load cues - HUBZ animals
-; ---------------------------------------------------------------------------
-PLC_HUBZAnimals:	dc.w ((PLC_HUBZAnimalsend-PLC_HUBZAnimals-2)/6)-1
-		plcm	Nem_Pig, $B000		; pig
-		plcm	Nem_Flicky, $B240	; flicky
-	PLC_HUBZAnimalsend:
-; ---------------------------------------------------------------------------
-; Pattern load cues - IntroZ animals
-; ---------------------------------------------------------------------------
-PLC_IntroZAnimals:	dc.w ((PLC_IntroZAnimalsend-PLC_IntroZAnimals-2)/6)-1
-		plcm	Nem_BlackBird, $B000	; blackbird
-		plcm	Nem_Seal, $B240		; seal
-	PLC_IntroZAnimalsend:
-; ---------------------------------------------------------------------------
-; Pattern load cues - Tropic animals
-; ---------------------------------------------------------------------------
-PLC_TropicAnimals:	dc.w ((PLC_TropicAnimalsend-PLC_TropicAnimals-2)/6)-1
-		plcm	Nem_Rabbit, $B000	; rabbit
-		plcm	Nem_Flicky, $B240	; flicky
-	PLC_TropicAnimalsend:
-
-; ---------------------------------------------------------------------------
 ; Pattern load cues - Intro
 ; ---------------------------------------------------------------------------
 PLC_IntroZ:	dc.w ((PLC_IntroZ2-PLC_IntroZ-2)/6)-1
@@ -543,7 +464,6 @@ PLC_Tropic2:	dc.w ((PLC_Tropic2end-PLC_Tropic2-2)/6)-1
 ; ---------------------------------------------------------------------------
 plcid_Main:		equ (ptr_PLC_Main-ArtLoadCues)/2	; 0
 plcid_Main2:		equ (ptr_PLC_Main2-ArtLoadCues)/2	; 1
-plcid_Explode:		equ (ptr_PLC_Explode-ArtLoadCues)/2	; 2
 plcid_GameOver:		equ (ptr_PLC_GameOver-ArtLoadCues)/2	; 3
 plcid_GHZ:		equ (ptr_PLC_GHZ-ArtLoadCues)/2		; 4
 plcid_GHZ2:		equ (ptr_PLC_GHZ2-ArtLoadCues)/2	; 5
@@ -568,15 +488,6 @@ plcid_Boss:		equ (ptr_PLC_Boss-ArtLoadCues)/2	; $11
 plcid_Signpost:		equ (ptr_PLC_Signpost-ArtLoadCues)/2	; $12
 plcid_Warp:		equ (ptr_PLC_Warp-ArtLoadCues)/2	; $13
 plcid_SpecialStage:	equ (ptr_PLC_SpecialStage-ArtLoadCues)/2 ; $14
-plcid_GHZAnimals:	equ (ptr_PLC_GHZAnimals-ArtLoadCues)/2	; $15
-plcid_LZAnimals:	equ (ptr_PLC_LZAnimals-ArtLoadCues)/2	; $16
-plcid_MZAnimals:	equ (ptr_PLC_MZAnimals-ArtLoadCues)/2	; $17
-plcid_SLZAnimals:	equ (ptr_PLC_SLZAnimals-ArtLoadCues)/2	; $18
-plcid_SYZAnimals:	equ (ptr_PLC_SYZAnimals-ArtLoadCues)/2	; $19
-plcid_SBZAnimals:	equ (ptr_PLC_SBZAnimals-ArtLoadCues)/2	; $1A
-plcid_HUBZAnimals:	equ (ptr_PLC_HUBZAnimals-ArtLoadCues)/2	; $22
-plcid_IntroZAnimals:	equ (ptr_PLC_IntroZAnimals-ArtLoadCues)/2 ; $23
-plcid_TropicAnimals:	equ (ptr_PLC_TropicAnimals-ArtLoadCues)/2 ; $24
 plcid_SSResult:		equ (ptr_PLC_SSResult-ArtLoadCues)/2	; $1B
 plcid_Ending:		equ (ptr_PLC_Ending-ArtLoadCues)/2	; $1C
 plcid_TryAgain:		equ (ptr_PLC_TryAgain-ArtLoadCues)/2	; $1D

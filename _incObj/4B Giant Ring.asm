@@ -80,7 +80,5 @@ GRing_Delete:	; Routine 6
 ; ===========================================================================
 GRing_DeleteRange:
         ; reload graphics replaced by ring when ring goes out of range
-		moveq	#plcid_Explode,d0
-		jsr		(AddPLC).l	; load explosion patterns
-		jsr		(LoadAnimalPLC).l ; load animal patterns
+		jsr		(LoadAnimalExplosion).l ; load animal patterns
 		bra.s	GRing_Delete

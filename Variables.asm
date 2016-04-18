@@ -8,7 +8,21 @@ v_errortype:	= $FFFFFC48		; error type
 
 v_256x256:	=   $FF0000		; 256x256 tile mappings ($A400 bytes)
 
-v_LZ_Waterline_Buffer: = $FFFF9900	; $300 bytes, dma buffer for lz waterline, used in LZ only
+v_LZ_Waterline_Buffer: = $FFFF9890	; $300 bytes, dma buffer for lz waterline, used in LZ only
+Kos_queue_ram =			$FFFF9B90	; formerly $FFFFF460
+Kos_decomp_queue_count =	Kos_queue_ram  		; word 		; the number of pieces of data on the queue. Sign bit set indicates a decompression is in progress
+Kos_decomp_stored_registers =	Kos_queue_ram+$2  	; $28 bytes 	; allows decompression to be spread over multiple frames
+Kos_decomp_stored_SR =		Kos_queue_ram+$2A  	; word
+Kos_decomp_bookmark =		Kos_queue_ram+$2C  	; long 		; the address within the Kosinski queue processor at which processing is to be resumed
+Kos_description_field =		Kos_queue_ram+$30  	; word 		; used by the Kosinski queue processor the same way the stack is used by the normal Kosinski decompression routine
+Kos_decomp_queue =		Kos_queue_ram+$32  	; $20 bytes 	; 2 longwords per entry, first is source location and second is decompression location
+Kos_decomp_source =		Kos_queue_ram+$32  	; long 		; the compressed data location for the first entry in the queue
+Kos_decomp_destination =	Kos_queue_ram+$36  	; long 		; the decompression location for the first entry in the queue
+Kos_modules_left =		Kos_queue_ram+$50  	; byte 		; the number of modules left to decompresses. Sign bit set indicates a module is being decompressed/has been decompressed
+Kos_last_module_size =		Kos_queue_ram+$52  	; word 		; the uncompressed size of the last module in words. All other modules are $800 words
+Kos_module_queue =		Kos_queue_ram+$54  	; $18 bytes 	; 6 bytes per entry, first longword is source location and next word is VRAM destination
+Kos_module_source =		Kos_queue_ram+$54  	; long 		; the compressed data location for the first module in the queue
+Kos_module_destination =	Kos_queue_ram+$6C  	; word 		; the VRAM destination for the first module in the queue
 Kos_decomp_buffer =  $FFFF9C00  	; $1000 bytes	; each module in a KosM archive is decompressed here and then DMAed to VRAM
 
 v_spritequeue:	= $FFFFAC00		; sprite display queue, in order of priority ($400 bytes)
@@ -90,26 +104,11 @@ v_abil_peelout  = v_abil_items+$8
 v_abil_walljump = v_abil_items+$9
 v_abil_insta    = v_abil_items+$A        ; instashield
 ; --------------------------------------------------------------------------
-
-Kos_decomp_queue_count =	$FFFFF460  ; word 		; the number of pieces of data on the queue. Sign bit set indicates a decompression is in progress
-Kos_decomp_stored_registers =	$FFFFF462  ; $28 bytes 		; allows decompression to be spread over multiple frames
-Kos_decomp_stored_SR =		$FFFFF48A  ; word
-Kos_decomp_bookmark =		$FFFFF48C  ; long 		; the address within the Kosinski queue processor at which processing is to be resumed
-Kos_description_field =		$FFFFF490  ; word 		; used by the Kosinski queue processor the same way the stack is used by the normal Kosinski decompression routine
-Kos_decomp_queue =		$FFFFF492  ; $20 bytes 		; 2 longwords per entry, first is source location and second is decompression location
-Kos_decomp_source =		$FFFFF492  ; long 		; the compressed data location for the first entry in the queue
-Kos_decomp_destination =	$FFFFF496  ; long 		; the decompression location for the first entry in the queue
-Kos_modules_left =		$FFFFF4B0  ; byte 		; the number of modules left to decompresses. Sign bit set indicates a module is being decompressed/has been decompressed
-Kos_last_module_size =		$FFFFF4B2  ; word 		; the uncompressed size of the last module in words. All other modules are $800 words
-Kos_module_queue =		$FFFFF4B4  ; $18 bytes 		; 6 bytes per entry, first longword is source location and next word is VRAM destination
-Kos_module_source =		$FFFFF4B4  ; long 		; the compressed data location for the first module in the queue
-Kos_module_destination =	$FFFFF4CC  ; word 		; the VRAM destination for the first module in the queue
-
 v_worldmap_X	= $FFFFF49E		; current level's left boundary position in world map squares (1 byte)
 v_worldmap_Y	= $FFFFF49F		; current level's top boundary position in world map squares  (1 byte)
-v_worldmap		= $FFFFF4A0		; $160 bytes, 1 bit for each square of the 80x35 map that has been visited		
+v_worldmap	= $FFFFF4A0		; $160 bytes, 1 bit for each square of the 80x35 map that has been visited		
 
-v_gamemode:		= $FFFFF600		; game mode (00=Sega			; 04=Title			; 08=Demo			; 0C=Level			; 10=SS			; 14=Cont			; 18=End			; 1C=Credit			; +8C=PreLevel)
+v_gamemode:	= $FFFFF600		; game mode (00=Sega; 04=Title; 08=Demo; 0C=Level; 10=SS; 14=Cont; 18=End; 1C=Credit; +8C=PreLevel)
 v_jpadhold2:	= $FFFFF602		; joypad input - held, duplicate
 v_jpadpress2:	= $FFFFF603		; joypad input - pressed, duplicate
 v_jpadhold1:	= $FFFFF604		; joypad input - held

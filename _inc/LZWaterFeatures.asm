@@ -527,18 +527,18 @@ locret_3FBE2:
 ; End of function LZWaterSlides
 
 ; ===========================================================================
-Grind_001:	dc.w		    $F5
-		dc.w	$F4,$F4,$F4,$F4
-		dc.w	$F5,$F5,$F5,$F5
-		dc.w	$0000,$000A,$001A,$002A
+Grind_001:	dc.w		    $0000
+		dc.w	$0000,$0000,$0000,$0000
+		dc.w	$0000,$001A,$000A,$001A
+		dc.w	$000A,$000A,$001A,$002A
 		dc.w	$000A,$000A,$000A,$001A
 		dc.w	$002A,$002A,$001A,$000A				; MJ: Values for speed, format XX00 = Speed in $14(a-)
 		even
 ; ---------------------------------------------------------------------------
 Grind_002:	dc.b	$A5,$A6,$A7,$A8				; MJ: Chunks to read (128x128 ID's)
 		dc.b	$A9,$AA,$AB,$AC
-		dc.b	$AF,$B0,$B3,$FF
-		dc.b	$FF,$FF,$FF,$FF
+		dc.b	$AF,$B0,$B3,$B6
+		dc.b	$B7,$B8,$B9,$FF
 		dc.b	$FF,$FF,$FF,$FF
 		dc.b	$FF
 		even

@@ -504,7 +504,8 @@ Demo_Time:				; XREF: VBlank; HBlank
 		subq.w	#1,(v_demolength).w ; subtract 1 from time left
 
 	@end:
-		rts	
+		jmp	(Set_Kos_Bookmark).l
+	;	rts	
 ; End of function Demo_Time
 
 ; ===========================================================================
@@ -593,6 +594,7 @@ VBla_1A:
 		writeCRAM	v_pal1_wat,$80,0
 		writeVRAM	v_scrolltable,$380,vram_hscroll
 		writeVRAM	v_sprites,$280,vram_sprites
+                jsr	(ProcessDMAQueue).l
 		move.w	(v_hbla_hreg).w,(a5)
 		bra.w	sub_1642
 
@@ -614,7 +616,7 @@ sub_106E:				; XREF: VBla_02; et al
 		writeVRAM	v_sprites,$280,vram_sprites
 		writeVRAM	v_scrolltable,$380,vram_hscroll
 ; 		startZ80
-		rts	
+		jmp	(Set_Kos_Bookmark).l
 ; End of function sub_106E
 
 ; ---------------------------------------------------------------------------
@@ -1104,7 +1106,7 @@ QueueDMATransfer:
 	clr.w	(a1)							; Put a stop token at the end of the used part of the queue
 	move.w	a1,(v_vdp_buffer_slot).w	; Set the next free slot address, potentially undoing the above clr (this is intentional!)
 
-	if UseVIntSafeDMA==1
+	if UseVIntSafeDMA=1
 	move.w	(sp)+,sr						; Restore interrupts to previous state
 	endif ;UseVIntSafeDMA=1
 	rts
@@ -1185,27 +1187,37 @@ InitDMAQueue:
 ; ---------------------------------------------------------------------------
  
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
- 
- 
-LoadAnimalPLC:
-		moveq	#0,d0
-;		move.b	(v_level).w,d0
+LoadAnimalExplosion:
+ 		moveq	#0,d0
 		move.b	(v_zone).w,d0
-		cmpi.w	#7,d0
-		bhs.s	LoadAnimalPLC_New
-		addi.w	#plcid_GHZAnimals,d0
-		bra.s	AddPLC
-; ---------------------------------------------------------------------------
- 
-LoadAnimalPLC_New:
- 		subi.w	#7,d0
-; 		; multiply d0 by 3
-; 		move.w	d0,d1
-; 		add.w	d0,d0
-; 		add.w	d1,d0
-		; add $22 (this is the index of the animal PLC for the first added zone)
-		addi.w	#plcid_HUBZAnimals,d0
-	;	 bra.s	AddPLC
+		add.w	d0,d0
+		add.w	d0,d0
+		lea	ZoneAnimals(pc,d0.w),a3
+		movea.l	(a3)+,a1
+		move.w	#$B000,d2
+		jsr	(Queue_Kos_Module).l
+		movea.l	(a3),a1
+		move.w	#$B240,d2
+		jsr	(Queue_Kos_Module).l	
+		lea	(KosM_Explode).l,a1
+		move.w	#$B400,d2
+		jsr	(Queue_Kos_Module).l
+		rts	
+
+ZoneAnimals:
+		dc.l	KosM_Rabbit, KosM_Flicky	; GHZ
+		dc.l	KosM_BlackBird, KosM_Seal	; LZ
+		dc.l	KosM_Squirrel, KosM_Seal	; MZ
+		dc.l	KosM_Pig, KosM_Flicky		; SLZ
+		dc.l	KosM_Pig, KosM_Chicken		; SYZ
+		dc.l	KosM_Rabbit, KosM_Chicken	; SBZ
+		dc.l	KosM_Rabbit, KosM_Flicky	; GHZ
+		dc.l	KosM_Rabbit, KosM_Flicky	; GHZ
+		dc.l	KosM_Rabbit, KosM_Flicky	; GHZ
+		dc.l	KosM_Rabbit, KosM_Flicky	; GHZ
+		dc.l	KosM_Rabbit, KosM_Flicky	; GHZ
+		even
+
 ; End of function LoadAnimalPLC
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
@@ -1379,7 +1391,7 @@ loc_16AA:				; XREF: sub_165E
 		move.l	d6,($FFFFF6F4).w
 
 locret_16DA:				; XREF: sub_1642
-		rts	
+		jmp	(Set_Kos_Bookmark).l
 ; ===========================================================================
 
 loc_16DC:				; XREF: sub_165E
@@ -1389,7 +1401,7 @@ loc_16DC:				; XREF: sub_165E
 loc_16E2:				; XREF: sub_165E
 		move.l	6(a0),(a0)+
 		dbf	d0,loc_16E2
-		rts	
+		jmp	(Set_Kos_Bookmark).l
 ; End of function sub_165E
 
 ; ---------------------------------------------------------------------------
@@ -3017,31 +3029,21 @@ Level_Delay:
 		bra.s	Level_StartGame
 ; ===========================================================================
 
-; Level_ClrCardArt:
-; 		moveq	#plcid_Explode,d0
-; 		jsr	(AddPLC).l	; load explosion gfx
-; 		moveq	#0,d0
-; 		move.b	(v_zone).w,d0
-; 		addi.w	#plcid_GHZAnimals,d0
-; 		jsr	(AddPLC).l	; load animal gfx (level no. + $15)
 Level_ClrCardArt:
-		moveq	#plcid_Explode,d0
-		jsr	(AddPLC).l	; load explosion patterns
-		jsr	(LoadAnimalPLC).l ; load animal patterns
+		jsr	(LoadAnimalExplosion).l ; load animal patterns
 		
 Level_StartGame:
 		bclr	#7,(v_gamemode).w ; subtract $80 from mode to end pre-level stuff
-
 
 ; ---------------------------------------------------------------------------
 ; Main level loop (when	all title card and loading sequences are finished)
 ; ---------------------------------------------------------------------------
 
 Level_MainLoop:
-    	cmpi.b  #id_GotPowUpCard,(v_objspace+$5C0).w ; is powerup card active?
-        beq.w   PowerupCardLoop                      ; go to it's own loop
-		tst.b	(v_objspace+$5C0).w					; is powerup card active?
-        bne.w   PowerupCardLoop                      ; go to it's own loop
+		cmpi.b  #id_GotPowUpCard,(v_objspace+$5C0).w	; is powerup card active?
+		beq.w   PowerupCardLoop				; go to it's own loop
+		tst.b	(v_objspace+$5C0).w			; is powerup card active?
+		bne.w   PowerupCardLoop				; go to it's own loop
 		bsr.w	PauseGame
 	; change the background colour, for a pretty basic kind of cpu meter	
 ;		tst.w	(f_debugmode).w	                    ; is debug mode being used?
@@ -3049,13 +3051,14 @@ Level_MainLoop:
 ;		move.w	#$8C89,($C00004).l	; H res 40 cells, no interlace, S/H enabled
 ;	@vbla_wait:	
 		move.b	#8,(v_vbla_routine).w
+		jsr	(Process_Kos_Queue).l	
 		bsr.w	WaitForVBla
-		addq.w	#1,(v_framecount).w                  ; add 1 to level timer
-;		move.w	#$8C81,($C00004).l	; H res 40 cells, no interlace, S/H disabled
+		addq.w	#1,(v_framecount).w			; add 1 to level timer
+;		move.w	#$8C81,($C00004).l			; H res 40 cells, no interlace, S/H disabled
 ;		bsr.w	MoveSonicInDemo
 		bsr.w	LZWaterFeatures
 		bsr.w	GrindRails		
-		jsr		ExecuteObjects
+		jsr	ExecuteObjects
 
 		tst.w   (f_restart).w                        ; is restart flag set?
 		bne     GM_Level                             ; reload level
@@ -3068,13 +3071,14 @@ Level_MainLoop:
 		bsr.w	DeformLayers
 
 	Level_SkipScroll:
-		jsr		BuildSprites
-		jsr		ObjPosLoad
+		jsr	BuildSprites
+		jsr	ObjPosLoad
 		bsr.w	PaletteCycle
 		bsr.w	RunPLC
+		jsr	(Process_Kos_Module_Queue).l
 		bsr.w	OscillateNumDo
 		bsr.w	SynchroAnimate
-		jsr		RevealMapTile
+		jsr	RevealMapTile
 ;		bsr.w	SignpostArtLoad
 
 ;		cmpi.b	#id_Demo,(v_gamemode).w
@@ -7113,7 +7117,7 @@ locret_ED1A:				; XREF: Obj0D_Index
 		include	"_incObj\HangPoint.asm"
 		include	"_incObj\Spring Pole.asm"
 		include	"_incObj\Splats.asm"
-
+		include	"_incObj\Teleporter.asm"
 
 		
 		even
@@ -9444,8 +9448,6 @@ Nem_Ring:	incbin	"artnem\Rings.bin"
 		even
 Nem_Monitors:	incbin	"artnem\Monitors.bin"
 		even
-Nem_Explode:	incbin	"artnem\Explosion.bin"
-		even
 Nem_BossExplode:incbin	"artnem\Boss Explosion.bin"
 		even
 Nem_Points:	incbin	"artnem\Points.bin"	; points from destroyed enemy or object
@@ -9466,6 +9468,13 @@ Nem_BigFlash:	incbin	"artnem\Giant Ring Flash.bin"
 		even
 Nem_Bonus:	incbin	"artnem\Hidden Bonuses.bin" ; hidden bonuses at end of a level
 		even
+; ---------------------------------------------------------------------------
+; Compressed graphics - various Kosinski Moduled
+; ---------------------------------------------------------------------------
+KosM_Teleporter:	incbin	"artkosm\Teleporter.kosm" ; ssz/hpz type teleporter
+		even
+KosM_Explode:	incbin	"artkosm\Explosion.kosm"
+		even
 
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - continue screen
@@ -9477,19 +9486,19 @@ Nem_MiniSonic:	incbin	"artnem\Continue Screen Stuff.bin"
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - animals
 ; ---------------------------------------------------------------------------
-Nem_Rabbit:	incbin	"artnem\Animal Rabbit.bin"
+KosM_Rabbit:	incbin	"artkosm\Animal Rabbit.kosm"
 		even
-Nem_Chicken:	incbin	"artnem\Animal Chicken.bin"
+KosM_Chicken:	incbin	"artkosm\Animal Chicken.kosm"
 		even
-Nem_BlackBird:	incbin	"artnem\Animal Blackbird.bin"
+KosM_BlackBird:	incbin	"artkosm\Animal Blackbird.kosm"
 		even
-Nem_Seal:	incbin	"artnem\Animal Seal.bin"
+KosM_Seal:	incbin	"artkosm\Animal Seal.kosm"
 		even
-Nem_Pig:	incbin	"artnem\Animal Pig.bin"
+KosM_Pig:	incbin	"artkosm\Animal Pig.kosm"
 		even
-Nem_Flicky:	incbin	"artnem\Animal Flicky.bin"
+KosM_Flicky:	incbin	"artkosm\Animal Flicky.kosm"
 		even
-Nem_Squirrel:	incbin	"artnem\Animal Squirrel.bin"
+KosM_Squirrel:	incbin	"artkosm\Animal Squirrel.kosm"
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - primary patterns and block mappings
@@ -10091,9 +10100,9 @@ SIcon_Homing:   incbin "artunc\SIcons\HomingAttack.bin"
 SIcon_LDash:    incbin "artunc\SIcons\LightDash.bin"
                 even
 
-Art_MenuBG:     incbin "artunc\Menu Background.bin"               ; gotta make sure this doesn't cross a 128kb boundary, dma screws up
-                even
-Art_MenuFont:   incbin "artunc\Menu Font.bin"
+;KosM_MenuBG:     incbin "artkosm\Menu Background.kosm"
+;                even
+KosM_MenuFont:   incbin "artkosm\Menu Font.kosm"
                 even
 Eni_MenuBG:     incbin "tilemaps\Menu Background (Enigma).bin"
                 even               

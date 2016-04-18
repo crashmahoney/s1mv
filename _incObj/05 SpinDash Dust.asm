@@ -140,9 +140,12 @@ SD_Dust_BranchTo16_DeleteObject:				; DATA XREF: h+6DBA?o
  
  
 SD_Dust_CheckSkid:
-	movea.w	$3E(a0),a2         ; move sonic's address to a2
-	moveq	#$10,d1		; y offset of new object
-	moveq	#0,d2		; x offset of new object
+	movea.w	$3E(a0),a2         	; move sonic's address to a2
+	btst	#1,obStatus(a2)		; is sonic in the air?
+	bne.s	@rts			; if so, branch
+
+	moveq	#$10,d1			; y offset of new object
+	moveq	#0,d2			; x offset of new object
 	cmp.b	#id_Stop,obAnim(a2)
 	beq.s	SD_Dust_SkidDust
 
@@ -150,16 +153,16 @@ SD_Dust_CheckSkid:
 	beq.s	SD_Dust_SkidDust
 	cmp.b	#id_Grind2,obAnim(a2)
 	beq.s	SD_Dust_SkidDust
-	;addq.w	#4,d1		; add to y pos
-	subq.w	#8,d2		; add to x pos
+	subq.w	#8,d2			; add to x pos
 	cmp.b	#id_Grind3,obAnim(a2)
 	beq.s	SD_Dust_SkidDust
 
 	moveq	#$6,d1
 	cmp.b	#$3,obColProp(a2)
-	beq.s	SD_Dust_SkidDust   ; if not, branch
+	beq.s	SD_Dust_SkidDust   	; if not, branch
 	move.b	#2,obRoutine(a0)
 	move.b	#0,$32(a0)
+@rts:
 	rts
 ; 컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴�
  
