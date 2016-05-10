@@ -2,10 +2,10 @@
 ; Object 11 - GHZ bridge
 ; ---------------------------------------------------------------------------
 ; OST Variables:
-Obj11_child1		equ objoff_30	; pointer to first set of bridge segments
-Obj11_child2		equ objoff_34	; pointer to second set of bridge segments, if applicable
-Obj11_baseYpos		equ	objoff_3C	; resting y position of bridge
-Obj11_Sonanim		equ $3E
+Obj11_child1		= $30	; pointer to first set of bridge segments
+Obj11_child2		= $34	; pointer to second set of bridge segments, if applicable
+Obj11_baseYpos		= $3C	; resting y position of bridge
+Obj11_Sonanim		= $3E
 
 
 Bridge:					; XREF: Obj_Index

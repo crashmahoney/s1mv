@@ -509,10 +509,10 @@ loc_3F9A2:
 		bpl.s	@angleok
 		neg.b	d0
 	@angleok:	
-		cmpi.b	#$8,d0
+		cmpi.b	#$6,d0
 		bcs.s	@animok
 		add.b	#1,obAnim(a1)
-		cmpi.b	#$10,d0
+		cmpi.b	#$18,d0
 		bcs.s	@animok
 		add.b	#1,obAnim(a1)
 	@animok:

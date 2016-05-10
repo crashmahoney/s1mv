@@ -97,6 +97,11 @@ Splats_ActIndex:	dc.w @move-Splats_ActIndex
 		add.l	d0,obX(a0)
 
 		move.w	obX(a0),d3
+		add.w	#16,d3					; check 16px to the right of centre
+		btst	#0,obRender(a0)			; check direction
+		bne.s	@ok						; branch if facing right
+		sub.w	#32,d3					; check 16px to the left of centre
+	@ok:
 		move.w	splats_y_floor(a0),d2
 		jsr		ObjFloorDist3
 		cmpi.w	#-8,d1

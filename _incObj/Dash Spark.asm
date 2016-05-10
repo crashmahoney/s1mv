@@ -30,6 +30,14 @@ CreateSparks:
 		rts
 ; ---------------------------------------------------------------------------
 SparkVelocities:
+; double jump pattern
+		dc.w  -$200, -$200
+		dc.w   $200, -$200
+		dc.w  -$200,  $200
+		dc.w   $200,  $200
+
+
+; horizontal dash pattern
 		dc.w  -$200, -$200
 		dc.w  -$100, -$100
 		dc.w  -$100,  $100

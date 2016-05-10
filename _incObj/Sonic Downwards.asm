@@ -1,5 +1,5 @@
 ; ---------------------------------------------------------------------------
-; Downwards attack (and bounce version)
+; Downwards attack
 ; ---------------------------------------------------------------------------
 
 Sonic_DownAttack:
@@ -14,7 +14,7 @@ Sonic_DownAttack:
 		move.w	#$1F,obLRLock(a0)	; don't let him turn around for a few frames
 		bra.s	@skipothermoves
  @chkbuttons:               
-        tst.b   (v_abil_down).w
+        tst.b   (v_abil_down).w                 ; do you have this ability?
         beq.s   @rts
 	move.b	(v_jpadhold2).w,d1
 	andi.b	#btnDn,d1	              ; is down held?

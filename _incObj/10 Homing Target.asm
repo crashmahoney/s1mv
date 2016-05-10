@@ -31,6 +31,7 @@ Homing_Notarget:; Routine 2
 		addq.b	#2,obRoutine(a0)
 ; ===========================================================================
 Homing_Animate: ; Routine 4
+;		sfx	$5B
                 clr.b   obAnim(a0)      ; go to starting animation
 ;                sfx     sfx_switch
 		addq.b	#2,obRoutine(a0)
