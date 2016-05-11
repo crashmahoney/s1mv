@@ -8,7 +8,7 @@
 Sonic_LevelBound:			; XREF: Obj01_MdNormal; et al
 		cmpi.b  #$0C,(v_gamemode).w
 		bne.w   @rts
-        move.l	obX(a0),d1
+	move.l	obX(a0),d1
 ;		smi.b	d2				; Set d2 if player on position > 32767
 ;		add.w	d2,d2			; Move bit up
 		move.w	obVelX(a0),d0
@@ -33,16 +33,16 @@ Sonic_LevelBound:			; XREF: Obj01_MdNormal; et al
 		addi.w	#$128,d0        ; was $128
 		cmp.w	d1,d0		; has Sonic touched the	side boundary?
 		bls.w	@sideslocked		; if yes, branch    was bls.s
-        bra.s   @chkbottom
+	bra.s   @chkbottom
     @chkleft:
-        move.w	(v_limitleft2).w,d0
-        subi.w  #$10,d0
-        cmp.w   d1,d0
+	move.w	(v_limitleft2).w,d0
+	subi.w  #$10,d0
+	cmp.w   d1,d0
 		bls.w	@leftside		; if yes, branch
     @chkright:
-        move.w	(v_limitright2).w,d0
-        addi.w  #$138,d0
-        cmp.w   d1,d0
+	move.w	(v_limitright2).w,d0
+	addi.w  #$138,d0
+	cmp.w   d1,d0
 		bls.w	@rightside		; if yes, branch
 
 	@chkbottom:
@@ -77,7 +77,7 @@ Sonic_LevelBound:			; XREF: Obj01_MdNormal; et al
 		bne.w	@nextact        ; if no, go to next act
 
 		cmpi.w	#$2000,(v_player+obX).w
-        ;        jmp     KillSonic
+	;        jmp     KillSonic
 		move.w	#$0700,(v_zone).w	; first 2 digits are the zone number, second pair are act number
 		move.w	#1,(f_restart).w ; restart level
 
@@ -112,6 +112,7 @@ Sonic_LevelBound:			; XREF: Obj01_MdNormal; et al
 		move.w	(v_player+obInertia).w,(v_lamp_inertia).w
 		move.w  (v_player+obAnim).w,(v_lamp_anim).w
 
+		move.b	(v_player+obStatus2).w,(v_lamp_status2).w
 		move.b  #0,(v_lamp_dir).w               ; clear dir flag
 		btst    #0,(v_player+obStatus).w         ; test which way sonic is facing
 		beq.s   @chkroll                         ; if left, branch
@@ -156,23 +157,24 @@ Sonic_LevelBound:			; XREF: Obj01_MdNormal; et al
 		move.w	($FFFFF718).w,($FFFFFE4C).w 	; bg position
 		move.w	($FFFFF71C).w,($FFFFFE4E).w 	; bg position
 
-                move.w  (v_player+obVelX).w,(v_lamp_xspeed).w
-                move.w  (v_player+obVelY).w,(v_lamp_yspeed).w
+		move.w  (v_player+obVelX).w,(v_lamp_xspeed).w
+		move.w  (v_player+obVelY).w,(v_lamp_yspeed).w
 		move.w	(v_player+obInertia).w,(v_lamp_inertia).w
-                move.w  (v_player+obAnim).w,(v_lamp_anim).w
+		move.w  (v_player+obAnim).w,(v_lamp_anim).w
 
-                move.b  #0,(v_lamp_dir).w               ; clear dir flag
-                btst    #0,(v_player+obStatus).w         ; test which way sonic is facing
-                beq.s   @chkroll2                        ; if left, branch
-                move.b  #1,(v_lamp_dir).w               ; set if facing right
+		move.b	(v_player+obStatus2).w,(v_lamp_status2).w
+		move.b  #0,(v_lamp_dir).w               ; clear dir flag
+		btst    #0,(v_player+obStatus).w         ; test which way sonic is facing
+		beq.s   @chkroll2                        ; if left, branch
+		move.b  #1,(v_lamp_dir).w               ; set if facing right
 
-         @chkroll2:
-                move.b  #0,(v_lamp_roll).w               ; clear roll flag
-                btst    #2,(v_player+obStatus).w         ; test if sonic is rolling
-                beq.s   @notrolling2                     ; if not, branch
-                move.b  #1,(v_lamp_roll).w               ; set roll flag
+	 @chkroll2:
+		move.b  #0,(v_lamp_roll).w               ; clear roll flag
+		btst    #2,(v_player+obStatus).w         ; test if sonic is rolling
+		beq.s   @notrolling2                     ; if not, branch
+		move.b  #1,(v_lamp_roll).w               ; set roll flag
 
-         @notrolling2:
+	 @notrolling2:
 
 		sub.w	#1,(v_zone).w ; set level to prev    +++
 		move.w	#1,(f_restart).w ; restart the level
@@ -181,37 +183,37 @@ Sonic_LevelBound:			; XREF: Obj01_MdNormal; et al
 ; ===========================================================================
 
 @rightside:
-                lea     RightData,a3
-                bra.s   @load
+		lea     RightData,a3
+		bra.s   @load
 
 @leftside:
 
-                cmpi.b  #$02,(v_act).w                   ; act 3?
-                bne.s   @loadleftdata                    ;
-                move.w  #$1000,d0                        ; ***(this bit is a hack to stop level from changing at the wrong point in act 3)
- 		move.w  obX(a0),d1                       ;
-                cmp.w   d0,d1                            ; is sonic far enough into the level that going off the left doesn't matter? (d1 is sonic's pos)
-                ble.s   @loadleftdata
-                rts
+		cmpi.b  #$02,(v_act).w                   ; act 3?
+		bne.s   @loadleftdata                    ;
+		move.w  #$1000,d0                        ; ***(this bit is a hack to stop level from changing at the wrong point in act 3)
+		move.w  obX(a0),d1                       ;
+		cmp.w   d0,d1                            ; is sonic far enough into the level that going off the left doesn't matter? (d1 is sonic's pos)
+		ble.s   @loadleftdata
+		rts
 
-          @loadleftdata:
-                lea     LeftData,a3
-          
-          @load:
+	  @loadleftdata:
+		lea     LeftData,a3
+	  
+	  @load:
 		clr.b	(v_lastlamp).w	                 ; clear lamppost counter
 		move.b  #1,(f_dontstopmusic).w           ; keep playing current song
 		move.b	#$FF,(v_lastlamp).w 	         ; lamppost number
 		move.b	(v_lastlamp).w,($FFFFFE31).w
-                jsr     SaveState                        ; Save act's state to SRAM
-                moveq	#0,d3
+		jsr     SaveState                        ; Save act's state to SRAM
+		moveq	#0,d3
 		move.b	(v_zone).w,d3                    ; get zone number
 		mulu    #4,d3                            ; mult by 4 to get index number of first act in zone
 		add.b   (v_act).w,d3                     ; add act number to get final index number
 		mulu    #6,d3                           ; mutliply by number of words ofdata saved in each act
-                add.w   d3,d3                            ; double (cos they're stored as words)
-                lea     (a3,d3),a3                       ; sets a3 to address of data
+		add.w   d3,d3                            ; double (cos they're stored as words)
+		lea     (a3,d3),a3                       ; sets a3 to address of data
 		move.b  (a3),(f_dontstopmusic).w        ; load graphics/change music?
-                adda    #2,a3                           ; advance data location
+		adda    #2,a3                           ; advance data location
 		move.w	(a3)+,($FFFFFE32).w		; x-position
 		move.w	obY(a0),d1
 		add.w	(a3)+,d1         		; put y offset in d1
@@ -219,7 +221,7 @@ Sonic_LevelBound:			; XREF: Obj01_MdNormal; et al
 		move.w	d1,($FFFFFE34).w                ; add offset to y position
 		move.w	(a3)+,(v_lamp_limitbtm).w       ; screen bottom limit
 		move.b	(a3),($FFFFFE3C).w              ; routine counter for dynamic level mod
-                adda    #2,a3                           ; advance data location
+		adda    #2,a3                           ; advance data location
 		move.w	(a3),d0                         ; set level
 
 		move.w	(v_rings).w,($FFFFFE36).w 	; rings
@@ -228,23 +230,24 @@ Sonic_LevelBound:			; XREF: Obj01_MdNormal; et al
 		move.w	(v_screenposx).w,($FFFFFE40).w 	; screen x-position
 		move.w	(v_screenposy).w,($FFFFFE42).w 	; screen y-position
 
-                move.w  (v_player+obVelX).w,(v_lamp_xspeed).w
-                move.w  (v_player+obVelY).w,(v_lamp_yspeed).w
+		move.w  (v_player+obVelX).w,(v_lamp_xspeed).w
+		move.w  (v_player+obVelY).w,(v_lamp_yspeed).w
 		move.w	(v_player+obInertia).w,(v_lamp_inertia).w
-                move.w  (v_player+obAnim).w,(v_lamp_anim).w
+		move.w  (v_player+obAnim).w,(v_lamp_anim).w
 
-                move.b  #0,(v_lamp_dir).w               ; clear dir flag
-                btst    #0,(v_player+obStatus).w        ; test which way sonic is facing
-                beq.s   @chkroll4                       ; if left, branch
-                move.b  #1,(v_lamp_dir).w               ; set if facing right
+		move.b	(v_player+obStatus2).w,(v_lamp_status2).w
+		move.b  #0,(v_lamp_dir).w               ; clear dir flag
+		btst    #0,(v_player+obStatus).w        ; test which way sonic is facing
+		beq.s   @chkroll4                       ; if left, branch
+		move.b  #1,(v_lamp_dir).w               ; set if facing right
 
-         @chkroll4:
-                move.b  #0,(v_lamp_roll).w               ; clear roll flag
-                btst    #2,(v_player+obStatus).w         ; test if sonic is rolling
-                beq.s   @notrolling4                     ; if not, branch
-                move.b  #1,(v_lamp_roll).w               ; set roll flag
+	 @chkroll4:
+		move.b  #0,(v_lamp_roll).w               ; clear roll flag
+		btst    #2,(v_player+obStatus).w         ; test if sonic is rolling
+		beq.s   @notrolling4                     ; if not, branch
+		move.b  #1,(v_lamp_roll).w               ; set roll flag
 
-         @notrolling4:
+	 @notrolling4:
 		move.w	d0,(v_zone).w                    ; set level     +++
 		move.w	#1,(f_restart).w                 ; restart the level
 		rts
@@ -254,6 +257,6 @@ Sonic_LevelBound:			; XREF: Obj01_MdNormal; et al
 		move.w	#0,obX+2(a0)
 		move.w	#0,obVelX(a0)	; stop Sonic moving
 		move.w	#0,obInertia(a0)
-                rts
+		rts
 ; End of function Sonic_LevelBound
 

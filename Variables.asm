@@ -374,6 +374,7 @@ v_musicpitch:    = $FFFFFFBE    	; +++ adjust music pitch by this amount
 v_palmuscounter  = $FFFFFFBF    	; +++ counts up to 5 then runs UpdateMusic twice
 v_scorecopy:	= $FFFFFFC0		; score, duplicate (4 bytes)
 v_scorelife:	= $FFFFFFC0		; points required for an extra life (4 bytes) (JP1 only)
+v_lamp_status2	= $FFFFFFC4
 
 f_levselcheat:	= $FFFFFFE0		; level select cheat flag
 f_slomocheat:	= $FFFFFFE1		; slow motion & frame advance cheat flag

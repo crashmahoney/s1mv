@@ -7163,6 +7163,13 @@ Sonic_Main:	; Routine 0
 		move.b	#id_HomingTarget,(v_homingattackobj).w ; Homing Target object
 		move.b	#id_InstaShield,(v_shieldobj).w  ; generic shield object
 
+		move.b	#id_SonicTrail,(v_objspace+$240).w ; load stars object ($3802)
+		move.b	#2,(v_objspace+$240+obAnim).w
+		move.b	#id_SonicTrail,(v_objspace+$280).w ; load stars object ($3802)
+		move.b	#3,(v_objspace+$280+obAnim).w
+		move.b	#id_SonicTrail,(v_objspace+$2C0).w ; load stars object ($3802)
+		move.b	#4,(v_objspace+$2C0+obAnim).w
+
 Sonic_Control:	; Routine 2
 
 	;Mercury Wall Jump
@@ -7176,7 +7183,7 @@ Sonic_Control:	; Routine 2
 		move.b	(v_jpadhold2).w,d0	; get jpad
 		and.b	(obWallJump+1)(a0),d0	; compare jpad to stored L,R button states
 		bne.s	@skip		; if still held, branch
-		move.w	#0,obWallJump(a0)	; clear wall jump flag and button states
+		move.b	#0,obWallJump(a0)	; clear wall jump flag and button states
 		move.b	#id_Roll,obAnim(a0) ; use "jumping" animation
 	
 	@skip:
@@ -7276,11 +7283,12 @@ Sonic_MdNormal:				; XREF: Sonic_Modes
 		jsr	SpeedToPos
 		bsr.w	Sonic_AnglePos
 		bsr.w	Sonic_SlopeRepel
+		bsr.w	Sonic_BoostMode
 		rts	
 ; ===========================================================================
 Sonic_MdJump:				; XREF: Sonic_Modes
-		clr.b	$39(a0)		; +++ spindash bug fix
-                bclr	#staDash,obStatus2(a0)	; clear Mercury's Dash flag
+		bclr	#staSpinDash,obStatus2(a0); clear Spin Dash flag
+		bclr	#staDash,obStatus2(a0)	; clear Mercury's Dash flag
 		bsr.w	Sonic_JumpHeight
 		bsr.w	Sonic_JumpDirection
 		bsr.w	Sonic_LevelBound
@@ -7320,11 +7328,12 @@ Sonic_MdRoll:				; XREF: Sonic_Modes
 		jsr	SpeedToPos
 		bsr.w	Sonic_AnglePos
 		bsr.w	Sonic_SlopeRepel
+		bsr.w	Sonic_BoostMode
 		rts	
 ; ===========================================================================
 
 Sonic_MdJump2:				; XREF: Sonic_Modes
-		clr.b	$39(a0)		; +++ spindash bug fix
+		bclr	#staSpinDash,obStatus2(a0); clear Spin Dash flag
 		bclr	#staDash,obStatus2(a0)	; clear Mercury's Dash flag
 		bsr.w	Sonic_JumpHeight
 		bsr.w	Sonic_JumpDirection
@@ -7394,6 +7403,7 @@ locret_13302:
 		include	"_incObj\Sonic Super.asm"
 		include	"_incObj\Sonic SpinDash.asm"     ; +++ added spindash
 		include	"_incObj\Sonic Dash.asm"
+		include	"_incObj\Sonic Boost Mode.asm"		
 		include	"_incObj\Sonic SlopeResist.asm"
 		include	"_incObj\Sonic RollRepel.asm"
 		include	"_incObj\Sonic SlopeRepel.asm"
@@ -8748,6 +8758,8 @@ SS_MapIndex:
 
 		include	"_incObj\21 HUD.asm"
 		include	"_maps\HUD.asm"
+
+		include	"_incObj\Sonic Trail Object.asm"
 
 ; ---------------------------------------------------------------------------
 ; Add points subroutine

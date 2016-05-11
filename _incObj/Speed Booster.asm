@@ -83,8 +83,9 @@ Obj1B_GiveBoost:
 	bclr	#5,obStatus(a1)
 
 Obj1B_GiveBoost_Done:
-	move.w	#sfx_SpeedBoost,d0 				; spring boing sound
-	jmp		(PlaySound).l
+		bset	#staBoost,obStatus2(a1)			; set boost flag
+		sfx	sfx_SpeedBoost	 			; spring boing sound
+		jmp	SetStatEffects				; reset stats
 ; ===========================================================================
 ; -------------------------------------------------------------------------------
 ; sprite obMap
