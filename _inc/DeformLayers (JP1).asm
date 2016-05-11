@@ -336,7 +336,7 @@ lzloc_63A4:
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
 
-Deform_MZ:				; XREF: Deform_Index
+;Deform_MZ:				; XREF: Deform_Index
 		
 		move.w	(v_scrshiftx).w,d4
 		ext.l	d4
@@ -370,7 +370,7 @@ loc_63C6:
 ; old version
 
 
-
+Deform_MZ:
 		tst.l   ($FFFFF708).w                 ; is scrollblock 3 = 0
 		bne.s   @sb3not0
                 moveq   #0,d4

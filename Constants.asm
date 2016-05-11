@@ -430,8 +430,11 @@ staOnObj:	equ 3
 staRollJump:	equ 4
 staPush:	equ 5
 staWater:	equ 6
-staDash:	equ 1   ; Peelout
+
+; obStatus2
 staSpinDash:	equ 0
+staDash:	equ 1   ; Peelout
+staBoost:	equ 2	; boost mode
 
 ; Sonic OST Bytes
 
@@ -441,7 +444,7 @@ flip_speed =		$2A ; number of flip revolutions per frame / 256
 flips_remaining =	$2C ; number of flip revolutions remaining
 
 obWallJump:	equ $2C	; Wall Jump flag
-			; $2D reserved, as well
+obBoostTimer:	equ $2D		; boost timer	
 obInvuln:	equ $30	; Invulnerable (blinking) timer
 			; $31 reserved as well
 obInvinc:	equ $32	; Invincibility timer
