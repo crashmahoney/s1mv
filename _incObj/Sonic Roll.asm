@@ -16,6 +16,7 @@ Sonic_Roll:				; XREF: Obj01_MdNormal
 ;		bset	#1,obStatus(a1)            ; set in air bit
 ; 		bclr	#3,obStatus(a1)            ; clear 'shouldn't fall' bit
 		move.b	(v_lamp_status2).w,(v_player+obStatus2).w
+		jsr		SetStatEffects
 		move.w	(v_lamp_anim).w,(v_player+obAnim).w
 		bclr    #0,(v_player+obStatus).w
 		tst.b   (v_lamp_dir).w             ; was sonic facing right at level transition?

@@ -205,6 +205,9 @@ React_Enemy:
 		cmpi.b	#id_Stomp,obAnim(a0)	; +++ is Sonic stomping?
 		beq.w	@donthurtsonic			; +++ if yes, branch
 
+		btst	#staBoost,obStatus2(a0)			; is sonic boosting?
+		bne.s	@donthurtsonic				; if so, branch
+
 		cmpi.b	#id_Roll,obAnim(a0) ; is Sonic rolling/jumping?
 		bne.w	React_ChkHurt	; if not, branch
 

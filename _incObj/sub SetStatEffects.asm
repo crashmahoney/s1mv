@@ -83,7 +83,7 @@ TempEffects:
 		move.w	#$600,(v_sonspeedmax).w ; det default speed
 		move.w	#$C,(v_sonspeedacc).w   ; det default acceleration
 
-		btst    #staBoost,obStatus2(a0)	; is sonic boosting?
+		btst    #staBoost,(v_player+obStatus2).w	; is sonic boosting?
 		beq.s   @notboosting		; if so, branch
 		move.w  #$A00,(v_sonspeedmax).w ; change Sonic's top speed
 		move.w	#$14,(v_sonspeedacc).w  ; change Sonic's acceleration

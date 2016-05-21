@@ -34,7 +34,8 @@ SonicTrail_Main:
 		move.b	obAnim(a0),d1
 		subq.b	#1,d1
 		move.b	(v_framebyte).w,d3
-		and.b	d1,d3
+		and.b	#3,d3
+		cmp.b	d1,d3
 		bne.s	@rts
 		lsl.b	#2,d1		; multiply animation number by 4
 		move.b	d1,d2

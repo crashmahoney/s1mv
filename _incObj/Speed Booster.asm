@@ -84,8 +84,8 @@ Obj1B_GiveBoost:
 
 Obj1B_GiveBoost_Done:
 		bset	#staBoost,obStatus2(a1)			; set boost flag
-		sfx	sfx_SpeedBoost	 			; spring boing sound
-		jmp	SetStatEffects				; reset stats
+		jsr	SetStatEffects				; reset stats
+		sfx	sfx_SpeedBoost, 1	 			; spring boing sound
 ; ===========================================================================
 ; -------------------------------------------------------------------------------
 ; sprite obMap
