@@ -180,14 +180,18 @@ React_Monitor:
 @movingdown:
 		cmpi.b	#id_Stomp,obAnim(a0) ; is Sonic stomping?
 		beq.s	@notjumpdashing
+		btst	#staBoost,obStatus2(a0)		; is sonic boosting?
+		bne.s	@bounce						; if so, branch	
+	@noboost:	
 		cmpi.b	#id_Roll,obAnim(a0) ; is Sonic rolling/jumping?
 		bne.s	@donothing
+	@bounce:	
 		neg.w	obVelY(a0)	; reverse Sonic's y-motion
 		tst.b   (v_jumpdashcount).w
 		beq.s   @notjumpdashing
 		move.w	0,obVelX(a0)	; stop Sonic's x movement
 		clr.b   (v_jumpdashcount).w
-        @notjumpdashing:
+	@notjumpdashing:
 
 		addq.b	#2,obRoutine(a1) ; advance the monitor's routine counter
 
@@ -293,6 +297,9 @@ Touch_KillEnemy: ; TESTING, added this label from the older disassembly, don't k
 ; ===========================================================================
 
 React_Caterkiller:
+		btst	#staBoost,obStatus2(a0)		; is sonic boosting?
+		bne.s	@donthurt					; if so, branch	
+
      ;Mercury Caterkiller Fix
 		move.b	#1,d0
 		move.w	obInertia(a0),d1
@@ -308,6 +315,7 @@ React_Caterkiller:
 		bne.s	@hurt			;if so, move on
 		btst	#staSpin,obStatus(a0)	;is Sonic spinning?	;Mercury Constants
 		beq.s	@hurt			;if not, move on
+	@donthurt:	
 		moveq	#-1,d0			;else, he's rolling on the ground, and shouldn't be hurt
 		rts				
 	
