@@ -16,6 +16,8 @@ loc_137AE:
 		move.b	#id_Walk,d1
 		cmpi.b	#id_Stomp,obAnim(a0) 
 		bne.s	@notstomping
+		move.w	#16,(v_shakeamount).w
+		move.b	#4,(v_shaketime).w
 		sfx	$5F
 		move.b	#id_Crouch,d1
 

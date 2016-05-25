@@ -334,7 +334,8 @@ v_vscrolldelay  = $FFFFFF73
 v_hscrolldelay: = $FFFFFF74     	; +++ something to do with the spin dash and horizontal scrolling
 f_dontstopmusic: = $FFFFFF76    	; +++ let music continue from last act
 v_popuptimer	= $FFFFFF77			; how long the popup timer can be onscreen
-
+v_shakeamount	= $FFFFFF78			; how far the screen should shake up/down
+v_shaketime		= $FFFFFF7A			; how long the screen should shake for
 			; ^^^ can use values between here vvv
 
 v_levseldelay:	= $FFFFFF80			; level select - time until change when up/down is held (2 bytes)

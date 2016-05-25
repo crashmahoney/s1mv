@@ -31,6 +31,8 @@ Sonic_BoostMode:
 		rts
 	@enterboost:	
 		bset	#staBoost,obStatus2(a0)			; set boost flag
+		move.w	#1,(v_shakeamount).w
+		move.b	#30,(v_shaketime).w		
 		sfx	sfx_SpeedBoost	 			; spring boing sound
 		jmp	SetStatEffects				; reset stats
 ; ================================================================================

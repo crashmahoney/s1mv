@@ -4417,7 +4417,7 @@ Demo_EndGHZ2:	incbin	"demodata\Ending - GHZ2.bin"
 		include	"_inc\LevelSizeLoad & BgScrollSpeed (JP1).asm"
 		include	"_inc\DeformLayers (JP1).asm"
 		endc
-
+		include	"_incobj\sub ShakeScreen.asm"
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 

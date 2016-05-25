@@ -21,6 +21,7 @@ loc_628E:
 		bsr.w	DynamicLevelEvents
 		move.w	(v_screenposy).w,(v_scrposy_dup).w
 		move.w	($FFFFF70C).w,(v_bgposy_dup).w
+		bsr.w	ShakeScreen
 ;                 cmpi.w  #0,(f_pause).w
 ;                 bne     Deform_Pause
 		moveq	#0,d0
@@ -1083,6 +1084,7 @@ ScrollVertical:				; XREF: DeformLayers
 		moveq	#0,d1
 		move.w	(v_player+obY).w,d0
 		sub.w	(v_screenposy).w,d0 ; Sonic's distance from top of screen
+		sub.w	(v_shakeamount).w,d0 
 		btst	#2,(v_player+obStatus).w ; is Sonic rolling?
 		beq.s	SV_NotRolling	; if not, branch
 		subq.w	#5,d0
@@ -1210,6 +1212,7 @@ loc_6724:
 		swap	d1
 		move.l	d1,d3
 		sub.l	(v_screenposy).w,d3
+;		add.l	(v_shakeamount).w,d3
 		ror.l	#8,d3
 		move.w	d3,($FFFFF73C).w
 		move.l	d1,(v_screenposy).w
