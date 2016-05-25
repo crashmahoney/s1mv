@@ -339,9 +339,15 @@ Art_Text:	incbin	"artunc\menutext.bin" ; text used in level select and debug mod
 VBlank:					; XREF: Vectors
 
         movem.l	d0-a6,-(sp)                   ; save registers to stack
-
 		tst.b	(v_vbla_routine).w
 		beq		VBla_00
+
+		tst.b	(v_cpumeter).w
+		beq.s	@skipcpumeter
+		move.w	#$9101,(VDP_control_port).l	; set window plane horiz to 1
+		move.w	#$8004,(VDP_control_port).l	; turn sms vdp mode off
+	@skipcpumeter:	
+
 		move.w	($C00004).l,d0
 		move.l	#$40000010,($C00004).l
 		move.l	(v_scrposy_dup).w,($C00000).l ; send screen y-axis pos. to VSRAM
@@ -385,6 +391,10 @@ VBla_Index:	dc.w VBla_00-VBla_Index, VBla_02-VBla_Index
 ; ===========================================================================
 
 VBla_00:				; XREF: VBlank; VBla_Index
+		tst.b	(v_cpumeter).w
+		beq.s	@skipcpumeter
+		move.w	#$8000,(VDP_control_port).l		; go crazy
+	@skipcpumeter:
 		cmpi.b	#$80+id_Level,(v_gamemode).w
 		beq.s	@islevel
 		cmpi.b	#id_Level,(v_gamemode).w ; is game on a level?
@@ -803,7 +813,7 @@ VDPSetupGame:				; XREF: GameClrRAM; ChecksumError
 VDPSetupArray:	dc.w $8004		; 8-colour mode
 		dc.w $8134		; enable V.interrupts, enable DMA
 		dc.w $8200+(vram_fg>>10) ; set foreground nametable address
-		dc.w $8300+($A000>>10)	; set window nametable address
+		dc.w $8300+($D000>>10)	; set window nametable address
 		dc.w $8400+(vram_bg>>13) ; set background nametable address
 		dc.w $8500+(vram_sprites>>9) ; set sprite table address
 		dc.w $8600		; unused
@@ -2224,6 +2234,9 @@ Pal_Black:	incbin	"palette\black.bin"
 
 WaitForVBla:				; XREF: PauseGame
 		move	#$2300,sr
+		tst.b	(v_cpumeter).w
+		beq.s	@wait
+		move.w	#$9100,(VDP_control_port).l	; set window plane off (for cpu meter)
 
 	@wait:
 		tst.b	(v_vbla_routine).w 			; has VBlank routine finished?
@@ -3034,7 +3047,6 @@ Level_ClrCardArt:
 		
 Level_StartGame:
 		bclr	#7,(v_gamemode).w ; subtract $80 from mode to end pre-level stuff
-
 ; ---------------------------------------------------------------------------
 ; Main level loop (when	all title card and loading sequences are finished)
 ; ---------------------------------------------------------------------------
@@ -3051,7 +3063,7 @@ Level_MainLoop:
 ;		move.w	#$8C89,($C00004).l	; H res 40 cells, no interlace, S/H enabled
 ;	@vbla_wait:	
 		move.b	#8,(v_vbla_routine).w
-		jsr	(Process_Kos_Queue).l	
+		jsr	(Process_Kos_Queue).l
 		bsr.w	WaitForVBla
 		addq.w	#1,(v_framecount).w			; add 1 to level timer
 ;		move.w	#$8C81,($C00004).l			; H res 40 cells, no interlace, S/H disabled

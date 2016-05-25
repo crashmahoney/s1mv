@@ -384,6 +384,7 @@ Debug_Mode_Flag       equ $FFFFFFE2
 f_creditscheat:	= $FFFFFFE3		; hidden credits & press start cheat flag
 v_title_dcount:	= $FFFFFFE4		; number of times the d-pad is pressed on title screen (2 bytes)
 v_title_ccount:	= $FFFFFFE6		; number of times C is pressed on title screen (2 bytes)
+v_cpumeter	= $FFFFFFE7				; is the cpu meter enabled?
 
 			; ^^^ can use values between here vvv
 

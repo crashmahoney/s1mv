@@ -139,17 +139,18 @@ Inventory_Text_Highlight:            ; in pairs of 2, i think. first is the text
 ;-------------------------------------------------------------------------------
 
 Debug_Menu_Items:
-                dc.b    $0E, "SAVE IN SLOT 1 "          ; 9
-                dc.b    $0E, "SAVE IN SLOT 2 "          ; 8
-                dc.b    $0E, "SAVE IN SLOT 3 "          ; 7
-                dc.b    $0E, "ITEM PLACEMENT "          ; 6
-                dc.b    $0E, "SUPER SONIC    "          ; 5
-                dc.b    $0E, "ADD 1 MINUTE   "          ; 4
-                dc.b    $0E, "ADD EMERALD    "          ; 3
-                dc.b    $0E, "LEVEL SELECT   "          ; 2
-                dc.b    $0E, "ALL ABILITIES  "          ; 1
-                dc.b    $0E, "1 OF EVERY ITEM"          ; 0
-                dc.b    $0E, "VRAM VIEWER    "          ; 0
+                dc.b    $0E, "SAVE IN SLOT 1 "          ; B
+                dc.b    $0E, "SAVE IN SLOT 2 "          ; A
+                dc.b    $0E, "SAVE IN SLOT 3 "          ; 9
+                dc.b    $0E, "ITEM PLACEMENT "          ; 8
+                dc.b    $0E, "SUPER SONIC    "          ; 7
+                dc.b    $0E, "ADD 1 MINUTE   "          ; 6
+                dc.b    $0E, "ADD EMERALD    "          ; 5
+                dc.b    $0E, "LEVEL SELECT   "          ; 4
+                dc.b    $0E, "ALL ABILITIES  "          ; 3
+                dc.b    $0E, "1 OF EVERY ITEM"          ; 2
+                dc.b    $0E, "VRAM VIEWER    "          ; 1
+                dc.b    $0E, "CPU METER      "          ; 0
                 even
 
 Debug_Text_Positions:
@@ -164,6 +165,7 @@ Debug_Text_Positions:
                 dc.w    $0466          ; all abilities
                 dc.w    $04B6          ; give all items
                 dc.w    $0506          ; vram
+                dc.w    $0556          ; cpu meter
                 even
 
 Debug_Text_Highlight:            ; in pairs of 2, i think. first is the text to highlight, second is the number (zone, quantity, wahtever it's dispalying)
@@ -178,6 +180,7 @@ Debug_Text_Highlight:            ; in pairs of 2, i think. first is the text to 
                 dc.w    $0E06, $0E24  ; all abilities
                 dc.w    $0F06, $0F24  ; give all items
                 dc.w    $1006, $1024  ; vram
+                dc.w    $1106, $1124  ; cpu meter
                 even
 ; ===========================================================================
 
@@ -500,6 +503,7 @@ DebugSlotDescriptions:
                 dc.w    DebugAllAbilities_Description-DebugSlotDescriptions
                 dc.w    DebugAllItems_Description-DebugSlotDescriptions
                 dc.w    DebugVRAM_Description-DebugSlotDescriptions
+                dc.w    DebugCPUMeter_Description-DebugSlotDescriptions
 ; --------------------------------------------------------------------------
 DebugSave1_Description:
                 dc.l    Icon_Save                                   ; Icon
@@ -600,7 +604,15 @@ DebugVRAM_Description:
                 dc.b    $13, "    A/B: VIEW       "
                 dc.b    $13, "     C: BACK        "
                 even
-
+DebugCPUMeter_Description:
+                dc.l    Icon_NoIcon                                 ; Icon
+                dc.l    IconPal_Default                             ; Icon Palette
+                dc.b    $1D, "DISPLAY ONSCREEN CPU METER.   "       ; Description
+                dc.b    $1D, "DOESN@T WORK IN FUSION.       "
+                dc.b    $1D, "                              "
+                dc.b    $13, "    A/B: ENABLE     "
+                dc.b    $13, "     C: BACK        "
+                even
 ; =========================================================================
 SoundTestSlotDescriptions:
                 dc.w    PlaySound_Description-SoundTestSlotDescriptions

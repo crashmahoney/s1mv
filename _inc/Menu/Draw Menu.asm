@@ -409,7 +409,7 @@ PauseMenu_DrawDebug:
                 move.b  #$F,d1                     ; height
                 jsr     DrawBacker
 
-                move.b  #$A,(v_menuslots)         ; 12 menu slots
+                move.b  #$B,(v_menuslots)         ; 12 menu slots
 
 @drawtext:
                 lea     (v_menufg), A3          
@@ -447,6 +447,7 @@ Debug_Loop_Load_Text:
 
 ; ===========================================================================
 Debug_Draw_Number:
+        dc.l    @cpumeter
 		dc.l	@skipnumber		; vram viewer
                 dc.l	@skipnumber             ; 1 of all items
                 dc.l	@skipnumber             ; all abilities
@@ -458,6 +459,13 @@ Debug_Draw_Number:
 		dc.l	@skipnumber		; save slot 3
 		dc.l	@skipnumber		; save slot 2
 		dc.l	@skipnumber		; save slot 1
+; ===========================================================================
+@cpumeter:
+                moveq   #$00,d0
+                move.b  (v_cpumeter).w,d0
+                bsr     DrawHex
+                bra     @skipnumber
+
 ; ===========================================================================
 @chaos:
                 moveq   #$00,d0
