@@ -50,7 +50,7 @@ PLC_Main:	dc.w ((PLC_Mainend-PLC_Main-2)/6)-1
 		plcm	Nem_Hud_BG, $AE00	; hud popup text backer
 		plcm	Nem_Lamp, $D800		; lamppost    +++ moved from #F400 to make room for spindash dust $D880
 		plcm	Nem_Hud, $D9C0		; HUD
-		plcm	Nem_Homing, $DD40	; homing target
+		plcm	Nem_Homing, $DEC0	; homing target
 		plcm	Nem_Ring, $F640 	; rings
 		plcm	Nem_Points, $F2E0	; points from enemy
 	PLC_Mainend:

@@ -34,7 +34,7 @@ DrawName:
                 move    #$2700, sr                    ; interrupt mask level 7
 		lea	Art_HudText,a1
 		lea     (vdp_data_port).l,a6
-		hudVRAM	$DE80
+		hudVRAM	$BE80
                 moveq   #11,d6               	; draw 12 letters
 @mainloop:
                 moveq   #0,d2

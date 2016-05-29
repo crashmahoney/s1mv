@@ -1,7 +1,7 @@
 ; ---------------------------------------------------------------------------
 ; Subroutine to	update the HUD
 ; ---------------------------------------------------------------------------
-rings_loc   =  $DC80
+rings_loc   =  $DE00
 icons_loc   =  $DA80
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
@@ -9,6 +9,51 @@ icons_loc   =  $DA80
 HUD_Update:
 		tst.w	(f_debugmode).w	; is debug mode	on?
 		bne.w	HudDebug	; if yes, branch
+; ---------------------------------------------------------------------------
+		lea	($C00000).l,a6			; vdp data port
+		tst.b	(v_minimap_update).w
+		beq.w	@chkscore
+		locVRAM	$DC00
+		lea	(v_minimap_buffer).l,a3 
+		moveq	#3,d1				; number of 8x8 tiles to transfer
+	@transfercolumn:
+		movea.l	a3,a1
+	rept 8*4
+		move.l	(a1),(a6)
+		lea	16(a1),a1						
+	endr
+		lea	4(a3),a3
+		dbf	d1,@transfercolumn
+		clr.b	(v_minimap_update).w		; clear update flag 
+; ---------------------------------------------------------------------------
+@map_pointer:
+
+		locVRAMread	$DCC2
+		move.w	(a6),d0				; get 4 pixels
+		eori.w	#$1111,d0			; invert colours
+		locVRAM	$DCC2
+		move.w	d0,(a6)
+
+		locVRAMread	$DCC6
+		move.w	(a6),d0				; get 4 pixels
+		eori.w	#$1111,d0			; invert colours
+		locVRAM	$DCC6
+		move.w	d0,(a6)
+
+		locVRAMread	$DCCA
+		move.w	(a6),d0				; get 4 pixels
+		eori.w	#$1111,d0			; invert colours
+		locVRAM	$DCCA
+		move.w	d0,(a6)
+
+		locVRAMread	$DCCE
+		move.w	(a6),d0				; get 4 pixels
+		eori.w	#$1111,d0			; invert colours
+		locVRAM	$DCCE
+		move.w	d0,(a6)
+
+
+	@chkscore:
 		tst.b	(f_scorecount).w ; does the score need updating?
 		beq.s	@chkrings	; if not, branch
 ; 		clr.b	(f_scorecount).w
@@ -337,10 +382,10 @@ Hud_Icons:
                 move.b  (v_c_ability).l,d1
                 bsr.s   @LoadIcon
 ; --------------------------------------------------------------------------
-                moveq   #32, d1
-          @cleartiles:
-		move.l	#0,(a6)
-		dbf     d1,@cleartiles
+;                moveq   #32, d1
+;          @cleartiles:
+;		move.l	#0,(a6)
+;		dbf     d1,@cleartiles
                 rts
 
 ; --------------------------------------------------------------------------

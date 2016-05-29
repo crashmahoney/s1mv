@@ -25,6 +25,18 @@ locVRAM:	macro loc,controlport
 		endm
 
 ; ---------------------------------------------------------------------------
+; Set a VRAM address via the VDP control port.
+; input: 16-bit VRAM address, control port (default is ($C00004).l)
+; ---------------------------------------------------------------------------
+
+locVRAMread:	macro loc,controlport
+		if (narg=1)
+		move.l	#($00000000+((loc&$3FFF)<<16)+((loc&$C000)>>14)),($C00004).l
+		else
+		move.l	#($00000000+((loc&$3FFF)<<16)+((loc&$C000)>>14)),controlport
+		endc
+		endm
+; ---------------------------------------------------------------------------
 ; DMA copy data from 68K (ROM/RAM) to the VRAM
 ; input: source, length, destination
 ; ---------------------------------------------------------------------------

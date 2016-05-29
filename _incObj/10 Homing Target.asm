@@ -19,7 +19,7 @@ Homing_Main:	; Routine 0
 		move.w	#$00,obX(a0)
 		move.w	#$00,obY(a0)
 		move.l	#Map_HomingTarget,obMap(a0)
-		move.w	#$6EA,obGfx(a0)
+		move.w	#$6F6,obGfx(a0)
 		move.b	#4,obRender(a0)
 		move.w	#0,obPriority(a0)
 ; --------------------------------------------------------------------------

@@ -9,6 +9,7 @@ v_errortype:	= $FFFFFC48		; error type
 v_256x256:	=   $FF0000		; 256x256 tile mappings ($A400 bytes)
 
 v_LZ_Waterline_Buffer: = $FFFF9890	; $300 bytes, dma buffer for lz waterline, used in LZ only
+v_minimap_buffer = v_LZ_Waterline_Buffer	;$200 bytes
 Kos_queue_ram =			$FFFF9B90	; formerly $FFFFF460
 Kos_decomp_queue_count =	Kos_queue_ram  		; word 		; the number of pieces of data on the queue. Sign bit set indicates a decompression is in progress
 Kos_decomp_stored_registers =	Kos_queue_ram+$2  	; $28 bytes 	; allows decompression to be spread over multiple frames
@@ -104,6 +105,8 @@ v_abil_peelout  = v_abil_items+$8
 v_abil_walljump = v_abil_items+$9
 v_abil_insta    = v_abil_items+$A        ; instashield
 ; --------------------------------------------------------------------------
+v_minimap_update= $FFFFF49B		; 1 if map to be buffered to ram, -1 if to be transferred to vram (1 byte)
+v_worldmap_last	= $FFFFF49C		; last known location in world, if changed, run minimap draw code (2 bytes)
 v_worldmap_X	= $FFFFF49E		; current level's left boundary position in world map squares (1 byte)
 v_worldmap_Y	= $FFFFF49F		; current level's top boundary position in world map squares  (1 byte)
 v_worldmap	= $FFFFF4A0		; $160 bytes, 1 bit for each square of the 80x35 map that has been visited		

@@ -113,9 +113,8 @@ WaitForPLC:
 
 	@nexttile:
 		addq.w	#1,d4				; add 1 to bit to check
-		cmpi.w	#8,d4							
+		and.w	#7,d4							
 		bne.s	@ok
-		moveq	#0,d4				; set bit to check to 0
 		adda.w	#1,a0				; add 1 to byte to check
 	@ok:	
 		lea	2(a3),a3			; get next tile ram location
