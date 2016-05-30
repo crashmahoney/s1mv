@@ -93,7 +93,7 @@ WaitForPLC:
 @dotile:	
 		moveq	#0,d0
 		move.b	(a1)+,d0			; get tile id to draw
-	;	beq.s	@nexttile			; if blank tile, skip
+		beq.s	@nexttile			; if blank tile, skip
 
 		btst	d4,(a0)				; test current bit
 		beq.s	@nexttile			; if 0, branch
@@ -102,15 +102,14 @@ WaitForPLC:
 		lea	(a2,d0.w),a4			; get tile gfx start
 		movea.l	a3,a5				; copy tile ram start
 
-		moveq	#4,d1				; draw 5 rows of pixels
 	@buffertile:
+	rept 5
 		move.l	(a5),d0	
 		andi.l	#$FFF,d0
 		add.l	(a4)+,d0
 		move.l	d0,(a5)
 		lea	160(a5),a5			; next line
-		dbf	d1,@buffertile
-
+	endr
 	@nexttile:
 		addq.w	#1,d4				; add 1 to bit to check
 		and.w	#7,d4							
@@ -133,20 +132,10 @@ WaitForPLC:
 		moveq	#39,d1				; number of 8x8 tiles to transfer
 	@transfertile:
 		movea.l	a0,a1
+	rept 7
 		move.l	(a1),(a6)
 		lea	160(a1),a1						
-		move.l	(a1),(a6)
-		lea	160(a1),a1				
-		move.l	(a1),(a6)
-		lea	160(a1),a1						
-		move.l	(a1),(a6)
-		lea	160(a1),a1					
-		move.l	(a1),(a6)
-		lea	160(a1),a1					
-		move.l	(a1),(a6)
-		lea	160(a1),a1					
-		move.l	(a1),(a6)
-		lea	160(a1),a1					
+	endr						
 		move.l	(a1),(a6)
 		lea	4(a0),a0
 		dbf	d1,@transfertile
@@ -172,6 +161,9 @@ WaitForPLC:
 		tst.b	(Kos_modules_left).w
 		bne.s	@loadgfx
 
+		move.b  #$1A, (v_vbla_routine).w
+		jsr	(Process_Kos_Queue).l
+		jsr     WaitForVBla
 
 		bsr.w   RedrawFullMenu           	; Draw the menu
 		jsr     PaletteFadeInFast

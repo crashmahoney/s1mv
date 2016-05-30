@@ -26,7 +26,7 @@ RevealMapTile:
 		lsr.w	#1,d0						; divide by 512
 		add.b	(v_worldmap_X).w,d0
 		move.w	d0,d2						
-		andi.w	#$F,d2						; get bit in byte
+		andi.w	#$7,d2						; get bit in byte
 		lsr.w	#3,d0						; divide by 8
 
 		move.w	(v_player+obY).w,d1			; get player Y position
@@ -72,7 +72,7 @@ DrawMiniMap:
 		dbf	d1,@clearbuffer
 
 		lea	WorldMap,a1			; 4 x 4 tile mappings
-		sub.w	#331,d0				
+		sub.w	#323,d0				
 		lea	(a1,d0.l),a1			; first tile to draw
 		lea	(v_worldmap).w,a0
 		moveq	#0,d4

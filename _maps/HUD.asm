@@ -11,7 +11,7 @@ Map_HUD:	dc.w @ringGFX-Map_HUD, @ringGFXred-Map_HUD
 		SpriteMap  9, -104, 2, 2, 0, 0, 1, 0, 0x000A     ; B box
 ;		SpriteMap  26, -104, 4, 2, 0, 0, 1, 0, 0x000E    ; C box
 		SpriteMap  26, -104, 2, 2, 0, 0, 1, 0, 0x000E    ; C box
-		SpriteMap  56, -120, 4, 4, 0, 0, 1, 1, 0x0012    ; map
+		SpriteMap  56, -120, 4, 4, 0, 0, 1, 0, 0x0012    ; map
 
 		even
 @ringGFXred:	dc.b 6
@@ -21,5 +21,5 @@ Map_HUD:	dc.w @ringGFX-Map_HUD, @ringGFXred-Map_HUD
 		SpriteMap  9, -104, 2, 2, 0, 0, 1, 0, 0x000A     ; B box
 ;		SpriteMap  26, -104, 4, 2, 0, 0, 1, 0, 0x000E    ; C box
 		SpriteMap  26, -104, 2, 2, 0, 0, 1, 0, 0x000E    ; C box
-		SpriteMap  56, -120, 4, 4, 0, 0, 1, 1, 0x0012    ; map
+		SpriteMap  56, -120, 4, 4, 0, 0, 1, 0, 0x0012    ; map
 		even
