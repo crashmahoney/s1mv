@@ -14,7 +14,7 @@ ShakeScreen:
 		asr.w	#1,d0				; halve shake amount
 @shake:
 		move.w	d0,(v_shakeamount).w		; store new value in ram
-		sub.w	d0,(v_scrposy_dup).w
+		add.w	d0,(v_scrposy_dup).w
 		sub.w	d0,(v_bgposy_dup).w
 
 @rts:

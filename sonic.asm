@@ -8104,6 +8104,8 @@ BossDefeated:
 		move.b	(v_vbla_byte).w,d0
 		andi.b	#7,d0
 		bne.s	locret_178A2
+		move.w	#2,(v_shakeamount).w
+		move.b	#1,(v_shaketime).w			
 		jsr		FindFreeObj
 		bne.s	locret_178A2
 		move.b	#id_ExplosionBomb,(a1)	; load explosion object

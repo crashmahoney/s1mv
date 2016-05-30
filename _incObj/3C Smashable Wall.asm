@@ -62,6 +62,8 @@ Smash_Solid:	; Routine 2
 @chkroll:
 		cmpi.b	#id_Roll,obAnim(a1) ; is Sonic rolling?
 		bne.s	@donothing	; if not, branch
+		add.w	#2,(v_shakeamount).w
+		add.b	#1,(v_shaketime).w			
 		move.w	speed(a0),d0
 		bpl.s	@chkspeed
 		neg.w	d0

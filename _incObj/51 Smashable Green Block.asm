@@ -70,6 +70,8 @@ Smab_Solid:	; Routine 2
 ; ===========================================================================
 
 @smash:
+		add.w	#2,(v_shakeamount).w
+		add.b	#1,(v_shaketime).w	
 		cmpi.b	#id_stomp,@sonic(a0) ; is Sonic stomping?
 		bne.s	@chkroll	; if not, branch
 		move.w	@count(a0),(v_itembonus).w

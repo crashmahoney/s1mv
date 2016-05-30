@@ -178,6 +178,8 @@ React_Monitor:
 ; ===========================================================================
 
 @movingdown:
+		add.w	#2,(v_shakeamount).w
+		add.b	#1,(v_shaketime).w	
 		cmpi.b	#id_Stomp,obAnim(a0) ; is Sonic stomping?
 		beq.s	@notjumpdashing
 		btst	#staBoost,obStatus2(a0)		; is sonic boosting?
@@ -225,6 +227,8 @@ React_Enemy:
 	        neg.w	obVelY(a0)
 	        move.b	#0,obColType(a1)
 	        subq.b	#1,$32(a1)              ; uses $32 for boss health
+		add.w	#2,(v_shakeamount).w
+		add.b	#1,(v_shaketime).w		        
         @end:
 	        rts
 React_Enemy_Part2:
@@ -235,6 +239,8 @@ React_Enemy_Part2:
 		neg.w	obVelY(a0)
 		asr	obVelX(a0)
 		asr	obVelY(a0)
+		add.w	#2,(v_shakeamount).w
+		add.b	#1,(v_shaketime).w			
 		move.b	#0,obColType(a1)           ; remove boss collision while flashing
 		subq.b	#1,obColProp(a1)           ; subtract 1 health from boss
 		bne.s	@flagnotclear
@@ -245,6 +251,8 @@ React_Enemy_Part2:
 ; ===========================================================================
 @breakenemy:
 Touch_KillEnemy: ; TESTING, added this label from the older disassembly, don't know if it will break anything cos it's not a temp label
+		add.w	#2,(v_shakeamount).w
+		add.b	#1,(v_shaketime).w	
 		bset	#7,obStatus(a1)
 		tst.b   (v_jumpdashcount).w
 		beq.s   @notjumpdashing
