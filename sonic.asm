@@ -1198,6 +1198,12 @@ InitDMAQueue:
  
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 LoadAnimalExplosion:
+		lea	(KosM_GunstarExplosion).l,a1
+		move.w	#$B000,d2
+		jsr	(Queue_Kos_Module).l
+		rts
+
+
  		moveq	#0,d0
 		move.b	(v_zone).w,d0
 		add.w	d0,d0
@@ -9429,7 +9435,7 @@ Nem_Turtroll:	incbin	"artnem\Enemy Turtroll.bin"
 		even
 Nem_Buzz:	incbin	"artnem\Enemy Buzz Bomber.bin"
 		even
-Nem_UnkExplode:	incbin	"artnem\Unused - Explosion.bin"
+Nem_GunstarExplosion:	incbin	"artnem\Gunstar Explosion.bin"
 		even
 Nem_Burrobot:	incbin	"artnem\Enemy Burrobot.bin"
 		even
@@ -9500,6 +9506,8 @@ Nem_Bonus:	incbin	"artnem\Hidden Bonuses.bin" ; hidden bonuses at end of a level
 KosM_Teleporter:	incbin	"artkosm\Teleporter.kosm" ; ssz/hpz type teleporter
 		even
 KosM_Explode:	incbin	"artkosm\Explosion.kosm"
+		even
+KosM_GunstarExplosion:	incbin	"artkosm\Gunstar Explosion.kosm"
 		even
 
 ; ---------------------------------------------------------------------------

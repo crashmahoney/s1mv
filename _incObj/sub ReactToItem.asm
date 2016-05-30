@@ -276,7 +276,7 @@ Touch_KillEnemy: ; TESTING, added this label from the older disassembly, don't k
 
 	@lessthan16:
 		bsr.w	AddPoints
-		move.b	#id_ExplosionItem,0(a1) ; change object to explosion
+		move.b	#id_GunstarExplosion,0(a1) ; change object to explosion
 		move.b	#0,obRoutine(a1)
 		cmpi.b	#id_Stomp,obAnim(a0)	; +++ is Sonic stomping?
 		bne.w	@bounce			; +++ if yes, branch

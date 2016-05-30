@@ -184,8 +184,8 @@ Mon_BreakOpen:	; Routine 4
 Mon_Explode:
 		bsr.w	FindFreeObj
 		bne.s	@fail
-		move.b	#id_ExplosionItem,0(a1) ; load explosion object
-		addq.b	#2,obRoutine(a1) ; don't create an animal
+		move.b	#id_GunstarExplosion,0(a1) ; load explosion object
+;		addq.b	#2,obRoutine(a1) ; don't create an animal
 		move.w	obX(a0),obX(a1)
 		move.w	obY(a0),obY(a1)
 

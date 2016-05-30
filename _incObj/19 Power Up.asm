@@ -41,8 +41,8 @@ PowUp_Init:
 		move.b	#4,obRender(a0)
 		move.w	#$80,obPriority(a0)         ; put object in front of sonic
 		move.b	#$10,obActWid(a0)
-		move.w	#$5E4,obGfx(a0)	
-		move.w	#$BC80,vram_address(a0)
+		move.w	#$5FC,obGfx(a0)	
+		move.w	#$BF80,vram_address(a0)
 		move.w	obY(a0),origY(a0)
 		move.b	#$47,obColType(a0)
 		move.b	obSubtype(a0),obAnim(a0)

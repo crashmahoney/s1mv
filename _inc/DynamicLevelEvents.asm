@@ -225,7 +225,7 @@ loc_6EB0:
 		bne.s   GHZBossBeaten             ; if so, skip boss
 ;		move.w	#$2960,(v_limitright2).w
 		move.w	#$2AB0,(v_limitright2).w
-		bsr.w	FindFreeObj
+		jsr	FindFreeObj
 		bne.s	loc_6ED0
 ;		move.b	#id_BossGreenHill,0(a1) ; load GHZ boss	object
 		move.b	#id_MTZBoss,0(a1)       ; load GHZ boss	object

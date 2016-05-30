@@ -36,7 +36,7 @@ ptr_Cannonball:		dc.l Cannonball		; $20
 ptr_HUD:			dc.l HUD
 ptr_BuzzBomber:		dc.l BuzzBomber
 ptr_Missile:		dc.l Missile
-ptr_MissileDissolve:	dc.l MissileDissolve
+ptr_GunstarExplosion:	dc.l GunstarExplosion
 ptr_Rings:			dc.l Rings
 ptr_Monitor:		dc.l Monitor
 ptr_ExplosionItem:	dc.l ExplosionItem
@@ -193,7 +193,7 @@ id_Cannonball:		equ ((ptr_Cannonball-Obj_Index)/4)+1		; $20
 id_HUD:			equ ((ptr_HUD-Obj_Index)/4)+1
 id_BuzzBomber:		equ ((ptr_BuzzBomber-Obj_Index)/4)+1
 id_Missile:		equ ((ptr_Missile-Obj_Index)/4)+1
-id_MissileDissolve:	equ ((ptr_MissileDissolve-Obj_Index)/4)+1
+id_GunstarExplosion:	equ ((ptr_GunstarExplosion-Obj_Index)/4)+1
 id_Rings:		equ ((ptr_Rings-Obj_Index)/4)+1
 id_Monitor:		equ ((ptr_Monitor-Obj_Index)/4)+1
 id_ExplosionItem:	equ ((ptr_ExplosionItem-Obj_Index)/4)+1

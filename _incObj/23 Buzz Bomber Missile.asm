@@ -75,9 +75,9 @@ Msl_FromBuzz:	; Routine 4
 ; ===========================================================================
 
 	@explode:
-		move.b	#id_MissileDissolve,0(a0) ; change object to an explosion (Obj24)
-		move.b	#0,obRoutine(a0)
-		bra.w	MissileDissolve
+	;	move.b	#id_MissileDissolve,0(a0) ; change object to an explosion (Obj24)
+	;	move.b	#0,obRoutine(a0)
+	;	bra.w	MissileDissolve
 ; ===========================================================================
 
 Msl_Delete:	; Routine 6
