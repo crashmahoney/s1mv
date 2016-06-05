@@ -7182,11 +7182,11 @@ Sonic_Main:	; Routine 0
 		move.b	#id_InstaShield,(v_shieldobj).w  ; generic shield object
 
 		move.b	#id_SonicTrail,(v_objspace+$240).w ; load stars object ($3802)
-		move.b	#2,(v_objspace+$240+obAnim).w
-		move.b	#id_SonicTrail,(v_objspace+$280).w ; load stars object ($3802)
-		move.b	#3,(v_objspace+$280+obAnim).w
-		move.b	#id_SonicTrail,(v_objspace+$2C0).w ; load stars object ($3802)
-		move.b	#4,(v_objspace+$2C0+obAnim).w
+;		move.b	#2,(v_objspace+$240+obAnim).w
+;		move.b	#id_SonicTrail,(v_objspace+$280).w ; load stars object ($3802)
+;		move.b	#3,(v_objspace+$280+obAnim).w
+;		move.b	#id_SonicTrail,(v_objspace+$2C0).w ; load stars object ($3802)
+;		move.b	#4,(v_objspace+$2C0+obAnim).w
 
 Sonic_Control:	; Routine 2
 

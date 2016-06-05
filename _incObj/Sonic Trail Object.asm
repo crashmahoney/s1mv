@@ -27,6 +27,29 @@ SonicTrail_Init:
 
 SonicTrail_Main:	
 		btst	#staBoost,(v_player+obStatus2).w	; test boost flag
+		beq.w	@rts					; if not, branch
+
+		moveq	#$18,d1
+		btst	#0,(v_framebyte).w
+		beq.s	@getpos
+		moveq	#$28,d1
+
+	@getpos:
+		move.w	(v_trackpos).w,d0 ; get index value for tracking data
+		lea	(v_tracksonic).w,a1
+		sub.b	d1,d0
+		lea	(a1,d0.w),a1
+		move.w	(a1)+,obX(a0)
+		move.w	(a1)+,obY(a0)
+		move.w	(a1)+,obX(a0)
+		move.w	(a1)+,obY(a0)
+		move.b	(v_player+obStatus).w,obStatus(a0)
+		move.b	(v_player+obRender).w,obRender(a0)		
+		move.b	(v_player+obFrame).w,obFrame(a0)		
+		jmp	DisplaySprite
+; ===========================================================================
+; old version
+		btst	#staBoost,(v_player+obStatus2).w	; test boost flag
 		beq.s	@rts					; if not, branch
 
 		moveq	#0,d0
