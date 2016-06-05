@@ -1,6 +1,10 @@
 ; ---------------------------------------------------------------------------
 ; Object 59 - platforms	that move when you stand on them (SLZ)
 ; ---------------------------------------------------------------------------
+elev_origX:	= $32		; original x-axis position
+elev_origY:	= $30		; original y-axis position
+elev_dist:	= $3C		; distance to move (2 bytes)
+; ===========================================================================
 
 Elevator:				; XREF: Obj_Index
 		moveq	#0,d0
@@ -19,9 +23,7 @@ Elev_Index:	dc.w Elev_Main-Elev_Index
 		dc.w Elev_Action-Elev_Index
 		dc.w Elev_MakeMulti-Elev_Index
 
-elev_origX:	= $32		; original x-axis position
-elev_origY:	= $30		; original y-axis position
-elev_dist:	= $3C		; distance to move (2 bytes)
+
 
 Elev_Var1:	dc.b $28, 0		; width, frame number
 

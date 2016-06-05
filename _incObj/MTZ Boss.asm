@@ -7,27 +7,27 @@ MTZBscreenY:       = $A0                                                        
 ; ----------------------------------------------------------------------------
 MtzBoss_FlashCounter = $14
 boss_routine      = $26
-objoff_28         = $28
+;objoff_28         = $28
 orb_orbit_radius  = $29
 MtzBoss_timer     = $29
 orb_centre_Y      = $2A
-objoff_2b         = $2B
+;objoff_2b         = $2B
 bouncing_orb_count = $2C
 Mtz_LazersLeftToFire  = $2D
 Mtz_Pinch_Rout    = $2E
-objoff_2f         = $2F
-objoff_30         = $30
+;objoff_2f         = $2F
+;objoff_30         = $30
 orb_timer         = $32        ; orb only
 MtzBoss_health    = $32        ; robotnic only
-objoff_33         = $33
+;objoff_33         = $33
 MtzBoss_parent    = $34
 orb_centre_X      = $38        ; orb only
 orb_remove_flag   = $38        ; robotnic only
-objoff_3a         = $3A
-objoff_3b         = $3B
-objoff_3c         = $3C
+;objoff_3a         = $3A
+;objoff_3b         = $3B
+;objoff_3c         = $3C
 MtzBoss_health2   = $3E
-objoff_3f         = $3F
+;objoff_3f         = $3F
 ; Sprite_32288:
 MTZBoss:
 ;        rts

@@ -4,15 +4,15 @@
 ; ----------------------------------------------------------------------------
 ; Sprite_3C442:
 ObjC5_Timer    = $2A    ;                                      word
-objoff_2C      = $2C    ;                                      word
-objoff_2E      = $2E    ;                                      word
-objoff_2F      = $2F	; makes lazer wall "flash" if set it won't flash   byte
-objoff_30      = $30    ; some timer                           word
-objoff_34      = $34    ; Case Max Left position               word
-objoff_36      = $36    ; Case Max Right position              word
-objoff_38      = $38    ;                                      word
-objoff_3C      = $3C    ;                                      word
-objoff_3E      = $3E    ;                                      word
+;objoff_2C      = $2C    ;                                      word
+;objoff_2E      = $2E    ;                                      word
+;objoff_2F      = $2F	; makes lazer wall "flash" if set it won't flash   byte
+;objoff_30      = $30    ; some timer                           word
+;objoff_34      = $34    ; Case Max Left position               word
+;objoff_36      = $36    ; Case Max Right position              word
+;objoff_38      = $38    ;                                      word
+;objoff_3C      = $3C    ;                                      word
+;objoff_3E      = $3E    ;                                      word
 wfz_parent     = $3E
 WFZBoss:
 	moveq	#0,d0

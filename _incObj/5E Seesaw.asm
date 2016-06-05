@@ -1,6 +1,12 @@
 ; ---------------------------------------------------------------------------
 ; Object 5E - seesaws (SLZ)
 ; ---------------------------------------------------------------------------
+see_origX:	= $30		; original x-axis position
+see_origY:	= $34		; original y-axis position
+see_speed:	= $38		; speed of collision
+see_frame:	= $3A		; 
+see_parent:	= $3C		; RAM address of parent object
+; ===========================================================================
 
 Seesaw:					; XREF: Obj_Index
 		moveq	#0,d0
@@ -30,12 +36,6 @@ See_Index:	dc.w See_Main-See_Index
 		dc.w See_Spikeball-See_Index
 		dc.w See_MoveSpike-See_Index
 		dc.w See_SpikeFall-See_Index
-
-see_origX:	= $30		; original x-axis position
-see_origY:	= $34		; original y-axis position
-see_speed:	= $38		; speed of collision
-see_frame:	= $3A		; 
-see_parent:	= $3C		; RAM address of parent object
 ; ===========================================================================
 
 See_Main:	; Routine 0

@@ -133,6 +133,27 @@ sub9_x_pos		= $3A
 sub9_y_pos		= $3C
 sub9_mapframe		= $3F
 next_subspr		= $6
+
+
+; unknown object offsets
+objoff_28	= $28
+objoff_2b	= $2B
+objoff_2C	= $2C
+objoff_2E	= $2E
+objoff_2F	= $2F
+objoff_30	= $30
+objoff_32	= $32
+objoff_33	= $33
+objoff_34	= $34
+objoff_36	= $36
+objoff_38	= $38
+objoff_3a	= $3A
+objoff_3b	= $3B
+objoff_3C	= $3C
+objoff_3E	= $3E
+objoff_3f	= $3F
+
+
 ; Animation flags
 afEnd:		equ $FF	; return to beginning of animation
 afBack:		equ $FE	; go back (specified number) bytes
@@ -458,7 +479,8 @@ obRearAngle:	equ $37
 obOnWheel:	equ $38	; on convex wheel flag
 
 obStatus2:	equ $39	; status for abilities such as Spin Dash
-
+SpinDashFlag    = $39
+SpinDashCount   = $3A
 obRevSpeed:	equ $3A	; rev speed for Spin Dash or Dash
 			; $3B reserved as well
 
@@ -468,3 +490,43 @@ obPlatformID:	equ $3D	; ost slot of the object Sonic's on top of
 obLRLock:	equ $3E	; flag for preventing left and right input
 
 
+
+; ================================================================================
+;Object Vram Locations
+; ================================================================================
+; ---------------------------------------------------------------------------
+; Pattern load cues - Green Hill Zone
+; ---------------------------------------------------------------------------
+VRAMloc_Splats		=	$6D60
+VRAMloc_Island		=	$7000	; BG islands
+VRAMloc_SpringPole	=	$7260
+VRAMloc_Swing 		=	$7400	; swinging platform
+VRAMloc_Bridge 		=	$75C0	; bridge
+VRAMloc_GHZplatform =	$7700	; new platform
+VRAMloc_Springboard	=	$7900
+VRAMloc_PplRock 	=	$7C00	; purple rock
+VRAMloc_Leaves 		=	$7F00	; floating leaves
+VRAMloc_Turtroll	=	$8000
+VRAMloc_Buzz		=	$8880
+VRAMloc_Chopper		=	$8F60
+VRAMloc_Newtron		=	$9360
+VRAMloc_Motobug		=	$9E00
+VRAMloc_Spikes		=	$A360
+VRAMloc_HSpring		=	$A460
+VRAMloc_VSpring		=	$A5C0
+VRAMloc_DSpring		=	$A720
+VRAMloc_GhzWall1 	=	$A1E0	; breakable wall
+VRAMloc_MonitorSpinDash =	$D400 ; +++ spin dash icon, overwrites goggles icon
+VRAMloc_Teleporter	=	$B000
+
+; ---------------------------------------------------------------------------
+; Pattern load cues - Metropolis Zone Boss
+; ---------------------------------------------------------------------------
+VRAMloc_MTZBoss	=	$8000
+VRAMloc_EggpodS2=	$9000
+VRAMloc_EggpodJetsS2=	$9C00
+
+; ---------------------------------------------------------------------------
+; Pattern load cues - Wing Fortress Zone Boss
+; ---------------------------------------------------------------------------
+VRAMloc_WFZBoss	=	$8000

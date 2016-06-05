@@ -4,9 +4,6 @@
 ; 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
-SpinDashFlag    = $39
-SpinDashCount   = $3A
-
 Sonic_SpinDash:
 		btst	#staSpinDash,obStatus2(a0); already Spin Dashing?
 		bne.s	loc2_1AC8E				; if set, branch

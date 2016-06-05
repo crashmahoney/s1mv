@@ -308,8 +308,6 @@ Obj79_MakeSpecialStars:
 	rts
 ; ===========================================================================
 ; loc_1F536:
-objoff_32  =  $32
-
 Obj79_Star:
 	move.b	obColProp(a0),d0
 	beq.w	loc_1F554

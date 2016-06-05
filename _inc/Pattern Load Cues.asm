@@ -69,29 +69,6 @@ PLC_GameOver:	dc.w ((PLC_GameOverend-PLC_GameOver-2)/6)-1
 ; ---------------------------------------------------------------------------
 ; Pattern load cues - Green Hill
 ; ---------------------------------------------------------------------------
-VRAMloc_Splats		=	$6D60
-VRAMloc_Island		=	$7000	; BG islands
-VRAMloc_SpringPole	=	$7260
-VRAMloc_Swing 		=	$7400	; swinging platform
-VRAMloc_Bridge 		=	$75C0	; bridge
-VRAMloc_GHZplatform =	$7700	; new platform
-VRAMloc_Springboard	=	$7900
-VRAMloc_PplRock 	=	$7C00	; purple rock
-VRAMloc_Leaves 		=	$7F00	; floating leaves
-VRAMloc_Turtroll	=	$8000
-VRAMloc_Buzz		=	$8880
-VRAMloc_Chopper		=	$8F60
-VRAMloc_Newtron		=	$9360
-VRAMloc_Motobug		=	$9E00
-VRAMloc_Spikes		=	$A360
-VRAMloc_HSpring		=	$A460
-VRAMloc_VSpring		=	$A5C0
-VRAMloc_DSpring		=	$A720
-VRAMloc_GhzWall1 	=	$A1E0	; breakable wall
-VRAMloc_MonitorSpinDash =	$D400 ; +++ spin dash icon, overwrites goggles icon
-VRAMloc_Teleporter	=	$B000
-
-
 PLC_GHZ:	dc.w ((PLC_GHZ2-PLC_GHZ-2)/6)-1
 		plcm	Nem_Splats, 	VRAMloc_Splats	; turtroll enemy
 		plcm	Nem_Island, VRAMloc_Island	; springboard
@@ -368,10 +345,6 @@ PLC_FZBoss:	dc.w ((PLC_FZBossend-PLC_FZBoss-2)/6)-1
 ; ---------------------------------------------------------------------------
 ; Pattern load cues - Metropolis Zone Boss
 ; ---------------------------------------------------------------------------
-VRAMloc_MTZBoss	=	$8000
-VRAMloc_EggpodS2=	$9000
-VRAMloc_EggpodJetsS2=	$9C00
-
 PLC_MTZBoss:	dc.w ((PLC_MTZBossend-PLC_MTZBoss-2)/6)-1
 		plcm	Nem_MTZBoss, VRAMloc_MTZBoss ;originally $380*$20   ; Metropolis Boss Specific Graphics ($7C tiles, $F80 bytes)
 		plcm	Nem_EggpodS2, VRAMloc_EggpodS2  ; Sonic 2 Eggman pod graphics   ($60 tiles, $C00 bytes)
@@ -383,8 +356,6 @@ PLC_MTZBoss:	dc.w ((PLC_MTZBossend-PLC_MTZBoss-2)/6)-1
 ; ---------------------------------------------------------------------------
 ; Pattern load cues - Wing Fortress Zone Boss
 ; ---------------------------------------------------------------------------
-VRAMloc_WFZBoss	=	$8000
-
 PLC_WFZBoss:	dc.w ((PLC_WFZBossend-PLC_WFZBoss-2)/6)-1
 		plcm	Nem_WFZBoss, VRAMloc_WFZBoss	; originally $6F20
 		plcm	Nem_BossExplode, $B400	; boss explosion

@@ -1,6 +1,11 @@
 ; ---------------------------------------------------------------------------
 ; Object 5B - blocks that form a staircase (SLZ)
 ; ---------------------------------------------------------------------------
+stair_origX:	= $30		; original x-axis position
+stair_origY:	= $32		; original y-axis position
+
+stair_parent:	= $3C		; address of parent object (4 bytes)
+; ===========================================================================
 
 Staircase:				; XREF: Obj_Index
 		moveq	#0,d0
@@ -17,11 +22,6 @@ Staircase:				; XREF: Obj_Index
 Stair_Index:	dc.w Stair_Main-Stair_Index
 		dc.w Stair_Move-Stair_Index
 		dc.w Stair_Solid-Stair_Index
-
-stair_origX:	= $30		; original x-axis position
-stair_origY:	= $32		; original y-axis position
-
-stair_parent:	= $3C		; address of parent object (4 bytes)
 ; ===========================================================================
 
 Stair_Main:	; Routine 0
