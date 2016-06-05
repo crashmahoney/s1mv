@@ -123,9 +123,10 @@ SolidObject2F:				; XREF: Obj2F_Solid
 
 	@notflipped:
 		lsr.w	#1,d5
-		moveq	#0,d3
+;		moveq	#0,d3
 		move.b	(a2,d5.w),d3
 		sub.b	(a2),d3
+		ext.w	d3
 		move.w	obY(a0),d5
 		sub.w	d3,d5
 		move.b	obWidth(a1),d3

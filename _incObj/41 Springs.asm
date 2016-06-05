@@ -34,7 +34,7 @@ Spring_Index:	dc.w Spring_Main-Spring_Index
 		dc.w Spring_ResetDiagDown-Spring_Index
 
 spring_pow:	= $30			; power of current spring
-
+spring_anim = $32			; currently animating?
 ; ===========================================================================
 
 Spring_Main:	; Routine 0
@@ -100,7 +100,6 @@ loc_DB72:
 Spring_Powers:	dc.w -$1000		; power	of red spring
 		dc.w -$A00		; power	of yellow spring
 ; ===========================================================================
-
 Spring_Up:	; Routine 2
 		move.w	#$1B,d1
 		move.w	#8,d2
@@ -109,27 +108,37 @@ Spring_Up:	; Routine 2
 		bsr.w	SolidObject
 		tst.b	obSolid(a0)	; is Sonic on top of the spring?
 		bne.s	Spring_BounceUp	; if yes, branch
+		tst.b	spring_anim(a0)
+		bne.s	@animate
 		rts	
+	@animate:
+		lea		(Ani_Spring).l,a1
+		bra.w	AnimateSprite		
 ; ===========================================================================
 
 Spring_BounceUp:
-		addq.b	#2,obRoutine(a0)
+;		addq.b	#2,obRoutine(a0)
 		addq.w	#8,obY(a1)
 		move.w	spring_pow(a0),obVelY(a1) ; move Sonic upwards
 		bset	#1,obStatus(a1)
 		bclr	#3,obStatus(a1)
 		move.b	#id_Spring,obAnim(a1) ; use "bouncing" animation
+		move.b	#1,spring_anim(a0)
 		move.b	#2,obRoutine(a1)
 		bclr	#3,obStatus(a0)
         clr.b	ob2ndRout(a0)
 		sfx	sfx_Spring	; play spring sound
-
-Spring_AniUp:	; Routine 4
 		lea		(Ani_Spring).l,a1
 		bra.w	AnimateSprite
+
+Spring_AniUp:	; Routine 4
+		move.b	#1,obNextAni(a0) ; reset animation
+		clr.b	spring_anim(a0)
+		subq.b	#2,obRoutine(a0) ; goto "Spring_Up" routine
+		bra.w	Spring_Up
 ; ===========================================================================
 
-Spring_ResetUp:	; Routine 6
+Spring_ResetUp:	; Routine 6	; now unused
 		move.b	#1,obNextAni(a0) ; reset animation
 		subq.b	#4,obRoutine(a0) ; goto "Spring_Up" routine
 		rts	
@@ -234,14 +243,12 @@ Spring_ResetDwn:
 Spring_DiagUp:	; Routine 14
 		move.w	#$1B,d1
 		move.w	#$10,d2
-		move.w	#$10,d3
+;		move.w	#$10,d3
 		move.w	obX(a0),d4
 		lea		byte_18FAA(pc),a2
-		bsr.w	SolidObject;Slope
+		bsr.w	SolidObjectSlope
 		tst.b	ob2ndRout(a0)	        ; is Sonic on top of the spring?
 		bne.s	Spring_ChkFlipDiagUp	; if yes, branch
-        cmpi.b  #1,d4                   ; side collision?
-        beq.s   Spring_ChkFlipDiagUp
 		rts
 
 ; ===========================================================================
@@ -274,7 +281,7 @@ Spring_BounceDiagUp:
 		neg.w	obVelX(a1)	; move Sonic to	the right
 
 	@flipped:
-		move.w	#$F,$3E(a1)
+		move.w	#$F,obLRLock(a1)
 		bset	#1,obStatus(a1)
 		bclr	#3,obStatus(a1)
 		move.b	#id_Spring,obAnim(a1) ; use "bouncing" animation
@@ -351,7 +358,7 @@ Spring_BounceDiagDown:
 		neg.w	obVelX(a1)	; move Sonic to	the right
 
 	@flipped:
-		move.w	#$F,$3E(a1)
+		move.w	#$F,obLRLock(a1)
 		bset	#1,obStatus(a1)
 		bclr	#3,obStatus(a1)
 		move.b	#id_Spring,obAnim(a1) ; use "bouncing" animation

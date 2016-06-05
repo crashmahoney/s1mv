@@ -8,6 +8,15 @@ v_errortype:	= $FFFFFC48		; error type
 
 v_256x256:	=   $FF0000		; 256x256 tile mappings ($A400 bytes)
 
+Ring_status_table	= $FFFF9400		; $400 bytes ; 1 word per ring
+Ring_consumption_table	= $FFFF9800	; $80 bytes ; stores the addresses of all rings currently being consumed
+Ring_consumption_count	= $FFFF9800	; word ; the number of rings being consumed currently
+Ring_consumption_list	= $FFFF9802	; $7E bytes ; the remaining part of the ring consumption table
+Ring_start_addr_ROM	= $FFFF9880		; long ; address in the ring layout of the first ring whose X position is >= camera X position - 8
+Ring_end_addr_ROM	= $FFFF9884		; long ; address in the ring layout of the first ring whose X position is >= camera X position + 328
+Ring_start_addr_RAM = $FFFF9888		; word ; address in the ring status table of the first ring whose X position is >= camera X position - 8
+Rings_manager_routine	= $FFFF9889	; byte
+
 v_LZ_Waterline_Buffer: = $FFFF9890	; $300 bytes, dma buffer for lz waterline, used in LZ only
 v_minimap_buffer = v_LZ_Waterline_Buffer	;$200 bytes
 Kos_queue_ram =			$FFFF9B90	; formerly $FFFFF460
@@ -104,6 +113,8 @@ v_abil_down     = v_abil_items+$7
 v_abil_peelout  = v_abil_items+$8
 v_abil_walljump = v_abil_items+$9
 v_abil_insta    = v_abil_items+$A        ; instashield
+
+; up to $FFFFF44A
 ; --------------------------------------------------------------------------
 v_minimap_update= $FFFFF49B		; 1 if map to be buffered to ram, -1 if to be transferred to vram (1 byte)
 v_worldmap_last	= $FFFFF49C		; last known location in world, if changed, run minimap draw code (2 bytes)
