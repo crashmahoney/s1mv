@@ -77,6 +77,8 @@ Obj85_LoadBoss:				; XREF: Obj85_Main
 		move.l	a0,$34(a1)
 		dbf	d1,Obj85_Loop
 
+
+
 loc_19E20:
 		lea	$36(a0),a2
 		jsr	FindFreeObj

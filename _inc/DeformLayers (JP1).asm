@@ -427,15 +427,15 @@ Deform_MZ:
 
 
 
-		move.w	#$200,d0
-		move.w	(v_screenposy).w,d1
-		subi.w	#$1C8,d1
-		bcs.s	loc_6590
-		move.w	d1,d2
-		add.w	d1,d1
-		add.w	d2,d1
-		asr.w	#2,d1
-		add.w	d1,d0
+		move.w	#$200,d0					; top of bg layer tiles starts at $200 for some reason
+		move.w	(v_screenposy).w,d1			; get fg screen position
+		subi.w	#$C8,d1						; sub $1C8
+		bcs.s	loc_6590					; if higher in the level than $1C8, don't scroll down
+	;	move.w	d1,d2						; multiply leftover height by 3
+		add.w	d1,d1						; "		"		"		"
+	;	add.w	d2,d1						; "		"		"		"
+		asr.w	#3,d1						; divide by 4
+		add.w	d1,d0						; add result to bg y position
 loc_6590:
 		move.w	d0,($FFFFF714).w
 		move.w	d0,($FFFFF71C).w

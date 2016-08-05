@@ -315,7 +315,7 @@ loc_1C134:
 		move.b	d0,(v_lani0_frame).w
 		mulu.w	#$600,d0
 		adda.w	d0,a1
-		locVRAM	$2660
+		locVRAM	$2640
 		move.w	#47,d1
 		bsr.w	LoadTiles
 		rts

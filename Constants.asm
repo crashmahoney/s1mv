@@ -257,7 +257,7 @@ musSegaSound    equ $E1
 ; Background music
 bgm_GHZ:	equ $01
 bgm_LZ:		equ $20
-bgm_MZ:		equ $05
+bgm_MZ:		equ $02
 bgm_SLZ:	equ $23
 bgm_SYZ:	equ $03
 bgm_SBZ:	equ $17
