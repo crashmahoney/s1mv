@@ -2475,7 +2475,7 @@ zFMFrequencies:
 ; MUSIC BANKS
 ; ===========================================================================
 z80_MusicBanks:
-		db  zmake68kBank(Snd_AIZ1),zmake68kBank(Snd_AIZ2),zmake68kBank(Snd_HCZ1),zmake68kBank(Snd_HCZ2)
+		db  zmake68kBank(Snd_AIZ1),zmake68kBank(Snd_Camino),zmake68kBank(Snd_HCZ1),zmake68kBank(Snd_HCZ2)
 		db  zmake68kBank(Snd_MGZ1),zmake68kBank(Snd_MGZ2),zmake68kBank(Snd_CNZ1),zmake68kBank(Snd_CNZ2)
 		db  zmake68kBank(Snd_FBZ1),zmake68kBank(Snd_FBZ2),zmake68kBank(Snd_ICZ1),zmake68kBank(Snd_ICZ2)
 		db  zmake68kBank(Snd_LBZ1),zmake68kBank(Snd_LBZ2),zmake68kBank(Snd_MHZ1),zmake68kBank(Snd_MHZ2)
@@ -4104,7 +4104,7 @@ PSGTone_33:     db	0Eh, 0Dh, 0Ch, 0Bh, 0Ah,   9,   8,   7,   6,   5,   4,   3,  
 ; ===========================================================================
 
 z80_MusicPointers:
-		dw	zmake68kPtr(Snd_AIZ1),zmake68kPtr(Snd_AIZ2),zmake68kPtr(Snd_HCZ1),zmake68kPtr(Snd_HCZ2)
+		dw	zmake68kPtr(Snd_AIZ1),zmake68kPtr(Snd_Camino),zmake68kPtr(Snd_HCZ1),zmake68kPtr(Snd_HCZ2)
 		dw	zmake68kPtr(Snd_MGZ1),zmake68kPtr(Snd_MGZ2),zmake68kPtr(Snd_CNZ1),zmake68kPtr(Snd_CNZ2)
 		dw	zmake68kPtr(Snd_FBZ1),zmake68kPtr(Snd_FBZ2),zmake68kPtr(Snd_ICZ1),zmake68kPtr(Snd_ICZ2)
 		dw	zmake68kPtr(Snd_LBZ1),zmake68kPtr(Snd_LBZ2),zmake68kPtr(Snd_MHZ1),zmake68kPtr(Snd_MHZ2)
@@ -4969,7 +4969,13 @@ Snd_EMZ:			include	"Sound/Music/Endless Mine.asm"
 Snd_S3Credits:		include	"Sound/Music/Sonic 3 Credits.asm"
 Snd_2PMenu:			include	"Sound/Music/Competition Menu.asm"	
 Snd_Drown:			include	"Sound/Music/Countdown.asm"
+	finishBank
 
+; ---------------------------------------------------------------------------
+; Music Bank 5
+; ---------------------------------------------------------------------------
+Snd_Bank5_Start:	startBank
+Snd_Camino:			include	"Sound/Music/Camino.asm"
 	finishBank
 
 	shared Snd_FBZ1,Snd_FBZ2,Snd_MHZ1,Snd_MHZ2,Snd_SOZ1,Snd_SOZ2,Snd_LRZ1
@@ -4979,7 +4985,7 @@ Snd_Drown:			include	"Sound/Music/Countdown.asm"
 	shared Snd_CNZ2,Snd_CNZ1,Snd_ICZ2,Snd_ICZ1,Snd_LBZ2,Snd_LBZ1,Snd_SKCredits
 	shared Snd_GameOver,Snd_Continue,Snd_Results,Snd_Invic,Snd_Menu,Snd_FinalBoss
 	shared Snd_PresSega,Snd_GumBonus,Snd_ALZ,Snd_BPZ,Snd_DPZ,Snd_CGZ,Snd_EMZ
-	shared Snd_S3Credits,Snd_2PMenu,Snd_Drown
+	shared Snd_S3Credits,Snd_2PMenu,Snd_Drown,Snd_Camino
 	shared                            Sound_33,Sound_34,Sound_35,Sound_36,Sound_37,Sound_38,Sound_39,Sound_3A,Sound_3B,Sound_3C,Sound_3D,Sound_3E,Sound_3F
 	shared Sound_40,Sound_41,Sound_42,Sound_43,Sound_44,Sound_45,Sound_46,Sound_47,Sound_48,Sound_49,Sound_4A,Sound_4B,Sound_4C,Sound_4D,Sound_4E,Sound_4F
 	shared Sound_50,Sound_51,Sound_52,Sound_53,Sound_54,Sound_55,Sound_56,Sound_57,Sound_58,Sound_59,Sound_5A,Sound_5B,Sound_5C,Sound_5D,Sound_5E,Sound_5F

@@ -49,6 +49,7 @@
 #define Snd_S3Credits 0x13547F
 #define Snd_2PMenu 0x1358BF
 #define Snd_Drown 0x135D91
+#define Snd_Camino 0x138000
 #define Sound_33 0x115E30
 #define Sound_34 0x115E5E
 #define Sound_35 0x115E6F
