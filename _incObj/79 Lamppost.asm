@@ -258,7 +258,13 @@ Lamp_LoadInfo:				; XREF: LevelSizeLoad
 ; 		move.w	#$C00,(v_sonspeedmax).w   ; change Sonic's top speed
 ; 		move.w	#$18,(v_sonspeedacc).w	  ; change Sonic's acceleration
 ; 		move.w	#$80,(v_sonspeeddec).w	  ; change Sonic's deceleration
-		music	$E2,1		          ; Speed up the music
+
+         if z80SoundDriver=0
+                music	$E2,1		; Speed	up the music
+         else
+                move.w	#8,d0
+		jmp	(SetTempo).l	; Speed	up the music
+         endif
 
           @notshoes:
 		tst.b	(v_lastlamp).w
