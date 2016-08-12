@@ -381,9 +381,12 @@ DLE_MZx:	dc.w DLE_MZ1-DLE_MZx
 DLE_MZ1:
 	;	move.w	#$7ff,(v_limitbtm1).w 
 	;	move.w  #0,(v_limittop1).w
-		rts
 
-
+; in the right x range to switch backgrounds?
+		cmpi.w	#$1100,(v_screenposx).w
+		blo.s	locret_6F8C
+		cmpi.w	#$1300,(v_screenposx).w
+		bhi.s	locret_6F8C
 
 		moveq	#0,d0
 		move.b	(v_dle_routine).w,d0
@@ -392,108 +395,46 @@ DLE_MZ1:
 ; ===========================================================================
 off_6FB2:	dc.w loc_6FBA-off_6FB2
 		dc.w loc_6FEA-off_6FB2
-		dc.w loc_702E-off_6FB2
-		dc.w loc_7050-off_6FB2
+
 ; ===========================================================================
 
 loc_6FBA:       ; Routine 0
-		move.w	#$1D0,(v_limitbtm1).w
-		cmpi.w	#$700,(v_screenposx).w
-		bcs.s	locret_6FE8
-		move.w	#$220,(v_limitbtm1).w
-		cmpi.w	#$D00,(v_screenposx).w
-		bcs.s	locret_6FE8
-		move.w	#$340,(v_limitbtm1).w
-		cmpi.w	#$340,(v_screenposy).w
-		bcs.s	locret_6FE8
-		addq.b	#2,(v_dle_routine).w
+		cmpi.w	#$200,(v_screenposy).w
+		blo.s	@no
 
-locret_6FE8:
-		rts	
+		addq.b	#2,(v_dle_routine).w
+		move.w	#$580,(v_bgposx).w		; force X position to 2nd chunk's position (So redraw always occurs at beginning correctly...)
+
+		lea	($C00004).l,a5
+		lea	($C00000).l,a6
+		lea	(v_bgposx).w,a3
+		movea.l	(v_lvllayout+4).w,a4			; MJ: Load address of layout BG
+		move.w	#$6000,d2
+		bsr.w	DrawChunks
+
+	@no:
+		rts		
+
 ; ===========================================================================
 
 loc_6FEA:       ; Routine 2
-		cmpi.w	#$340,(v_screenposy).w
-		bcc.s	loc_6FF8
+		cmpi.w	#$200,(v_screenposy).w
+		bhi.s	@no
+
 		subq.b	#2,(v_dle_routine).w
-		rts	
+		move.w	#$80,(v_bgposx).w		; force X position to 2nd chunk's position (So redraw always occurs at beginning correctly...)
+
+		lea	($C00004).l,a5
+		lea	($C00000).l,a6
+		lea	(v_bgposx).w,a3
+		movea.l	(v_lvllayout+4).w,a4			; MJ: Load address of layout BG
+		move.w	#$6000,d2
+		bsr.w	DrawChunks
+
+	@no:
+		rts		
 ; ===========================================================================
 
-loc_6FF8:
-		move.w	#0,(v_limittop2).w
-		cmpi.w	#$E00,(v_screenposx).w
-		bcc.s	locret_702C
-		move.w	#$340,(v_limittop2).w
-		move.w	#$340,(v_limitbtm1).w
-		cmpi.w	#$A90,(v_screenposx).w
-		bcc.s	locret_702C
-		move.w	#$500,(v_limitbtm1).w
-		cmpi.w	#$370,(v_screenposy).w
-		bcs.s	locret_702C
-		addq.b	#2,(v_dle_routine).w
-
-locret_702C:
-		rts
-; ===========================================================================
-
-loc_702E:       ; Routine 4
-		cmpi.w	#$370,(v_screenposy).w
-		bcc.s	loc_703C
-		subq.b	#2,(v_dle_routine).w
-		rts	
-; ===========================================================================
-
-loc_703C:
-		cmpi.w	#$500,(v_screenposy).w
-		bcs.s	locret_704E
-		if Revision=0
-		else
-			cmpi.w	#$B80,(v_screenposx).w
-			bcs.s	locret_704E
-		endc
-		move.w	#$500,(v_limittop2).w
-		addq.b	#2,(v_dle_routine).w
-
-locret_704E:
-		rts	
-; ===========================================================================
-
-loc_7050:       ; Routine 6
-                cmpi.w	#$B60,(v_screenposx).w
-		bcc.s	@Continue
-		move.w	#$340,(v_limittop2).w
-		subq.b	#2,(v_dle_routine).w
-		rts	
-; ===========================================================================
-
-        @Continue:
-		if Revision=0
-		else
-			cmpi.w	#$B80,(v_screenposx).w
-			bcc.s	locj_76B8
-			cmpi.w	#$340,(v_limittop2).w
-			beq.s	locret_7072
-			subq.w	#2,(v_limittop2).w
-			rts
-	locj_76B8:
-			cmpi.w	#$500,(v_limittop2).w
-			beq.s	locj_76CE
-			cmpi.w	#$500,(v_screenposy).w
-			bcs.s	locret_7072
-			move.w	#$500,(v_limittop2).w
-	locj_76CE:
-		endc
-
-		cmpi.w	#$E70,(v_screenposx).w
-		bcs.s	locret_7072
-		move.w	#0,(v_limittop2).w
-		move.w	#$500,(v_limitbtm1).w
-		cmpi.w	#$1430,(v_screenposx).w
-		bcs.s	locret_7072
-		move.w	#$210,(v_limitbtm1).w
-
-locret_7072:
-		rts	
 ; ===========================================================================
 
 DLE_MZ2:

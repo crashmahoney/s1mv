@@ -115,9 +115,9 @@ SetScreen:
 	SetScr_WithinBottom:
 		move.w	d0,(v_screenposy).w ; set vertical screen position
 		bsr.w	BgScrollSpeed
-		moveq	#0,d0
-		move.b	(v_zone).w,d0
-		lsl.b	#2,d0
+;		moveq	#0,d0
+;		move.b	(v_zone).w,d0
+;		lsl.b	#2,d0
 ;		lea		LoopTileNums,a0
 ;		move.l	(a0,d0.w),(v_256loop1).w      ;
 		move.w	#0000,(v_limitleft2).w ; +++ move left boundary to far left, this is a hack because the limit was in the wrong place when transitioning between acts from the top or bottom
@@ -210,8 +210,9 @@ BgScroll_LZ:				; XREF: BgScroll_Index
 ; ===========================================================================
 
 BgScroll_MZ:				; XREF: BgScroll_Index
-		;asr.l	#1,d0
-		move.w	d0,($FFFFF70C).w
+		move.w	#$80,($FFFFF708).w		; force X position to 2nd chunk's position (So redraw always occurs at beginning correctly...)
+		asr.w	#$03,d0					; divide by 8
+		move.w	d0,($FFFFF70C).w		; save as BG Y position
 		rts	
 ; ===========================================================================
 

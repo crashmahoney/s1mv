@@ -520,6 +520,11 @@ VRAMloc_MonitorSpinDash =	$D400 ; +++ spin dash icon, overwrites goggles icon
 VRAMloc_Teleporter	=	$B000
 
 ; ---------------------------------------------------------------------------
+; Pattern load cues - Marble Zone
+; ---------------------------------------------------------------------------
+VRAMloc_StompBlock		=	$71C0
+
+; ---------------------------------------------------------------------------
 ; Pattern load cues - Metropolis Zone Boss
 ; ---------------------------------------------------------------------------
 VRAMloc_MTZBoss	=	$8000

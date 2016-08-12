@@ -1026,9 +1026,10 @@ MTZBoss_LazerGunObject:       ; Main boss object Routine $6
 	move.w	obY(a1),obY(a0)
 	bclr	#0,obRender(a0)           ; match direction of parent object
 	btst	#0,obRender(a1)
-	beq.w	DisplaySprite
+	beq.s	@display
 	bset	#0,obRender(a0)
-	bra.w	DisplaySprite
+@display:	
+	jmp	DisplaySprite
 ; ===========================================================================
 ; animation script
 ; off_32D7A:

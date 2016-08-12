@@ -335,171 +335,175 @@ lzloc_63A4:
 ; ---------------------------------------------------------------------------
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
+Deform_MZ:				; XREF: Deform_Index
+		tst.b	(v_dle_routine).w		; outside?
+		beq.s	Deform_Mz_Outside		; if so, branch to the outside deformation code
 
+; ---------------------------------------------------------------------------
+Deform_Mz_Inside:
+		move.w	#$500,($FFFFF708).w		; force X position to 2nd chunk's position (So redraw always occurs at beginning correctly...)
+		moveq	#$00,d4				; set no X movement redraw
+		move.w	($FFFFF73C).w,d5		; load Y movement
+		ext.l	d5				; extend to long-word
+		asl.l	#$07-3,d5			; multiply by 100, then divide by 8
+	;	bsr.w	ScrollBlock2_Rev00		; perform redraw for Y
+		bsr.w	Bg_Scroll_Y			; perform redraw for Y
+		move.w	(v_bgposy).w,(v_bgposy_dup).w	; save as VSRAM BG scroll position
+		move.w	(v_screenposx).w,d0			; prepare FG X position
+		neg.w	d0					; reverse position
+		move.w	d0,d1					; copy
+		asr.w	#1,d1					; divide by 2
+		swap	d0					; put fg pos in upper half
+		move.w	d1,d0					; put bg pos in lower half
 
-;Deform_MZ:				; XREF: Deform_Index
+		lea	(v_scrolltable).w,a2			; load H-scroll buffer
+		move.w	#$00E0-1,d2				; prepare number of scanlines
+	@brickloop:
+		move.l	d0,(a2)+
+		dbf	d2,@brickloop
+
+		rts
+
+; ---------------------------------------------------------------------------
+Deform_Mz_Outside:
+		move.w	#$00,($FFFFF708).w		; force X position to 2nd chunk's position (So redraw always occurs at beginning correctly...)
+		moveq	#$00,d4				; set no X movement redraw
+		move.w	($FFFFF73C).w,d5		; load Y movement
+		ext.l	d5				; extend to long-word
+		asl.l	#$07-3,d5			; multiply by 100, then divide by 8
+	;	bsr.w	ScrollBlock2_Rev00		; perform redraw for Y
+		bsr.w	Bg_Scroll_Y			; perform redraw for Y
+		move.w	(v_bgposy).w,(v_bgposy_dup).w	; save as VSRAM BG scroll position
+
 		
-		move.w	(v_scrshiftx).w,d4
-		ext.l	d4
-		asl.l	#7,d4
-		move.w	($FFFFF73C).w,d5
-		ext.l	d5
-		asl.l	#7,d5
-		bsr.w	ScrollBlock1
-		move.w	($FFFFF70C).w,($FFFFF618).w
-		lea	(v_scrolltable).w,a1
-		move.w	#223,d1
-		move.w	(v_screenposx).w,d0
-		neg.w	d0
-		swap	d0
-		move.w	($FFFFF708).w,d0
-		neg.w	d0
-
-loc_63C6:
-		move.l	d0,(a1)+
-		dbf	d1,loc_63C6
-		move.w	(v_waterpos1).w,d0
-		sub.w	(v_screenposy).w,d0
-		rts	
-
-
-
-
-
-
-
-; old version
-
-
-Deform_MZ:
-		tst.l   ($FFFFF708).w                 ; is scrollblock 3 = 0
-		bne.s   @sb3not0
-                moveq   #0,d4
-                move.w  (v_screenposx).w,d4
-		asl.l	#8,d4
-		asl.l	#6,d4
-		move.l	d4,d1
-		asl.l	#1,d4
-		add.l	d1,d4
-		moveq	#2,d6
-		bsr	ScrollBlock3
-	@sb3not0:
-		move.w	(v_scrshiftx).w,d4
-		ext.l	d4
-		asl.l	#6,d4
-		move.l	d4,d1
-		asl.l	#1,d4
-		add.l	d1,d4
-		moveq	#2,d6
-		bsr	ScrollBlock3
-
-
-		tst.l   ($FFFFF718).w                 ; is scrollblock 5 = 0
-		bne.s   @sb5not0
-        moveq   #0,d4
-        move.w  (v_screenposx).w,d4
-		asl.l	#8,d4
-		asl.l	#6,d4
-		moveq	#6,d6
-		bsr	ScrollBlock5
-	@sb5not0:
-		move.w	(v_scrshiftx).w,d4
-		ext.l	d4
-		asl.l	#6,d4
-		moveq	#6,d6
-		bsr	ScrollBlock5
-
-
-		tst.l   ($FFFFF710).w                 ; is scrollblock 4 = 0
-		bne.s   @sb4not0
-                moveq   #0,d4
-                move.w  (v_screenposx).w,d4
-		asl.l	#8,d4
-		asl.l	#7,d4                         ; multiply by $80 (128)
-		moveq	#4,d6
-                bsr	ScrollBlock4
-	@sb4not0:
-		move.w	(v_scrshiftx).w,d4
-		ext.l	d4
-		asl.l	#7,d4
-		moveq	#4,d6
-		bsr	ScrollBlock4
-
-
-
-		move.w	#$200,d0					; top of bg layer tiles starts at $200 for some reason
-		move.w	(v_screenposy).w,d1			; get fg screen position
-		subi.w	#$C8,d1						; sub $1C8
-		bcs.s	loc_6590					; if higher in the level than $1C8, don't scroll down
-	;	move.w	d1,d2						; multiply leftover height by 3
-		add.w	d1,d1						; "		"		"		"
-	;	add.w	d2,d1						; "		"		"		"
-		asr.w	#3,d1						; divide by 4
-		add.w	d1,d0						; add result to bg y position
-loc_6590:
-		move.w	d0,($FFFFF714).w
-		move.w	d0,($FFFFF71C).w
-		bsr	ScrollBlock2
-		move.w	($FFFFF70C).w,(v_bgposy_dup).w
-		move.b	(v_bgscroll2).w,d0
-		or.b	(v_bgscroll3).w,d0
-		or.b	d0,($FFFFF75A).w
-		clr.b	(v_bgscroll2).w
-		clr.b	(v_bgscroll3).w
 		lea	(v_lvllayout+8).w,a1
-		move.w	(v_screenposx).w,d2
-		neg.w	d2
-		move.w	d2,d0
-		asr.w	#2,d0
-		sub.w	d2,d0
-		ext.l	d0
-		asl.l	#3,d0
-		divs.w	#5,d0
-		ext.l	d0
-		asl.l	#4,d0
-		asl.l	#8,d0
-		moveq	#0,d3
-		move.w	d2,d3
-		asr.w	#1,d3                       ;
-		move.w	#4,d1                       ; number of rows of clouds  (default $4)
-loc_65DE:		
-		move.w	d3,(a1)+
-		swap.w	d3
-		add.l	d0,d3
-		swap.w	d3
-		dbra	d1,loc_65DE
-		move.w	($FFFFF718).w,d0            ; scrollblock5
+		move.w	(v_screenposx).w,d0			; load X position
 		neg.w	d0
-		move.w	#1,d1                       ; rows of mountains (default $1)
-loc_65F4:		
-		move.w	d0,(a1)+
-		dbra	d1,loc_65F4
-		move.w	($FFFFF710).w,d0            ; scrollblock4
-		neg.w	d0
-		move.w	#8,d1                       ; rows of trees (default $8)
-loc_6604:		
-		move.w	d0,(a1)+
-		dbra	d1,loc_6604
-		move.w	($FFFFF708).w,d0            ; scrollblock3
-		neg.w	d0
-		move.w	#$F,d1
-loc_6614:		
-		move.w	d0,(a1)+
-		dbra	d1,loc_6614
-		lea	(v_lvllayout+8).w,a2
-		move.w	($FFFFF70C).w,d0
-		subi.w	#$200,d0
-		move.w	d0,d2
-		cmpi.w	#$100,d0
-		bcs.s	loc_6632
-		move.w	#$100,d0
-loc_6632:
-		andi.w	#$1F0,d0
-		lsr.w	#3,d0
-		lea	(a2,d0),a2
-		bra	Bg_Scroll_X
-; End of function Deform_MZ
 
+		swap	d0				; put in upper word 
+		clr.w	d0				; clear lower word
+		asr.l	#2,d0				; divide by 4
+		move.l	d0,d1				
+		asr.l	#4,d1				; divide by 16, gets amount to change each scroll part
+		lea	(v_lvllayout+8+$1C).w,a1	; get last place in our in buffer
+		moveq	#9-1,d2				; loop counter
+
+	@treeloop:	
+		swap	d0				; ready numerator for sending
+		move.w	d0,-(a1)			; send to buffer
+		swap	d0				; swap back
+		sub.l	d1,d0				; subtract amount to scroll
+		dbf	d2,@treeloop
+
+		lea	(v_lvllayout+8).w,a1		; get start of buffer
+		move.l	(v_lvllayout+8+$1C).w,d2	; get amount to scroll clouds by
+		addi.l	#$500,(v_lvllayout+8+$1C).w	; add to scroll amount
+		asr.l	#1,d0				; divide by 2
+		moveq	#5-1,d3				; loop counter
+
+	@cloudloop:
+		add.l	d2,d0				; add scroll amount
+		add.l	#$500,d2			; scroll next line by more
+		swap	d0				; ready numerator for sending
+		move.w	d0,(a1)+			; send to buffer
+		swap	d0				; swap back
+		add.l	d1,d0				; add amount to scroll
+		dbf	d3,@cloudloop
+		move.w	-2(a1),d0
+		move.w	-4(a1),-2(a1)
+		move.w	d0,-4(a1)
+
+
+		lea	DGHZ_Act1(pc),a0			; load scroll data to use
+		bra.w	DeformScroll				; continue
+
+; ---------------------------------------------------------------------------
+; Scroll data
+; ---------------------------------------------------------------------------
+
+scrsize:	macro	address,rows
+	dc.w	($F008+(address*2)), rows
+	endm
+
+
+DGHZ_Act1:	scrsize	0,  $10				; clouds0
+		scrsize	1,  $4				; clouds1
+		scrsize	2,  $4				; clouds2
+		scrsize	3,  $8				; clouds3
+		scrsize	4,  $8				; clouds4
+		scrsize	5,  $8				; mountains0
+		scrsize	6,  $D				; mountains1
+		scrsize	7,  $13				; mountains3
+		scrsize	8,  $8				; trees0
+		scrsize	9,  $8				; trees1
+		scrsize	10, $8				; trees2
+		scrsize	11, $8				; trees3
+		scrsize	12, $18				; trees4
+		scrsize	13, $E0				; the rest
+
+
+		dc.w	$0000
+
+; ===========================================================================
+
+
+; End of function Deform_MZ
+; ===========================================================================
+; ---------------------------------------------------------------------------
+; Deform scanlines correctly using a list
+; http://sonicresearch.org/community/index.php?threads/how-to-work-with-background-deformation.4607/#post-68207
+; Markey Jester Stuff
+; ---------------------------------------------------------------------------
+
+DeformScroll:
+		lea	(v_scrolltable).w,a2			; load H-scroll buffer
+		move.w	#$00E0,d7				; prepare number of scanlines
+		move.w	(v_bgposy).w,d6				; load Y position
+		move.l	(v_screenposx).w,d1			; prepare FG X position
+		neg.l	d1					; reverse position
+
+DS_FindStart:
+		move.w	(a0)+,d0				; load scroll speed address
+		beq.s	DS_Last					; if the list is finished, branch
+		movea.w	d0,a1					; set scroll speed address
+		sub.w	(a0)+,d6				; subtract size
+		bpl.s	DS_FindStart				; if we haven't reached the start, branch
+		neg.w	d6					; get remaining size
+		sub.w	d6,d7					; subtract from total screen size
+		bmi.s	DS_EndSection				; if the screen is finished, branch
+
+DS_NextSection:
+		subq.w	#$01,d6					; convert for dbf
+		move.w	(a1),d1					; load X position
+
+DS_NextScanline:
+		move.l	d1,(a2)+				; save scroll position
+		dbf	d6,DS_NextScanline			; repeat for all scanlines
+		move.w	(a0)+,d0				; load scroll speed address
+		beq.s	DS_Last					; if the list is finished, branch
+		movea.w	d0,a1					; set scroll speed address
+		move.w	(a0)+,d6				; load size
+
+DS_CheckSection:
+		sub.w	d6,d7					; subtract from total screen size
+		bpl.s	DS_NextSection				; if the screen is not finished, branch
+
+DS_EndSection:
+		add.w	d6,d7					; get remaining screen size and use that instead
+
+DS_Last:
+		subq.w	#$01,d7					; convert for dbf
+		bmi.s	DS_Finish				; if finished, branch
+		move.w	(a1),d1					; load X position
+
+DS_LastScanlines:
+		move.l	d1,(a2)+				; save scroll position
+		dbf	d7,DS_LastScanlines			; repeat for all scanlines
+
+DS_Finish:
+		rts						; return
+
+; ===========================================================================
 ; ---------------------------------------------------------------------------
 ; Star Light Zone background layer deformation code
 ; ---------------------------------------------------------------------------
@@ -1280,6 +1284,8 @@ loc_6B2C:
 		rts
 ; End of function ScrollBlock1
 
+
+
 Bg_Scroll_Y:
 		move.l	($FFFFF70C).w,d3
 		move.l	d3,d0
@@ -1301,6 +1307,36 @@ loc_6B5C:
 Exit_Bg_Scroll_Y:
 		rts
 
+; ===========================================================================
+; copy of revision 0 scrollblock2
+ScrollBlock2_Rev00:
+		move.l	($FFFFF708).w,d2
+		move.l	d2,d0
+		add.l	d4,d0
+		move.l	d0,($FFFFF708).w
+		move.l	($FFFFF70C).w,d3
+		move.l	d3,d0
+		add.l	d5,d0
+		move.l	d0,($FFFFF70C).w
+		move.l	d0,d1
+		swap	d1
+		andi.w	#$10,d1
+		move.b	($FFFFF74D).w,d2
+		eor.b	d2,d1
+		bne.s	locret_6812
+		eori.b	#$10,($FFFFF74D).w
+		sub.l	d3,d0
+		bpl.s	loc_680C
+		bset	#0,(v_bgscroll2).w
+		rts	
+; ===========================================================================
+
+loc_680C:
+		bset	#1,(v_bgscroll2).w
+
+locret_6812:
+		rts
+; ===========================================================================
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 

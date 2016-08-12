@@ -2446,7 +2446,7 @@ GM_Title:				; XREF: GameModeArray
 		bsr.w	ClearScreen
                 lea	($C00004).l,a5
 		lea	($C00000).l,a6
-		lea	($FFFFF708).w,a3
+		lea	(v_bgposx).w,a3
 	;	lea	(v_lvllayout+$40).w,a4
 		movea.l	(v_lvllayout+4).w,a4			; MJ: Load address of layout BG
 		move.w	#$6000,d2
@@ -3754,8 +3754,8 @@ Pal_SSCyc2:	incbin	"palette\Cycle - Special Stage 2.bin"
 SS_BGAnimate:				; XREF: GM_Special
 		move.w	($FFFFF7A0).w,d0
 		bne.s	loc_4BF6
-		move.w	#0,($FFFFF70C).w
-		move.w	($FFFFF70C).w,($FFFFF618).w
+		move.w	#0,(v_bgposy).w
+		move.w	(v_bgposy).w,($FFFFF618).w
 
 loc_4BF6:
 		cmpi.w	#8,d0
@@ -3763,12 +3763,12 @@ loc_4BF6:
 		cmpi.w	#6,d0
 		bne.s	loc_4C10
 		addq.w	#1,($FFFFF718).w
-		addq.w	#1,($FFFFF70C).w
-		move.w	($FFFFF70C).w,($FFFFF618).w
+		addq.w	#1,(v_bgposy).w
+		move.w	(v_bgposy).w,($FFFFF618).w
 
 loc_4C10:
 		moveq	#0,d0
-		move.w	($FFFFF708).w,d0
+		move.w	(v_bgposx).w,d0
 		neg.w	d0
 		swap	d0
 		lea	(byte_4CCC).l,a1
@@ -3818,7 +3818,7 @@ loc_4C7E:
 		swap	d0
 		moveq	#0,d3
 		move.b	(a2)+,d3
-		move.w	($FFFFF70C).w,d2
+		move.w	(v_bgposy).w,d2
 		neg.w	d2
 		andi.w	#$FF,d2
 		lsl.w	#2,d2
@@ -4432,7 +4432,7 @@ sub_6886:				; XREF: VBla_04
 		lea	($C00004).l,a5
 		lea	($C00000).l,a6
 		lea	(v_bgscroll2).w,a2
-		lea	($FFFFF708).w,a3
+		lea	(v_bgposx).w,a3
 	;	lea	(v_lvllayout+$40).w,a4
 		movea.l	(v_lvllayout+4).w,a4			; MJ: Load address of layout BG
 		move.w	#$6000,d2
@@ -4626,7 +4626,7 @@ loc_69EE:
 			moveq	#-$10,d4
 			moveq	#0,d5
 			moveq	#$1F,d6
-			bsr	DrawTiles_LR_3
+			bsr	DrawTiles_LR_2		; +++ was DrawTiles_LR_3, changed to fix mz bg, don't know if it'll break other zones
 	locj_6D88:
 
 			bclr	#5,(a2)
@@ -4637,7 +4637,7 @@ loc_69EE:
 			move.w	#$E0,d4
 			moveq	#0,d5
 			moveq	#$1F,d6
-			bsr	DrawTiles_LR_3
+			bsr	DrawTiles_LR_2		; +++ was DrawTiles_LR_3, changed to fix mz bg, don't know if it'll break other zones
 		endc
 
 locret_69F2:
@@ -4781,7 +4781,7 @@ locret_6AD6:
 			move.w	#$E0,d4
 	locj_6E28:
 			lea	(locj_6DF4+1),A0
-			move.w	($FFFFF70C).w,d0
+			move.w	(v_bgposy).w,d0
 			add.w	d4,d0
 			andi.w	#$1F0,d0
 			lsr.w	#4,d0
@@ -4819,7 +4819,7 @@ locret_6AD6:
 			move.w	#$140,d5
 	locj_6E8C:
 			lea	(locj_6DF4),a0
-			move.w	($FFFFF70C).w,d0
+			move.w	(v_bgposy).w,d0
 			andi.w	#$1F0,d0
 			lsr.w	#4,d0
 			lea	(a0,d0),a0
@@ -4831,8 +4831,8 @@ locret_6AD6:
 	locj_6EA4:
 			tst.b	(a2)
 			beq	locj_6EF0
-			cmpi.b	#id_MZ,(v_zone).w
-			beq	Draw_Mz
+;			cmpi.b	#id_MZ,(v_zone).w
+;			beq	Draw_Mz
 			bclr	#0,(a2)
 			beq.s	locj_6ED0
 			move.w	#$40,d4
@@ -4872,7 +4872,7 @@ locret_6AD6:
 			move.w	#$E0,d4
 	locj_6F66:
 			lea	(locj_6EF2+1),a0
-			move.w	($FFFFF70C).w,d0
+			move.w	(v_bgposy).w,d0
 			subi.w	#$200,d0
 			add.w	d4,d0
 			andi.w	#$7F0,d0
@@ -4910,7 +4910,7 @@ locret_6AD6:
 			move.w	#$140,d5
 	locj_6FC8:
 			lea	(locj_6EF2),a0
-			move.w	($FFFFF70C).w,d0
+			move.w	(v_bgposy).w,d0
 			subi.w	#$200,d0
 			andi.w	#$7F0,d0
 			lsr.w	#4,d0
@@ -5225,7 +5225,7 @@ LoadTilesFromStart:			; XREF: GM_Level; GM_Ending
 		movea.l	(v_lvllayout).w,a4			; MJ: Load address of layout
 		move.w	#$4000,d2
 		bsr.s	DrawChunks
-		lea	($FFFFF708).w,a3
+		lea	(v_bgposx).w,a3
 	;	lea	(v_lvllayout+$40).w,a4
 		movea.l	(v_lvllayout+4).w,a4			; MJ: Load address of layout BG
 		move.w	#$6000,d2
@@ -5274,7 +5274,7 @@ DrawChunks:				; XREF: LoadTilesFromStart
 	locj_7224:			
 			movem.l	d4-d6,-(sp)
 			lea	(locj_724a),a0
-			move.w	($FFFFF70C).w,d0
+			move.w	(v_bgposy).w,d0
 			add.w	d4,d0
 			andi.w	#$F0,d0
 			bsr	locj_72Ba
@@ -5291,8 +5291,8 @@ DrawChunks:				; XREF: LoadTilesFromStart
 	locj_725E:			
 			movem.l	d4-d6,-(sp)
 			lea	(locj_6EF2+$01),a0
-			move.w	($FFFFF70C).w,d0
-			subi.w	#$200,d0
+			move.w	(v_bgposy).w,d0
+	;		subi.w	#$200,d0
 			add.w	d4,d0
 			andi.w	#$7F0,d0
 			bsr	locj_72Ba
@@ -5307,7 +5307,7 @@ DrawChunks:				; XREF: LoadTilesFromStart
 	locj_728C:			
 			movem.l	d4-d6,-(sp)
 			lea	(locj_6DF4+$01),a0
-			move.w	($FFFFF70C).w,d0
+			move.w	(v_bgposy).w,d0
 			add.w	d4,d0
 			andi.w	#$1F0,d0
 			bsr	locj_72Ba
@@ -7057,6 +7057,8 @@ locret_ED1A:				; XREF: Obj0D_Index
 
 		include	"_incObj\51 Smashable Green Block.asm"
 		include	"_maps\Smashable Green Block.asm"
+
+		include	"_incObj\Stomp Block.asm"		
 
 		include	"_incObj\52 Moving Blocks.asm"
 		include	"_maps\Moving Blocks (MZ and SBZ).asm"
@@ -9500,6 +9502,9 @@ Nem_BigFlash:	incbin	"artnem\Giant Ring Flash.bin"
 		even
 Nem_Bonus:	incbin	"artnem\Hidden Bonuses.bin" ; hidden bonuses at end of a level
 		even
+
+Nem_StompBlock:	incbin	"artnem\Stomp Block.bin" ; Breakable stomp block
+		even		
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - various Kosinski Moduled
 ; ---------------------------------------------------------------------------

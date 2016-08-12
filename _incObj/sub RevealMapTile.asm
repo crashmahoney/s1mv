@@ -56,19 +56,30 @@ DrawMiniMap:
 ; Draw the minimap into a buffer in ram
 
 		move.w	#$2700,sr
-		move.l	#$70707070,d2			; dotted line to draw
-		moveq	#0,d3				; empty line to draw
+		move.l	#$89998999,d2			; horizontal line to draw
+		move.l	#$91119111,d3			; vertical line to draw
 		lea	(v_minimap_buffer).l,a3		; temp ram to write graphics to
-		moveq	#16-1,d1
+		moveq	#8-1,d1
 	@clearbuffer:	
 		move.l	d2,(a3)+
 		move.l	d2,(a3)+
 		move.l	d2,(a3)+
 		move.l	d2,(a3)+
+
 		move.l	d3,(a3)+
 		move.l	d3,(a3)+
 		move.l	d3,(a3)+
-		move.l	d3,(a3)+		
+		move.l	d3,(a3)+
+
+		move.l	d3,(a3)+
+		move.l	d3,(a3)+
+		move.l	d3,(a3)+
+		move.l	d3,(a3)+
+
+		move.l	d3,(a3)+
+		move.l	d3,(a3)+
+		move.l	d3,(a3)+
+		move.l	d3,(a3)+
 		dbf	d1,@clearbuffer
 
 		lea	WorldMap,a1			; 4 x 4 tile mappings

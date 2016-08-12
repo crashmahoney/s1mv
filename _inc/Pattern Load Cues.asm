@@ -136,7 +136,8 @@ PLC_MZ:		dc.w ((PLC_MZ2-PLC_MZ-2)/6)-1
 		plcm	Nem_MzMetal, $6000	; metal	blocks
 		plcm	Nem_MzFire, $68A0	; fireballs
 		plcm	Nem_Swing, $7000	; swinging platform
-		plcm	Nem_MzGlass, $71C0	; green	glassy block
+		plcm	Nem_StompBlock, VRAMloc_StompBlock	; Breakable Stomp Block
+;		plcm	Nem_MzGlass, $71C0	; green	glassy block
 ;		plcm	Nem_Lava, $7500		; lava
 		plcm	Nem_SpeedBooster, $7500		; speedbooster
 		plcm	Nem_Torch, $7580	; decorative torch
