@@ -14,7 +14,7 @@ HUD_Index:	dc.w HUD_Main-HUD_Index
 
 HUD_Main:	; Routine 0
 		addq.b	#2,obRoutine(a0)
-		move.w	#$90,obX(a0)
+		move.w	#$110,obX(a0)
 		move.w	#$108,obScreenY(a0)
 		move.l	#Map_HUD,obMap(a0)
 		move.w	#$6CE,obGfx(a0)
