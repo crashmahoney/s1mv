@@ -19,13 +19,13 @@
 #define Snd_Knux 0x11F4F0
 #define Snd_Title 0x11F7CE
 #define Snd_1UP 0x11FC89
-#define Snd_Emerald 0x11FDB2
+#define Snd_Emerald 0x11FDB2 /* Snd_MGZ1,Snd_MGZ2 */
 #define Snd_AIZ1 0x120000
 #define Snd_AIZ2 0x121B64
 #define Snd_HCZ1 0x1230A8
 #define Snd_HCZ2 0x1240A4
-#define Snd_MGZ1 0x125334
-#define Snd_MGZ2 0x125944
+#define Snd_Sky 0x13D07F
+#define Snd_OKIRAP 0x13B74F
 #define Snd_CNZ2 0x125D6B
 #define Snd_CNZ1 0x12643D
 #define Snd_ICZ2 0x128000

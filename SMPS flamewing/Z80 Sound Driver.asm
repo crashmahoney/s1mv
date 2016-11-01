@@ -2476,7 +2476,7 @@ zFMFrequencies:
 ; ===========================================================================
 z80_MusicBanks:
 		db  zmake68kBank(Snd_AIZ1),zmake68kBank(Snd_Camino),zmake68kBank(Snd_HCZ1),zmake68kBank(Snd_HCZ2)
-		db  zmake68kBank(Snd_MGZ1),zmake68kBank(Snd_MGZ2),zmake68kBank(Snd_CNZ1),zmake68kBank(Snd_CNZ2)
+		db  zmake68kBank(Snd_Sky),zmake68kBank(Snd_OKIRAP),zmake68kBank(Snd_CNZ1),zmake68kBank(Snd_CNZ2)
 		db  zmake68kBank(Snd_FBZ1),zmake68kBank(Snd_FBZ2),zmake68kBank(Snd_ICZ1),zmake68kBank(Snd_ICZ2)
 		db  zmake68kBank(Snd_LBZ1),zmake68kBank(Snd_LBZ2),zmake68kBank(Snd_MHZ1),zmake68kBank(Snd_MHZ2)
 
@@ -4105,7 +4105,7 @@ PSGTone_33:     db	0Eh, 0Dh, 0Ch, 0Bh, 0Ah,   9,   8,   7,   6,   5,   4,   3,  
 
 z80_MusicPointers:
 		dw	zmake68kPtr(Snd_AIZ1),zmake68kPtr(Snd_Camino),zmake68kPtr(Snd_HCZ1),zmake68kPtr(Snd_HCZ2)
-		dw	zmake68kPtr(Snd_MGZ1),zmake68kPtr(Snd_MGZ2),zmake68kPtr(Snd_CNZ1),zmake68kPtr(Snd_CNZ2)
+		dw	zmake68kPtr(Snd_Sky),zmake68kPtr(Snd_OKIRAP),zmake68kPtr(Snd_CNZ1),zmake68kPtr(Snd_CNZ2)
 		dw	zmake68kPtr(Snd_FBZ1),zmake68kPtr(Snd_FBZ2),zmake68kPtr(Snd_ICZ1),zmake68kPtr(Snd_ICZ2)
 		dw	zmake68kPtr(Snd_LBZ1),zmake68kPtr(Snd_LBZ2),zmake68kPtr(Snd_MHZ1),zmake68kPtr(Snd_MHZ2)
 
@@ -4976,12 +4976,14 @@ Snd_Drown:			include	"Sound/Music/Countdown.asm"
 ; ---------------------------------------------------------------------------
 Snd_Bank5_Start:	startBank
 Snd_Camino:			include	"Sound/Music/Camino.asm"
+Snd_OKIRAP:			include	"Sound/Music/okirap.asm"
+Snd_Sky:			include	"Sound/Music/sky.asm"
 	finishBank
 
 	shared Snd_FBZ1,Snd_FBZ2,Snd_MHZ1,Snd_MHZ2,Snd_SOZ1,Snd_SOZ2,Snd_LRZ1
 	shared Snd_LRZ2,Snd_SSZ,Snd_DEZ1,Snd_DEZ2,Snd_Minib_SK,Snd_Boss,Snd_DDZ
 	shared Snd_PachBonus,Snd_SpecialS,Snd_SlotBonus,Snd_Knux,Snd_Title,Snd_1UP
-	shared Snd_Emerald,Snd_AIZ1,Snd_AIZ2,Snd_HCZ1,Snd_HCZ2,Snd_MGZ1,Snd_MGZ2
+	shared Snd_Emerald,Snd_AIZ1,Snd_AIZ2,Snd_HCZ1,Snd_HCZ2,Snd_Sky,Snd_OKIRAP;Snd_MGZ1,Snd_MGZ2
 	shared Snd_CNZ2,Snd_CNZ1,Snd_ICZ2,Snd_ICZ1,Snd_LBZ2,Snd_LBZ1,Snd_SKCredits
 	shared Snd_GameOver,Snd_Continue,Snd_Results,Snd_Invic,Snd_Menu,Snd_FinalBoss
 	shared Snd_PresSega,Snd_GumBonus,Snd_ALZ,Snd_BPZ,Snd_DPZ,Snd_CGZ,Snd_EMZ
