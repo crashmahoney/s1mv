@@ -117,6 +117,10 @@ Spring_Up:	; Routine 2
 ; ===========================================================================
 
 Spring_BounceUp:
+		btst	#7,obSubtype(a0)	; layer change bit set?
+		beq.s	@nolayer		; if not, branch
+		bchg	#0,(v_layer).w		; swap sonic's layer
+	@nolayer:
 ;		addq.b	#2,obRoutine(a0)
 		addq.w	#8,obY(a1)
 		move.w	spring_pow(a0),obVelY(a1) ; move Sonic upwards
@@ -164,6 +168,10 @@ loc_DC0C:
 
 Spring_BounceLR:
 		addq.b	#2,obRoutine(a0)
+		btst	#7,obSubtype(a0)	; layer change bit set?
+		beq.s	@nolayer		; if not, branch
+		bchg	#0,(v_layer).w		; swap sonic's layer
+	@nolayer:		
 		move.w	spring_pow(a0),obVelX(a1) ; move Sonic to the left
 		addq.w	#8,obX(a1)
 		btst	#0,obStatus(a0)	; is object flipped?
@@ -217,6 +225,10 @@ locret_DCAE:
 
 Spring_BounceDwn:			; XREF: Spring_Dwn
 		addq.b	#2,obRoutine(a0)
+		btst	#7,obSubtype(a0)	; layer change bit set?
+		beq.s	@nolayer		; if not, branch
+		bchg	#0,(v_layer).w		; swap sonic's layer
+	@nolayer:		
 		subq.w	#8,obY(a1)
 		move.w	spring_pow(a0),obVelY(a1)
 		neg.w	obVelY(a1)	; move Sonic downwards
@@ -271,6 +283,10 @@ loc_18DCA:
 ; ===========================================================================
 Spring_BounceDiagUp:
         	addq.b	#2,obRoutine(a0)
+		btst	#7,obSubtype(a0)	; layer change bit set?
+		beq.s	@nolayer		; if not, branch
+		bchg	#0,(v_layer).w		; swap sonic's layer
+	@nolayer:       	
 		move.w	spring_pow(a0),obVelY(a1) ; move Sonic up
 		move.w	spring_pow(a0),obVelX(a1) ; move Sonic to the left
 		addq.w	#6,obX(a1)
@@ -347,6 +363,10 @@ Spring_ChkFlipDiagDown:
 ; ===========================================================================
 Spring_BounceDiagDown:
         	addq.b	#2,obRoutine(a0)
+		btst	#7,obSubtype(a0)	; layer change bit set?
+		beq.s	@nolayer		; if not, branch
+		bchg	#0,(v_layer).w		; swap sonic's layer
+	@nolayer:        	
 		move.w	spring_pow(a0),obVelY(a1)
 		neg.w	obVelY(a1)
 		move.w	spring_pow(a0),obVelX(a1) ; move Sonic to the left

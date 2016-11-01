@@ -57,7 +57,7 @@ DrawMiniMap:
 
 		move.w	#$2700,sr
 		move.l	#$89998999,d2			; horizontal line to draw
-		move.l	#$91119111,d3			; vertical line to draw
+		move.l	#$90009000,d3			; vertical line to draw
 		lea	(v_minimap_buffer).l,a3		; temp ram to write graphics to
 		moveq	#8-1,d1
 	@clearbuffer:	

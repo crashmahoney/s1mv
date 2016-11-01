@@ -580,7 +580,7 @@ JmpTo60_DeleteObject
 	dbf     d0,@movecolour
 
 	move.b	#0,(f_lockscreen).w     ; unlock screen
-	move.w	#$7FF,(v_limitbtm1).w
+	move.w	#$720,(v_limitbtm1).w
  	move.w	#0,(v_limitleft2).w
  	move.w	#$24BF,(v_limitright2).w
 	move.b	#0,(v_bossstatus).w
@@ -1021,7 +1021,7 @@ MTZBoss_Lazer_Move:
 MTZBoss_LazerGunObject:       ; Main boss object Routine $6
 	movea.l	MtzBoss_parent(a0),a1     ; a1= parent object
 	cmpi.b	#id_MTZBoss,(a1)
-	bne.w	DeleteObject              ; delete if main boss object is gone
+	bne.w	JmpTo61_DeleteObject      ; delete if main boss object is gone
 	move.w	obX(a1),obX(a0)           ; match position of parent object
 	move.w	obY(a1),obY(a0)
 	bclr	#0,obRender(a0)           ; match direction of parent object

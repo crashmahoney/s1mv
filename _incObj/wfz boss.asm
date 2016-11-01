@@ -331,7 +331,7 @@ ObjC5_End:	; play music and change camera speed
 	jsr		PlaySound
 ;	move.w	#$720,d0
 	move.w	#$0,(v_limittop1).w
-	move.w	#$710,(v_limitbtm1).w
+	move.w	#$720,(v_limitbtm1).w
 	jsr	DeleteObject
 	addq.w	#4,sp
 ObjC5_rts:

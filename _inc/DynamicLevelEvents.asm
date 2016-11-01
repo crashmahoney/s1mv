@@ -146,6 +146,8 @@ DLE_TitleScreen:
 ; ===========================================================================
 
 DLE_GHZ2:
+		rts
+
 		move.w	#$300,(v_limitbtm1).w
 		cmpi.w	#$ED0,(v_screenposx).w
 		bcs.s	locret_6E3A
