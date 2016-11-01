@@ -2878,7 +2878,7 @@ Level_GetBgm:
 ; 		tst.w	(f_leavemenu).w
 ; 		bne.w	Level_SkipClr	; change from bmi.s to bmi.w or you'll get an error
 		tst.w	(f_dontstopmusic).w
-		bne.w	Level_TtlCardLoop	; change from bmi.s to bmi.w or you'll get an error
+		bne.w	Level_SkipTtlCard
 		move.b	#id_TitleCard,(v_objspace+$80).w ; load title	card object
 
 		moveq	#0,d0
@@ -2915,7 +2915,6 @@ Level_PlayBgm:
 ; NineKode ends here
 
 Level_TtlCardLoop:
-                clr.b   (f_dontstopmusic).w    ; reset the music continue flag
 		move.b	#$C,(v_vbla_routine).w
 		bsr.w	WaitForVBla
 		jsr		ExecuteObjects
@@ -2929,6 +2928,7 @@ Level_TtlCardLoop:
 		jsr		Hud_Base				; load basic HUD gfx
 
 	Level_SkipTtlCard:
+		clr.b   (f_dontstopmusic).w    ; reset the music continue flag
 		moveq	#palid_Sonic,d0
 		bsr.w	PalLoad1				; load Sonic's palette
 		bsr.w	LevelSizeLoad

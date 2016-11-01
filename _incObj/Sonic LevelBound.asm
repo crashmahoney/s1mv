@@ -63,128 +63,54 @@ Sonic_LevelBound:			; XREF: Obj01_MdNormal; et al
 @bottom:
 		move.w	($FFFFF726).w,d0	; +++ fix dying at bottom bug
 		move.w	($FFFFF72E).w,d1	; +++
-		cmp.w	d0,d1			; +++ screen still scrolling down?
-		blt.w	@bottom_locret		; +++ if so, don't kill Sonic
-
-		cmpi.w	#(id_SBZ<<8)+1,(v_zone).w ; is level SBZ2 ?
-		bne.w	@NotSBZ2
-		clr.b	(v_lastlamp).w	; clear	lamppost counter
-		move.w	#(id_LZ<<8)+3,(v_zone).w ; set level to SBZ3 (LZ4)
-		move.w	#1,(f_restart).w ; restart the level
-		rts
-@notSBZ2:
-		cmpi.b	#2,(v_act).w	; is act number 02 (act 3)?
-		bne.w	@nextact        ; if no, go to next act
-
-		cmpi.w	#$2000,(v_player+obX).w
-	;        jmp     KillSonic
-		move.w	#$0700,(v_zone).w	; first 2 digits are the zone number, second pair are act number
-		move.w	#1,(f_restart).w ; restart level
-
-@bottom_locret:
-		rts
-
-
-@nextact
-		clr.b	(v_lastlamp).w					; clear	lamppost counter
-		move.b  #1,(f_dontstopmusic).w     		; keep playing current song
-		jsr     SaveState                       ; Save act's state to SRAM
-	; +++ save the position you enter the next level at
-		move.b	#$FF,(v_lastlamp).w 			; lamppost number
-		move.b	(v_lastlamp).w,($FFFFFE31).w
-		move.w	obX(a0),($FFFFFE32).w			; x-position
-	;	move.w	obY(a0),($FFFFFE34).w			; y-position
-		move.w	#$0001,($FFFFFE34).w			; y-position
-		move.w	(v_rings).w,($FFFFFE36).w 		; rings
-		move.b	(v_lifecount).w,($FFFFFE54).w 	; lives
-		move.l	(v_time).w,($FFFFFE38).w 		; time
-		move.w	(v_screenposx).w,($FFFFFE40).w 	; screen x-position
-		move.w	(v_limitbtm1).w,(v_lamp_limitbtm).w
-		move.w	($FFFFF708).w,($FFFFFE44).w 	; bg position
-		move.w	($FFFFF70C).w,($FFFFFE46).w 	; bg position
-		move.w	($FFFFF710).w,($FFFFFE48).w 	; bg position
-		move.w	($FFFFF714).w,($FFFFFE4A).w 	; bg position
-		move.w	($FFFFF718).w,($FFFFFE4C).w 	; bg position
-		move.w	($FFFFF71C).w,($FFFFFE4E).w 	; bg position
-
-		move.w  (v_player+obVelX).w,(v_lamp_xspeed).w
-		move.w  (v_player+obVelY).w,(v_lamp_yspeed).w
-		move.w	(v_player+obInertia).w,(v_lamp_inertia).w
-		move.w  (v_player+obAnim).w,(v_lamp_anim).w
-
-		move.b	(v_player+obStatus2).w,(v_lamp_status2).w
-		move.b  #0,(v_lamp_dir).w               ; clear dir flag
-		btst    #0,(v_player+obStatus).w         ; test which way sonic is facing
-		beq.s   @chkroll                         ; if left, branch
-		move.b  #1,(v_lamp_dir).w               ; set if facing right
-
-	@chkroll:
-		move.b  #0,(v_lamp_roll).w               ; clear roll flag
-		btst    #2,(v_player+obStatus).w         ; test if sonic is rolling
-		beq.s   @notrolling                      ; if not, branch
-		move.b  #1,(v_lamp_roll).w               ; set roll flag
-
-	@notrolling:
-
-		add.w	#1,(v_zone).w ; set level to next    +++
-		move.w	#1,(f_restart).w ; restart the level
-		rts
+		cmp.w	d0,d1				; +++ screen still scrolling down?
+		bge.w	@bottom_cont		; +++ if not, continue
+@bottom_cont:
+		lea     BottomData,a3
+		bra.s   @load1
 @top:
-		cmpi.b	#0,(v_act).w	; is act number 00 (act 1)?
-		bne.w	@prevact        ; if no, go to next act
-		rts
-
-@prevact:
-		clr.b	(v_lastlamp).w	; clear	lamppost counter
-		move.b  #1,(f_dontstopmusic).w     ; keep playing current song
-		jsr     SaveState                        ; Save act's state to SRAM
-	; +++ save the position you enter the next level at
-		move.b	#$FF,(v_lastlamp).w 	; lamppost number
+		lea     TopData,a3
+	  
+	  @load1:
+		clr.b	(v_lastlamp).w	                 ; clear lamppost counter
+		move.b  #1,(f_dontstopmusic).w           ; keep playing current song
+		move.b	#$FF,(v_lastlamp).w 	         ; lamppost number
 		move.b	(v_lastlamp).w,($FFFFFE31).w
-		move.w	obX(a0),($FFFFFE32).w		; x-position
-	;	move.w	obY(a0),($FFFFFE34).w		; y-position
-		move.w	#$0250,($FFFFFE34).w		; y-position
-		move.w	(v_rings).w,($FFFFFE36).w 	; rings
-		move.b	(v_lifecount).w,($FFFFFE54).w 	; lives
-		move.l	(v_time).w,($FFFFFE38).w 	; time
-		move.w	(v_screenposx).w,($FFFFFE40).w 	; screen x-position
-		move.w	#$0300,($FFFFFE42).w 	; screen y-position
-		move.w	(v_limitbtm1).w,(v_lamp_limitbtm).w
-		move.w	($FFFFF708).w,($FFFFFE44).w 	; bg position
-		move.w	($FFFFF70C).w,($FFFFFE46).w 	; bg position
-		move.w	($FFFFF710).w,($FFFFFE48).w 	; bg position
-		move.w	($FFFFF714).w,($FFFFFE4A).w 	; bg position
-		move.w	($FFFFF718).w,($FFFFFE4C).w 	; bg position
-		move.w	($FFFFF71C).w,($FFFFFE4E).w 	; bg position
+		jsr     SaveState                        ; Save act's state to SRAM
+		moveq	#0,d3
+		move.b	(v_zone).w,d3                    ; get zone number
+		mulu    #4,d3                            ; mult by 4 to get index number of first act in zone
+		add.b   (v_act).w,d3                     ; add act number to get final index number
+		add.w   d3,d3                            ; double (cos they're stored as words)
+		move.w	(a3,d3.w),d3					; data offset from table
+		lea     (a3,d3.w),a3                     ; sets a3 to address of data
 
-		move.w  (v_player+obVelX).w,(v_lamp_xspeed).w
-		move.w  (v_player+obVelY).w,(v_lamp_yspeed).w
-		move.w	(v_player+obInertia).w,(v_lamp_inertia).w
-		move.w  (v_player+obAnim).w,(v_lamp_anim).w
+	@chk_x:
+		move.w	(a3)+,d1					; get max x pos for this transition
+		sub.w	obX(a0),d1					; subtract sonic's y pos
+		bcc.s	@x_ok						; if still greater than 0, branch
+		adda.w	#12,a3						; advance to next transition
+		bra.w	@chk_x						; loop
 
-		move.b	(v_player+obStatus2).w,(v_lamp_status2).w
-		move.b  #0,(v_lamp_dir).w               ; clear dir flag
-		btst    #0,(v_player+obStatus).w         ; test which way sonic is facing
-		beq.s   @chkroll2                        ; if left, branch
-		move.b  #1,(v_lamp_dir).w               ; set if facing right
+	@x_ok:
+		move.b  (a3),(f_dontstopmusic).w        ; load graphics/change music?
+		adda    #2,a3                           ; advance data location
+		move.w	(a3)+,($FFFFFE34).w		; y-position
+		move.w	obX(a0),d1
+		add.w	(a3)+,d1         		; put x offset in d1
+;		andi.w	#$FFF,d1
+		move.w	d1,($FFFFFE32).w                ; add offset to y position
+		move.w	(a3)+,(v_lamp_limitbtm).w       ; screen bottom limit
+		move.b	(a3),($FFFFFE3C).w              ; routine counter for dynamic level mod
+		adda    #2,a3                           ; advance data location
+		move.w	(a3),d0                         ; set level
 
-	 @chkroll2:
-		move.b  #0,(v_lamp_roll).w               ; clear roll flag
-		btst    #2,(v_player+obStatus).w         ; test if sonic is rolling
-		beq.s   @notrolling2                     ; if not, branch
-		move.b  #1,(v_lamp_roll).w               ; set roll flag
-
-	 @notrolling2:
-
-		sub.w	#1,(v_zone).w ; set level to prev    +++
-		move.w	#1,(f_restart).w ; restart the level
-		rts
-
+		bra.w	@load_finish			; branch to common level load routine
 ; ===========================================================================
 
 @rightside:
 		lea     RightData,a3
-		bra.s   @load
+		bra.s   @load2
 
 @leftside:
 
@@ -199,7 +125,7 @@ Sonic_LevelBound:			; XREF: Obj01_MdNormal; et al
 	  @loadleftdata:
 		lea     LeftData,a3
 	  
-	  @load:
+	  @load2:
 		clr.b	(v_lastlamp).w	                 ; clear lamppost counter
 		move.b  #1,(f_dontstopmusic).w           ; keep playing current song
 		move.b	#$FF,(v_lastlamp).w 	         ; lamppost number
@@ -209,9 +135,18 @@ Sonic_LevelBound:			; XREF: Obj01_MdNormal; et al
 		move.b	(v_zone).w,d3                    ; get zone number
 		mulu    #4,d3                            ; mult by 4 to get index number of first act in zone
 		add.b   (v_act).w,d3                     ; add act number to get final index number
-		mulu    #6,d3                           ; mutliply by number of words ofdata saved in each act
 		add.w   d3,d3                            ; double (cos they're stored as words)
-		lea     (a3,d3),a3                       ; sets a3 to address of data
+		move.w	(a3,d3.w),d3					; data offset from table
+		lea     (a3,d3.w),a3                     ; sets a3 to address of data
+
+	@chk_y:
+		move.w	(a3)+,d1					; get max y pos for this transition
+		sub.w	obY(a0),d1					; subtract sonic's y pos
+		bcc.s	@y_ok						; if still greater than 0, branch
+		adda.w	#12,a3						; advance to next transition
+		bra.w	@chk_y						; loop
+
+	@y_ok:
 		move.b  (a3),(f_dontstopmusic).w        ; load graphics/change music?
 		adda    #2,a3                           ; advance data location
 		move.w	(a3)+,($FFFFFE32).w		; x-position
@@ -223,7 +158,9 @@ Sonic_LevelBound:			; XREF: Obj01_MdNormal; et al
 		move.b	(a3),($FFFFFE3C).w              ; routine counter for dynamic level mod
 		adda    #2,a3                           ; advance data location
 		move.w	(a3),d0                         ; set level
+; ===========================================================================
 
+@load_finish:
 		move.w	(v_rings).w,($FFFFFE36).w 	; rings
 		move.b	(v_lifecount).w,($FFFFFE54).w 	; lives
 		move.l	(v_time).w,($FFFFFE38).w 	; time

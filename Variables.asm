@@ -346,7 +346,6 @@ v_timersfxspindash: = $FFFFFF71 	; +++ timer for spin dash rev
 v_pitchsfxspindash: = $FFFFFF72 	; +++ spindash sfx pitch increase
 v_vscrolldelay  = $FFFFFF73 
 v_hscrolldelay: = $FFFFFF74     	; +++ something to do with the spin dash and horizontal scrolling
-f_dontstopmusic: = $FFFFFF76    	; +++ let music continue from last act
 v_popuptimer	= $FFFFFF77			; how long the popup timer can be onscreen
 v_shakeamount	= $FFFFFF78			; how far the screen should shake up/down
 v_shaketime		= $FFFFFF7A			; how long the screen should shake for
@@ -400,6 +399,7 @@ f_creditscheat:	= $FFFFFFE3		; hidden credits & press start cheat flag
 v_title_dcount:	= $FFFFFFE4		; number of times the d-pad is pressed on title screen (2 bytes)
 v_title_ccount:	= $FFFFFFE6		; number of times C is pressed on title screen (2 bytes)
 v_cpumeter	= $FFFFFFE7				; is the cpu meter enabled?
+f_dontstopmusic: = $FFFFFFE8    	; +++ let music continue from last act
 
 			; ^^^ can use values between here vvv
 
