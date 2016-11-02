@@ -40,6 +40,7 @@ Level_Select_Menu:
                 bsr     Menu_Play_Music
                 bsr     Menu_Pal_FadeFrom
                 move    #$2700, SR
+                move.w  #0,(v_levselitem).w
                 move.w  (v_vdp_buffer1).w, D0
                 andi.b  #$BF, D0
                 move.w  D0, ($00C00004)
@@ -49,7 +50,7 @@ Level_Select_Menu:
                 move.w  #$8230, (A6)
                 move.w  #$8407, (A6)
                 move.w  #$8230, (A6)
-                move.w  #$8700, (A6)
+                move.w  #$8700, (A6)            ; bg colour line 0 entry 0
                 move.w  #$8C81, (A6)
                 move.w  #$9001, (A6)
                 lea     (v_spritequeue).w, A1
@@ -168,7 +169,7 @@ Menu_Loop_Load_Wings:
                 jsr     Dynamic_Menu           ; Calls the animation routine
 ;-------------------------------------------------------------------------------
 
-                moveq   #palid_Menu_Palette, D0
+                moveq   #palid_LevelSel, D0
                 bsr     Menu_PalLoad1
                 lea     ($FFFFFB40).w, A1
                 lea     ($FFFFFBC0).w, A2
@@ -659,9 +660,7 @@ Wings_Mappings:
                 dc.w    $6000, $605E, $605F, $6060, $6061, $6062, $6063, $6064, $685E, $6000
 ;Wings_Line_6:
                 dc.w    $6000, $6000, $6065, $6066, $6067, $6867, $6866, $6865, $6000, $6000 
-;-------------------------------------------------------------------------------    
-Menu_Palette:
-                incbin  'data\menu\menu.pal'            
+;-------------------------------------------------------------------------------              
 Menu_ClearScreen:
                 jmp     ClearScreen
 Menu_ShowVDPGraphics:                
@@ -692,7 +691,7 @@ Menu_DelayProgram:
                 jmp     WaitForVBla
 ;-------------------------------------------------------------------------------
 Menu_Font:
-                incbin  'data\menu\menufont.nem'
+                incbin  'artnem\Standard Font.bin'
                 even
 Level_Icons:
                 incbin  'data\menu\levelico.nem'

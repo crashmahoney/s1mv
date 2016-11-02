@@ -352,7 +352,7 @@ VBlank:					; XREF: Vectors
 		move.l	#$40000010,($C00004).l
 		move.l	(v_scrposy_dup).w,($C00000).l ; send screen y-axis pos. to VSRAM
 		move.l	(v_scrposy_dup).w,(v_screenYstretch).w ; send screen y-axis pos.
-		move.w	#$8720,($C00004).l	      ; set background colour (line 3, palette entry 0)
+;		move.w	#$8720,($C00004).l	      ; set background colour (line 3, palette entry 0)
     if PALWait=1
 		btst	#6,(v_megadrive).w ; is Megadrive PAL?
 		beq.s	VBla_NotPAL	; if not, branch
@@ -2231,6 +2231,7 @@ Pal_IntroZ:	incbin	"palette\HUBZ.bin"
 Pal_Tropic:	incbin	"palette\Tropic.bin"
 Pal_Black:	incbin	"palette\black.bin"
 
+Pal_Menu:	incbin  'data\menu\menu.pal'  
 ; ---------------------------------------------------------------------------
 ; Subroutine to	wait for VBlank routines to complete
 ; ---------------------------------------------------------------------------
@@ -5427,7 +5428,7 @@ LevelDataLoad:				; XREF: GM_Level; GM_Ending
 		movea.l	(a2)+,a0
 		lea	(v_16x16).w,a1	; RAM address for 16x16 mappings
 		move.w	#0,d0
-		bsr.w	EniDec
+		jsr	EniDec
 		movea.l	(a2)+,a0
 		lea	(v_256x256).l,a1 ; RAM address for 256x256 mappings
 		bsr.w	KosDec

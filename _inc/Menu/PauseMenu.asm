@@ -54,9 +54,9 @@ Pause_Menu:
 		dbra    d1, @clr16x16loop
 ;===============================================================================
 ; load palette
-		moveq   #palid_Menu_Palette, D0
+		moveq   #palid_Menu, D0
 		jsr     PalLoad1
-		moveq   #palid_Menu_Palette, D0
+		moveq   #palid_Menu, D0
 		jsr		PalLoad4_Water
 		lea     ($FFFFFB40).w, A1
 		lea     ($FFFFFBC0).w, A2

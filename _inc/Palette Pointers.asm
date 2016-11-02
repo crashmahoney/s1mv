@@ -34,8 +34,8 @@ ptr_Pal_Ending:		palp	Pal_Ending,$FB00,$40		; $13 (19) - ending sequence
 ptr_Pal_HUBZ:		palp	Pal_HUBZ,$FB20,$30		; $14 (20) - HUBZ
 ptr_Pal_IntroZ:		palp	Pal_IntroZ,$FB20,$30		; $15 (21) - IntroZ
 ptr_Pal_Tropic:		palp	Pal_Tropic,$FB20, $30		; $16 (22) - Tropic
-ptr_Menu_Palette        palp    Menu_Palette,$FB00,$40          ; $17 (23) - S2 style level select palette
-ptr_Pal_Black           palp    Pal_Black,$FB00,$40             ; $18 (24) - S2 style level select palette
+ptr_Pal_Menu        	palp    Pal_Menu,$FB00,$40          	; $17 (23) - In Game Menu
+ptr_Pal_Black           palp    Pal_Black,$FB00,$40             ; $18 (24) - Pure Black
 			even
 
 
@@ -62,6 +62,6 @@ palid_Ending:		equ (ptr_Pal_Ending-PalPointers)/8
 palid_HUBZ:		equ (ptr_Pal_HUBZ-PalPointers)/8
 palid_IntroZ:		equ (ptr_Pal_IntroZ-PalPointers)/8
 palid_Tropic:		equ (ptr_Pal_Tropic-PalPointers)/8
-palid_Menu_Palette:	equ (ptr_Menu_Palette-PalPointers)/8
+palid_Menu:		equ (ptr_Pal_Menu-PalPointers)/8
 palid_Black:		equ (ptr_Pal_Black-PalPointers)/8
 
