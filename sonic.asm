@@ -7616,6 +7616,11 @@ ResumeMusic:	; +++			; XREF: Obj64_Wobble; Sonic_Water; Obj0A_ReduceAir
 
 
 Sonic_WalkSpeed:			; XREF: Sonic_Move
+		move.l	(v_collindex1).w,(v_collindex).w		; MJ: load first collision data location
+		tst.b	(v_layer).w			; MJ: is second collision set to be used?
+		beq.s	@first					; MJ: if not, branch
+		move.l	(v_collindex2).w,(v_collindex).w		; MJ: load second collision data location
+@first:
 		move.l	obX(a0),d3
 		move.l	obY(a0),d2
 		move.w	obVelX(a0),d1
@@ -7671,6 +7676,11 @@ loc_14D3C:
 
 
 sub_14D48:				; XREF: Sonic_Jump
+		move.l	(v_collindex1).w,(v_collindex).w		; MJ: load first collision data location
+		tst.b	(v_layer).w			; MJ: is second collision set to be used?
+		beq.s	@first					; MJ: if not, branch
+		move.l	(v_collindex2).w,(v_collindex).w		; MJ: load second collision data location
+@first:
 		move.b	d0,(v_anglebuffer).w
 		move.b	d0,($FFFFF76A).w
 		addi.b	#$20,d0
