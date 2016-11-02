@@ -3215,11 +3215,19 @@ ColIndexLoad:				; XREF: GM_Level
 		moveq	#0,d0
 		move.b	(v_zone).w,d0
 		lsl.w	#$03,d0					; MJ: multiply by 8 not 4
-		move.l	ColPointers(pc,d0.w),($FFFFFFD0).w	; MJ: get first collision set
-		add.w	#$04,d0					; MJ: increase to next location
-		move.l	ColPointers(pc,d0.w),($FFFFFFD4).w	; MJ: get second collision set
-		lsl.w	#2,d0
+		move.l	ColPointers(pc,d0.w),(v_collindex1).w	; MJ: get first collision set
+;		lsl.w	#2,d0
 		move.l	ColPointers(pc,d0.w),(v_collindex).w
+		add.w	#$04,d0					; MJ: increase to next location
+		move.l	ColPointers(pc,d0.w),(v_collindex2).w	; MJ: get second collision set
+
+		moveq	#0,d0
+		move.b	(v_zone).w,d0
+		mulu	#12,d0
+		lea		CollisionArrays(pc,d0.w),a3		; get per zone collision array
+		move.l	(a3)+,(v_collarray_normal).w
+		move.l	(a3)+,(v_collarray_rotated).w
+		move.l	(a3)+,(v_anglemap).w
 		rts	
 ; End of function ColIndexLoad
 
@@ -3227,12 +3235,7 @@ ColIndexLoad:				; XREF: GM_Level
 ; ---------------------------------------------------------------------------
 ; Collision index pointers
 ; ---------------------------------------------------------------------------
-ColPointers:; 	dc.l Col_GHZ
-; 		dc.l Col_LZ
-; 		dc.l Col_MZ
-; 		dc.l Col_SLZ
-; 		dc.l Col_SYZ
-; 		dc.l Col_SBZ
+ColPointers:
 	dc.l Col_GHZ_1                    ; MJ:
 	dc.l Col_GHZ_2
 	dc.l Col_LZ_1
@@ -3253,6 +3256,22 @@ ColPointers:; 	dc.l Col_GHZ
 	dc.l Col_IntroZ_2
 	dc.l Col_Tropic_1
 	dc.l Col_Tropic_2
+; ===========================================================================
+; ---------------------------------------------------------------------------
+; Collision array per zone
+; ---------------------------------------------------------------------------
+CollisionArrays:	
+	dc.l	CollArray1,CollArray2,AngleMap ;ghz
+	dc.l	CollArray1,CollArray2,AngleMap ;lz
+	dc.l	CollArray1,CollArray2,AngleMap ;mz
+	dc.l	CollArray1S1,CollArray2S1,AngleMapS1 ;slz
+	dc.l	CollArray1S1,CollArray2S1,AngleMapS1 ;syz
+	dc.l	CollArray1S1,CollArray2S1,AngleMapS1 ;sbz
+	dc.l	CollArray1,CollArray2,AngleMap ;ending
+	dc.l	CollArray1S1,CollArray2S1,AngleMapS1 ;hub
+	dc.l	CollArray1S1,CollArray2S1,AngleMapS1 ;intro
+	dc.l	CollArray1S1,CollArray2S1,AngleMapS1 ;tropic
+
 		include	"_inc\Oscillatory Routines.asm"
 
 ; ---------------------------------------------------------------------------
@@ -4019,8 +4038,8 @@ End_LoadData:
 		bsr.w	LoadTilesFromStart
 	;	move.l	#Col_GHZ,(v_collindex).w ; load collision index
 	;	move.l	#Col_GHZ,($FFFFF796).w ; load collision	index   ; MJ's version of the above line
-		move.l	#Col_GHZ_1,($FFFFFFD0).w			; MJ: Set first collision for ending
-		move.l	#Col_GHZ_2,($FFFFFFD4).w			; MJ: Set second collision for ending
+		move.l	#Col_GHZ_1,(v_collindex1).w			; MJ: Set first collision for ending
+		move.l	#Col_GHZ_2,(v_collindex2).w			; MJ: Set second collision for ending
 		move	#$2300,sr
 		lea	(Kos_EndFlowers).l,a0 ;	load extra flower patterns
 		lea	($FFFF9400).w,a1 ; RAM address to buffer the patterns
@@ -5381,7 +5400,7 @@ LoadZoneTiles:
 		move.w	d7,-(sp)			; Store d7 in the Stack
 		move.b	#$C,(v_vbla_routine).w
 		bsr.w	WaitForVBla
-		bsr.w	RunPLC
+		jsr	RunPLC
 		move.w	(sp)+,d7			; Restore d7 from the Stack
 		move.w	#$800,d3			; Force the DMA transfer length to be $1000/2 (the first cycle is dynamic because the art's DMA'd backwards)
 		dbf		d7,@loop			; Loop for each $1000 bytes the decompressed art is
@@ -9665,6 +9684,12 @@ AngleMap:	incbin	"collide\Angle Map.bin"
 CollArray1:	incbin	"collide\Collision Array (Normal).bin"
 		even
 CollArray2:	incbin	"collide\Collision Array (Rotated).bin"
+		even
+AngleMapS1:	incbin	"collide\Angle Map Sonic 1.bin"
+		even
+CollArray1S1:	incbin	"collide\Collision Array (Normal) Sonic 1.bin"
+		even
+CollArray2S1:	incbin	"collide\Collision Array (Rotated) Sonic 1.bin"
 		even
 Col_GHZ_1:	incbin	collide\ghz1.bin	; GHZ index 1
 		even

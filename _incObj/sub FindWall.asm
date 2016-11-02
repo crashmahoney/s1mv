@@ -49,7 +49,8 @@ loc_14B2C:
 		move.b	(a2,d0.w),d0    ; MJ: load correct colision ID based on the block ID
 		andi.w	#$FF,d0     ; MJ: keep within FF
 		beq.s	loc_14B1E    ; MJ: if it's null, branch
-		lea	(AngleMap).l,a2				; MJ: load angle map data to a2
+	;	lea	(AngleMap).l,a2				; MJ: load angle map data to a2
+		movea.l	(v_anglemap).w,a2
 		move.b	(a2,d0.w),(a4)    ; MJ: load angle set location based on collision ID
 		lsl.w	#4,d0     ; MJ: multiply by 10
 		move.w	d2,d1					; MJ: load Y position
@@ -71,7 +72,8 @@ loc_14B5A:
 loc_14B62:
 		andi.w	#$F,d1
 		add.w	d0,d1
-		lea	(CollArray2).l,a2
+	;	lea	(CollArray2).l,a2
+		movea.l	(v_collarray_rotated).w,a2
 		move.b	(a2,d1.w),d0
 		ext.w	d0
 		eor.w	d6,d4
@@ -136,7 +138,8 @@ loc_14BD4:
 		move.b	(a2,d0.w),d0
 		andi.w	#$FF,d0
 		beq.s	loc_14BC6
-		lea	(AngleMap).l,a2
+	;	lea	(AngleMap).l,a2				; MJ: load angle map data to a2
+		movea.l	(v_anglemap).w,a2
 		move.b	(a2,d0.w),(a4)
 		lsl.w	#4,d0
 		move.w	d2,d1
@@ -157,7 +160,8 @@ loc_14C02:
 loc_14C0A:
 		andi.w	#$F,d1
 		add.w	d0,d1
-		lea	(CollArray2).l,a2
+	;	lea	(CollArray2).l,a2
+		movea.l	(v_collarray_rotated).w,a2
 		move.b	(a2,d1.w),d0
 		ext.w	d0
 		eor.w	d6,d4
