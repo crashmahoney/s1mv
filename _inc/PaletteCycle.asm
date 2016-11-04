@@ -135,7 +135,7 @@ PCycLZ_Seq:	dc.b 1,	0, 0, 1, 0, 0, 1, 0
 PCycle_MZ:				; XREF: PCycle_Index
 		subq.w	#1,(v_pcyc_time).w
 		bpl.s	@rts
-		move.w	#7,(v_pcyc_time).w
+		move.w	#3,(v_pcyc_time).w
 		move.w	(v_pcyc_num).w,d0
 		addq.w	#1,d0
 		cmpi.w	#6,d0

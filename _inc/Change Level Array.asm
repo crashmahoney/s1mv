@@ -303,7 +303,7 @@ TopData:
 		dc.w	@tropz4-TopData
 
            			;max x pos	; dontstopmusic y-pos,  xoffset   bottom   routine new level
-@ghz1:		dc.w		$FFFF,		$FFFF,  	$07c0,   -$1600,   $0720,    $0000,   $0001		; ghz2
+@ghz1:		dc.w		$FFFF,		$FFFF,  	$07D0,   -$1600,   $0720,    $0000,   $0001		; ghz2
 @ghz2:
 @ghz3:
 @ghz4:
