@@ -93,7 +93,7 @@ WaitForPLC:
 @dotile:	
 		moveq	#0,d0
 		move.b	(a1)+,d0			; get tile id to draw
-		beq.s	@nexttile			; if blank tile, skip
+	;	beq.s	@nexttile			; if blank tile, skip
 
 		btst	d4,(a0)				; test current bit
 		beq.s	@nexttile			; if 0, branch

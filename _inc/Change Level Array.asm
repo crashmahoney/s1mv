@@ -43,7 +43,7 @@ RightData:
 		dc.w	@tropz4-RightData
 
            			;max y pos	; dontstopmusic x-pos,  yoffset   bottom   routine new level
-@ghz1:  	dc.w		$0355,		$0000,  	$0002,   $0220,   $07FF,    $0000,   $0200		; mz1
+@ghz1:  	dc.w		$F355,		$0000,  	$0002,   $0220,   $07FF,    $0000,   $0200		; mz1
 	 		dc.w		$FFFF,		$0000,  	$0002,   $0220,   $07FF,    $0000,   $0300		; slz1
 @ghz2:
 @ghz3:
