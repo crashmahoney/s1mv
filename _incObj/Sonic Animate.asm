@@ -36,7 +36,6 @@ Sonic_Animate:				; XREF: Obj01_Control; et al
 		moveq	#0,d1
 		move.b	obAniFrame(a0),d1 ; load current frame number
 		move.b	1(a1,d1.w),d0	; read sprite number from script
-;		bmi.s	@end_FF		; if animation is complete, branch
 		cmpi.b	#$F0,d0		; +++ changed to increase animation frames allowed
 		bcc.s	@end_FF	        ; +++ if animation is complete, branch
 
@@ -76,8 +75,6 @@ Sonic_Animate:				; XREF: Obj01_Control; et al
 ; ===========================================================================
 
 @walkrunroll:
-		subq.b	#1,obTimeFrame(a0) ; subtract 1 from frame duration
-		bpl.s	@delay		; if time remains, branch
 		tst.b	flip_angle(a0)		; is sonic tumbling?
 		bne.w	SAnim_Tumble		; if so, branch
 		addq.b	#1,d0		; is the start flag = $FF ?
@@ -109,10 +106,10 @@ Sonic_Animate:				; XREF: Obj01_Control; et al
 
 	@nomodspeed:
 		tst.b   (v_homingtimer).w ; currently light dashing?
-                bne.s   @animatelightdash     ; if so, branch
+		bne.w   @animatelightdash     ; if so, branch
 
-                tst.b   (f_supersonic).w   ; has sonic gone super?
-                bne.s   @animatesuper      ; if so, branch
+		tst.b   (f_supersonic).w   ; has sonic gone super?
+		bne.s   @animatesuper      ; if so, branch
 ; ===========================================================================
 ; Sonic normal amimations
 		lea	(SonAni_Dash).l,a1 ; use Dashing animation
@@ -131,6 +128,23 @@ Sonic_Animate:				; XREF: Obj01_Control; et al
 	@running:
 		add.b	d0,d0
 		move.b	d0,d3
+@getwalkrunframe:
+		moveq	#0,d1
+		move.b	obAniFrame(a0),d1 ; load current frame number
+		move.b	1(a1,d1.w),d0	; read sprite number from script
+		cmpi.b	#$FF,d0
+		bne.s	@loc_12742
+		move.b	#0,obAniFrame(a0) ; restart the animation
+		move.b	1(a1),d0	; read sprite number
+
+@loc_12742:
+		move.b	d0,obFrame(a0)	; load sprite number
+		add.b	d3,obFrame(a0)	; modify frame number
+
+
+		subq.b	#1,obTimeFrame(a0) ; subtract 1 from frame duration
+		bpl.s	@rts		; if time remains, branch
+
 		neg.w	d2
 		addi.w	#$800,d2
 		bpl.s	@belowmax
@@ -139,8 +153,7 @@ Sonic_Animate:				; XREF: Obj01_Control; et al
 	@belowmax:
 		lsr.w	#8,d2
 		move.b	d2,obTimeFrame(a0) ; modify frame duration
-		bsr.w	@loadframe
-		add.b	d3,obFrame(a0)	; modify frame number
+		addq.b	#1,obAniFrame(a0) ; next frame number
 	@rts:
 		rts	
 ; ===========================================================================
@@ -149,36 +162,33 @@ Sonic_Animate:				; XREF: Obj01_Control; et al
 		lea	(SonAni_SupRun).l,a1 ; use running animation
 		cmpi.w	#$800,d2	; is Sonic below running speed?
 		bcs.s	@superwalk	; if yes, branch
-	        lsr.b	#1,d0
-                bra.s   @superrunning
-        @superwalk:
+		lsr.b	#1,d0
+		bra.s   @superrunning
+	@superwalk:
 		lea	(SonAni_SupWalk).l,a1 ; use walking animation
 		add.b	d0,d0
 		add.b	d0,d0
 
 	@superrunning:
 		move.b	d0,d3
-		neg.w	d2
-		addi.w	#$800,d2
-		bpl.s	@belowmax
-		moveq	#0,d2		; max animation speed
-                bra.s   @belowmax       ;
+		bra.s   @getwalkrunframe       ;
 ; ===========================================================================
 ; light dash animations
 @animatelightdash:
 		lea	(SonAni_SupRun).l,a1 ; use super sonic running animation
-	        lsr.b	#1,d0
+		lsr.b	#1,d0
 		move.b	d0,d3
-		neg.w	d2
-		addi.w	#$800,d2
-		bpl.s	@belowmax
-		moveq	#0,d2		; max animation speed
-                bra.s   @belowmax       ;
+		bra.s   @getwalkrunframe       ;
+
 ; ===========================================================================
 
 @rolljump:
-		addq.b	#1,d0		; is animation rolling/jumping?
-		bne.s	@push		; if not, branch
+		move.b	obStatus(a0),d1
+		andi.b	#1,d1
+		andi.b	#$FC,obRender(a0)
+		or.b	d1,obRender(a0)
+		subq.b	#1,obTimeFrame(a0) ; subtract 1 from frame duration
+		bpl.w	@delay		; if time remains, branch
 		move.w	obInertia(a0),d2 ; get Sonic's speed
 		bpl.s	@nomodspeed2
 		neg.w	d2
@@ -198,14 +208,12 @@ Sonic_Animate:				; XREF: Obj01_Control; et al
 	@belowmax2:
 		lsr.w	#8,d2
 		move.b	d2,obTimeFrame(a0) ; modify frame duration
-		move.b	obStatus(a0),d1
-		andi.b	#1,d1
-		andi.b	#$FC,obRender(a0)
-		or.b	d1,obRender(a0)
 		bra.w	@loadframe
 ; ===========================================================================
 
 @push:
+		subq.b	#1,obTimeFrame(a0) ; subtract 1 from frame duration
+		bpl.w	@delay		; if time remains, branch
 		move.w	obInertia(a0),d2 ; get Sonic's speed
 		bmi.s	@negspeed
 		neg.w	d2
@@ -223,10 +231,6 @@ Sonic_Animate:				; XREF: Obj01_Control; et al
         beq.s   @notsuperpush          ; if not, branch
 		lea		(SonAni_SupPush).l,a1   ; load super sonic animation
     @notsuperpush:
-		move.b	obStatus(a0),d1
-		andi.b	#1,d1
-		andi.b	#$FC,obRender(a0)
-		or.b	d1,obRender(a0)
 		bra.w	@loadframe
 
 
