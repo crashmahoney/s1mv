@@ -437,11 +437,11 @@ loc_1A216:
 		cmpi.w	#$2790,(v_player+obX).w
 		blt.s	loc_1A23A
 		move.b	#1,(f_lockctrl).w
-		move.w	#0,(v_jpadhold2).w
+		move.l	#0,(v_P1Held).w
 		clr.w	(v_player+obInertia).w
 		tst.w	obVelY(a0)
 		bpl.s	loc_1A248
-		move.w	#$100,(v_jpadhold2).w
+		move.l	#$100,(v_P1Held).w
 
 loc_1A23A:
 		cmpi.w	#$27E0,(v_player+obX).w

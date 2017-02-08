@@ -18,6 +18,7 @@ StartupSoundtest= 1      ; enable cheat, hold a b or c before the sega screen ap
 SkipChecksum    = 1      ; skip checksum check at startup
 DebugPathSwappers: = 0
 VladDebug 		= 0		; 0 for flamewing debugger. 1 for vladikcomper
+CTRL_ENABLE_MULTI =	0; enable multitap (Team Player) and EA 4-way play.
 ; --------------------------------------------------------------------------
 
 	include	"Variables.asm"
@@ -276,7 +277,7 @@ GameInit:
 	        jsr	(InitDMAQueue).l
         	bsr.w	VDPSetupGame
 		bsr.w	SoundDriverLoad
-		bsr.w	JoypadInit
+;		bsr.w	JoypadInit
 		move.b	#id_Sega,(v_gamemode).w ; set Game Mode to Sega Screen
 
 MainGameLoop:
@@ -723,52 +724,118 @@ HBlank2:        ; background colour gradient
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
 
-JoypadInit:				; XREF: GameClrRAM
-		stopZ80
-		waitZ80
-		moveq	#$40,d0
-		move.b	d0,($A10009).l	; init port 1 (joypad 1)
-		move.b	d0,($A1000B).l	; init port 2 (joypad 2)
-		move.b	d0,($A1000D).l	; init port 3 (expansion)
-		startZ80
-		rts	
-; End of function JoypadInit
+InitPads:
+		lea	v_Ctrl1State.w,a0
+		clr.w	(a0)
+		lea	$A10003,a1
+		bsr.s	.ctrl
+		addq.w	#2,a1
 
-; ---------------------------------------------------------------------------
-; Subroutine to	read joypad input, and send it to the RAM
-; ---------------------------------------------------------------------------
+.ctrl	
+		move.b	#CTRL_TH,6(a1)
+		moveq	#0,d2		; th lo
 
-; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
+		move.b	d2,(a1)		; Pull TH line low
+		nop
+		moveq	#CTRL_TH,d3	; th hi
+		move.b	d3,(a1)		; Pull TH line high
+	ctrl_delay			; delay
+		move.b	d2,(a1)		; Pull TH line low
+	ctrl_delay			; delay
+		move.b	d3,(a1)		; Pull TH line high
+	ctrl_delay			; delay
+		move.b	d2,(a1)		; Pull TH line low
+	ctrl_delay			; delay
+
+		move.b	(a1),d0		; 6-BUTTON
+		and.b	#$f,d0
+		seq	d1		; if 6-button, set d1
+		add.b	d1,(a0)+	; (a0) = $FF if 6-button
+	rts
 
 
-ReadJoypads:				; XREF: VBlank, HBlank
-		lea	(v_jpadhold1).w,a0 ; address where joypad states are written
-		lea	($A10003).l,a1	; first	joypad port
-		bsr.s	@read		; do the first joypad
-		addq.w	#2,a1		; do the second	joypad
+ReadJoypads:
+		tst.b	v_PollChgCTRL.w		; are we polling for controller changes?
+		beq.s	.noinit			; if we aren't, skip this code
+		moveq	#7,d0			; we want to run once in 8 frames
+		move.b	$FFFFFE0C+3.w,d0	; and the low byte of VBlank global timer (in Github, it is v_vbla_count+3)
+;		andi.b	#$7,d0
+		beq.w	InitPads		; if counter&7 = 0, re-initialize controllers
 
-	@read:
-		move.b	#0,(a1)
-		nop	
-		nop	
-		move.b	(a1),d0
+.noinit		lea	$A10003,a1
+		lea	v_Ctrl1Held.w,a0
+		lea	v_Ctrl1State.w,a2
+
+		moveq	#CTRL_TH,d3		; TH hi
+		moveq	#0,d2			; TH lo
+		bsr.s	.ctrl3
+		addq.w	#2,a1
+
+.ctrl3	
+		tst.b	(a2)+			; check if is 3 or 6-button pad
+		bmi.s	 .ctrl6			; if 6, branch
+
+		move.b	d2,(a1)			; set TH low
+		moveq	#CTRL_TL|CTRL_TR,d0	; prepare d0
+		nop				; delay
+		and.b	(a1),d0			; and controller port data (start/A)
+		move.b	d3,(a1)			; set TH high
 		lsl.b	#2,d0
-		andi.b	#$C0,d0
-		move.b	#$40,(a1)
-		nop	
-		nop	
-		move.b	(a1),d1
-		andi.b	#$3F,d1
-		or.b	d1,d0
-		not.b	d0
-		move.b	(a0),d1
-		eor.b	d0,d1
-		move.b	d0,(a0)+
-		and.b	d0,d1
-		move.b	d1,(a0)+
-		rts	
-; End of function ReadJoypads
 
+		moveq	#CTRL_TL|CTRL_TR|$F,d1
+		and.b	(a1),d1			; and controller port data (B/C/Dpad)
+		or.b	d1,d0			; Fuse together into one controller bit array
+		not.b	d0
+
+		clr.b	(a0)+			; clear high byte
+		move.b	(a0),d1			; get pressed button data
+		eor.b	d0,d1			; toggle off inputs that are being held
+		move.b	d0,(a0)+		; put held buttons to a0
+		and.b	d0,d1			; only activate buttons that were pressed this frame (but not held)
+
+		clr.b	(a0)+			; clear high byte
+		move.b	d1,(a0)+		; and then save pressed buttons
+
+		rts
+
+.ctrl6
+		move.b	#CTRL_TH,6(a1)
+		move.b	d3,(a1)			; set TH high
+		moveq	#0,d0
+		moveq	#0,d1
+
+		move.b	(a1),d1			; Reading first 6 buttons
+		move.b	d2,(a1)			; set TH low
+		andi.b	#CTRL_TL|CTRL_TR|$F,d1
+
+		move.b	(a1),d0			; Read second 2 buttons
+		move.b	d3,(a1)			; set TH high
+		andi.b	#CTRL_TL|CTRL_TR,d0
+		move.b	d2,(a1)			; set TH low
+		lsl.b	#2,d0
+		move.b	d3,(a1)			; set TH high
+		or.l	d0,d1			; Combine basic 8 buttons and store it to d1
+
+		move.b	d2,(a1)			; set TH low
+	ctrl_delay				; delay
+		move.b	d3,(a1)			; set TH high
+
+		moveq	#$F,d0			; prepare d0
+		nop
+		and.b	(a1),d0			; Read extra buttons
+		move.b	d3,(a1)			; set TH high
+		lsl.w	#8,d0			; Shift it by 8 bits
+		or.w	d1,d0			; Combine it with basic buttons
+		not.w	d0			; Invert basic buttons
+
+		move.w	(a0),d1			; get pressed button data
+		eor.w	d0,d1			; toggle off inputs that are being held
+		move.w	d0,(a0)+		; put held buttons to a0
+		and.w	d0,d1			; only activate buttons that were pressed this frame (but not held)
+		move.w	d1,(a0)+		; and then save pressed buttons
+		rts
+
+	
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
@@ -2280,7 +2347,7 @@ GM_Sega:				; XREF: GameModeArray
 
        ; test for button held, go to sound test
        if StartupSoundtest=1
-		andi.b	#btnABC,(v_jpadhold1).w ; is a button being held?
+		andi.w	#btnABC,(v_Ctrl1Held).w ; is a button being held?
 		beq.s	@nosoundtest	; if not, branch
                 move.b  #$04, (v_levselpage).w  ; choose sound test menu
                 move.b  #$01, (v_menupagestate).l  ; go straight to menu
@@ -2316,6 +2383,8 @@ GM_Sega:				; XREF: GameModeArray
 		ori.b	#$40,d0
 		move.w	d0,($C00004).l
 
+	st	v_PollChgCTRL.w	; enable control polling
+
 Sega_WaitPal:
 		move.b	#2,(v_vbla_routine).w
 		bsr.w	WaitForVBla
@@ -2333,7 +2402,7 @@ Sega_WaitEnd:
 		bsr.w	WaitForVBla
 		tst.w	(v_demolength).w
 		beq.s	Sega_GotoSSRG
-		andi.b	#btnStart,(v_jpadpress1).w ; is Start button pressed?
+		andi.b	#btnStart,(v_Ctrl1Press+1).w ; is Start button pressed?
 		beq.s	Sega_WaitEnd	; if not, branch
 		
 Sega_GotoTitle:
@@ -2533,7 +2602,7 @@ Tit_ChkRegion:
 Tit_EnterCheat:
 		move.w	(v_title_dcount).w,d0
 		adda.w	d0,a0
-		move.b	(v_jpadpress1).w,d0 ; get button press
+		move.w	(v_Ctrl1Press).w,d0 ; get button press
 		andi.b	#btnDir,d0	; read only UDLR buttons
 		cmp.b	(a0),d0		; does button press match the cheat code?
 		bne.s	Tit_ResetCheat	; if not, branch
@@ -2565,7 +2634,7 @@ Tit_ResetCheat:				; XREF: Title_EnterCheat
 		move.w	#0,(v_title_dcount).w ; reset UDLR counter
 
 Tit_CountC:
-		move.b	(v_jpadpress1).w,d0
+		move.w	(v_Ctrl1Press).w,d0
 		andi.b	#btnC,d0	; is C button pressed?
 		beq.s	loc_3230	; if not, branch
 		addq.w	#1,(v_title_ccount).w ; increment C counter
@@ -2573,12 +2642,12 @@ Tit_CountC:
 loc_3230:
 		tst.w	(v_demolength).w
 		beq.w	GotoDemo
-		move.b	(v_jpadpress1).w,d0
+		move.w	(v_Ctrl1Press).w,d0
 		andi.b	#btnB,d0	; is B button pressed?
 		beq.w	@notB	; if not, branch
                 jmp     LoadGame
        @notB:
-		andi.b	#btnStart,(v_jpadpress1).w ; check if Start is pressed
+		andi.b	#btnStart,(v_Ctrl1Press+1).w ; check if Start is pressed
 		beq.w	Tit_MainLoop	; if not, branch
 
 Tit_ChkLevSel:
@@ -2669,7 +2738,7 @@ loc_33B6:				; XREF: loc_33E4
 ; ===========================================================================
 
 loc_33E4:
-		andi.b	#btnStart,(v_jpadpress1).w ; is Start button pressed?
+		andi.b	#btnStart,(v_Ctrl1Press+1).w ; is Start button pressed?
 		bne.w	Tit_ChkLevSel	; if yes, branch
 		tst.w	(v_demolength).w
 		bne.w	loc_33B6
@@ -2832,7 +2901,9 @@ LoadMonitorSRAM:
  ;		move.w	#$8014,($C00004).l	; enable H-interrupts
 ;		move.w	#$8A00+24,(v_hbla_hreg).w ; set palette change position (for water)
 
+
 Level_LoadPal:
+		clr.b	v_PollChgCTRL.w	; disable control polling
 		move.w	#30,(v_air).w
 		move	#$2300,sr
 		moveq	#palid_Sonic,d0
@@ -2949,8 +3020,8 @@ Level_TtlCardLoop:
 		move.b	#id_HUD,(v_objspace+$40).w ; load HUD object
 
 Level_ChkWater:
-		move.w	#0,(v_jpadhold2).w
-		move.w	#0,(v_jpadhold1).w
+		move.l	#0,(v_P1Held).w
+		move.l	#0,(v_Ctrl1Held).w
 		cmpi.b	#id_LZ,(v_zone).w 		; is level LZ?
 		bne.s	Level_LoadObj			; if not, branch
 		move.b	#id_WaterSurface,(v_objspace+$780).w ; load water surface object
@@ -3424,6 +3495,7 @@ GM_Special:				; XREF: GameModeArray
 		move.l	d0,(a1)+
 		dbf	d1,SS_ClrNemRam	; clear	Nemesis	buffer
 
+		clr.b	v_PollChgCTRL.w	; disable control polling
 		clr.b	(f_wtr_state).w
 		clr.w	(f_restart).w
 		moveq	#palid_Special,d0
@@ -3450,7 +3522,7 @@ GM_Special:				; XREF: GameModeArray
 		move.w	#1800,(v_demolength).w
 		tst.b	(f_debugcheat).w ; has debug cheat been entered?
 		beq.s	SS_NoDebug	; if not, branch
-		btst	#bitA,(v_jpadhold1).w ; is A button pressed?
+		btst	#bitA,(v_Ctrl1Held+1).w ; is A button pressed?
 		beq.s	SS_NoDebug	; if not, branch
 		move.b	#1,(f_debugmode).w ; enable debug mode
 
@@ -3469,7 +3541,7 @@ SS_MainLoop:
 		move.b	#$A,(v_vbla_routine).w
 		bsr.w	WaitForVBla
 		bsr.w	MoveSonicInDemo
-		move.w	(v_jpadhold1).w,(v_jpadhold2).w
+		move.l	(v_Ctrl1Held).w,(v_P1Held).w
 		jsr	ExecuteObjects
 		jsr	BuildSprites
 		jsr	SS_ShowLayout
@@ -3503,7 +3575,7 @@ SS_Finish:
 		move.b	#$16,(v_vbla_routine).w
 		bsr.w	WaitForVBla
 		bsr.w	MoveSonicInDemo
-		move.w	(v_jpadhold1).w,(v_jpadhold2).w
+		move.l	(v_Ctrl1Held).w,(v_P1Held).w
 		jsr	ExecuteObjects
 		jsr	BuildSprites
 		jsr	SS_ShowLayout
@@ -3921,6 +3993,7 @@ GM_Continue:				; XREF: GameModeArray
 		move.w	(v_vdp_buffer1).w,d0
 		ori.b	#$40,d0
 		move.w	d0,($C00004).l
+		clr.b	v_PollChgCTRL.w	; disable control polling		
 		bsr.w	PaletteFadeIn
 
 ; ---------------------------------------------------------------------------
@@ -4022,6 +4095,7 @@ GM_Ending:				; XREF: GameModeArray
 		move.w	#$8720,(a6)		; set background colour (line 3; colour 0)
 		move.w	#$8A00+223,(v_hbla_hreg).w ; set palette change position (for water)
 		move.w	(v_hbla_hreg).w,(a6)
+		clr.b	v_PollChgCTRL.w	; disable control polling		
 		move.w	#30,(v_air).w
 		move.w	#id_EndZ<<8,(v_zone).w ; set level number to 0600 (extra flowers)
 		cmpi.b	#6,(v_emeralds).w ; do you have all 6 emeralds?
@@ -4049,7 +4123,7 @@ End_LoadData:
 		bsr.w	PalLoad1	; load Sonic's palette
 		move.w	#bgm_Ending,d0
 		jsr	PlaySound	; play ending sequence music
-		btst	#bitA,(v_jpadhold1).w ; is button A pressed?
+		btst	#bitA,(v_Ctrl1Held+1).w ; is button A pressed?
 		beq.s	End_LoadSonic	; if not, branch
 		move.b	#1,(f_debugmode).w ; enable debug mode
 
@@ -4057,7 +4131,7 @@ End_LoadSonic:
 		move.b	#id_SonicPlayer,(v_objspace).w ; load Sonic object
 		bset	#0,(v_player+obStatus).w ; make Sonic face left
 		move.b	#1,(f_lockctrl).w ; lock controls
-		move.w	#(btnL<<8),(v_jpadhold2).w ; move Sonic to the left
+		move.l	#(btnL<<8),(v_P1Held).w ; move Sonic to the left
 		move.w	#$F800,(v_player+obInertia).w ; set Sonic's speed
 		move.b	#id_HUD,(v_objspace+$40).w ; load HUD object
 		jsr	ObjPosLoad
@@ -4171,7 +4245,7 @@ End_MoveSonic:				; XREF: End_MainLoop
 
 		addq.b	#2,(v_sonicend).w
 		move.b	#1,(f_lockctrl).w ; lock player's controls
-		move.w	#(btnR<<8),(v_jpadhold2).w ; move Sonic to the right
+		move.l	#(btnR<<8),(v_P1Held).w ; move Sonic to the right
 		rts	
 ; ===========================================================================
 
@@ -4184,7 +4258,7 @@ End_MoveSon2:
 		addq.b	#2,(v_sonicend).w
 		moveq	#0,d0
 		move.b	d0,(f_lockctrl).w
-		move.w	d0,(v_jpadhold2).w ; stop Sonic moving
+		move.l	d0,(v_P1Held).w ; stop Sonic moving
 		move.w	d0,(v_player+obInertia).w
 		move.b	#$81,(f_lockmulti).w ; lock controls & position
 		move.b	#3,(v_player+obFrame).w
@@ -4269,6 +4343,7 @@ GM_Credits:				; XREF: GameModeArray
 		bsr.w	AddPLC		; load object graphics
 
 	Cred_SkipObjGfx:
+		clr.b	v_PollChgCTRL.w	; disable control polling	
 		moveq	#plcid_Main2,d0
 		bsr.w	AddPLC		; load standard	level graphics
 		move.w	#120,(v_demolength).w ; display a credit for 2 seconds
@@ -4398,7 +4473,7 @@ TryAg_MainLoop:
 		bsr.w	WaitForVBla
 		jsr	ExecuteObjects
 		jsr	BuildSprites
-		andi.b	#btnStart,(v_jpadpress1).w ; is Start button pressed?
+		andi.b	#btnStart,(v_Ctrl1Press+1).w ; is Start button pressed?
 		bne.s	TryAg_Exit	; if yes, branch
 		tst.w	(v_demolength).w ; has 30 seconds elapsed?
 		beq.s	TryAg_Exit	; if yes, branch
@@ -7220,7 +7295,7 @@ Sonic_Control:	; Routine 2
 		move.b	#id_Roll,obAnim(a0) ; use "jumping" animation
 		
 	@chkLR:
-		move.b	(v_jpadhold2).w,d0	; get jpad
+		move.w	(v_P1Held).w,d0	; get jpad
 		and.b	(obWallJump+1)(a0),d0	; compare jpad to stored L,R button states
 		bne.s	@skip		; if still held, branch
 		move.b	#0,obWallJump(a0)	; clear wall jump flag and button states
@@ -7248,7 +7323,7 @@ Sonic_Control:	; Routine 2
 
 		tst.w	(f_debugmode).w	; is debug cheat enabled?
 		beq.s	loc_12C58	; if not, branch
-		btst	#bitB,(v_jpadpress1).w ; is button B pressed?
+		btst	#bitB,(v_Ctrl1Press+1).w ; is button B pressed?
 		beq.s	loc_12C58	; if not, branch
 		move.w	#1,(v_debuguse).w ; change Sonic into a ring/item
 		clr.b	(f_lockctrl).w
@@ -7258,7 +7333,7 @@ Sonic_Control:	; Routine 2
 loc_12C58:
 		tst.b	(f_lockctrl).w	; are controls locked?
 		bne.s	loc_12C64	; if yes, branch
-		move.w	(v_jpadhold1).w,(v_jpadhold2).w ; enable joypad control
+		move.l	(v_Ctrl1Held).w,(v_P1Held).w ; enable joypad control
 
 loc_12C64:
 		btst	#0,(f_lockmulti).w ; are controls locked?

@@ -232,7 +232,7 @@ WallJump:
 		beq.s	@return
 		tst.b	obVelY(a0)
 		bmi.s	@return
-		move.b	(v_jpadhold2).w,d0	; get jpad
+		move.w	(v_P1Held).w,d0	; get jpad
 		andi.b	#(btnL|btnR),d0	; keep just L and R state
 		beq.s	@return			; fail if neither are pressed
 		cmpi.b	#(btnL|btnR),d0	; fail if both are pressed

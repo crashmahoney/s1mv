@@ -305,3 +305,9 @@ mvabs	macro ;source, destination
 	neg.\0	\2
 @\@skip:
     endm
+
+
+; this instruction is basically 2 nops, except it affects cc too and is 2 bytes shorter
+ctrl_delay	macro
+	or.l	d0,d0
+	endm    

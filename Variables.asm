@@ -17,6 +17,40 @@ Ring_end_addr_ROM	= $FFFF9884		; long ; address in the ring layout of the first 
 Ring_start_addr_RAM = $FFFF9888		; word ; address in the ring status table of the first ring whose X position is >= camera X position - 8
 Rings_manager_routine	= $FFFF9889	; byte
 
+
+
+	rsset $FFFF9600
+
+	ifne CTRL_ENABLE_MULTI
+CTRL_STORE_REGS REG d0-d4/a0-a2
+v_Ctrl1Held	rs.w 1		; held buttons for controller 1
+v_Ctrl1Press	rs.w 1		; pressed buttons for controller 1
+v_Ctrl1BHeld	rs.w 1		; held buttons for multitap 1B
+v_Ctrl1BPress	rs.w 1		; pressed buttons for multitap 1B
+v_Ctrl1CHeld	rs.w 1		; hel§d buttons for multitap 1C
+v_Ctrl1CPress	rs.w 1		; pressed buttons for multitap 1C
+v_Ctrl1DHeld	rs.w 1		; held buttons for multitap 1D
+v_Ctrl1DPress	rs.w 1		; pressed buttons for multitap 1D
+v_Ctrl2Held	rs.w 1		; held buttons for controller 2
+v_Ctrl2Press	rs.w 1		; pressed buttons for controller 2
+v_Ctrl2BHeld	rs.w 1		; held buttons for multitap 2B
+v_Ctrl2BPress	rs.w 1		; pressed buttons for multitap 2B
+v_Ctrl2CHeld	rs.w 1		; held buttons for multitap 2C
+v_Ctrl2CPress	rs.w 1		; pressed buttons for multitap 2C
+v_Ctrl2DHeld	rs.w 1		; held buttons for multitap 2D
+v_Ctrl2DPress	rs.w 1		; pressed buttons for multitap 2D
+v_Ctrl1State	rs.b 2		; ctrl 1 and 2 state (0 = 3-button, $FF = 6-button, $FE - multitap, $EA = EA 4-way play)
+v_Ctrl1MTypes	rs.b 2		; multitap ctrl types (2 bits per ctrl, 00 = 3-btn, 01 = 6-btn, 11 = none)
+	else
+CTRL_STORE_REGS REG d0-d3/a0-a2
+v_Ctrl1Held	rs.w 1		; held buttons for controller 1
+v_Ctrl1Press	rs.w 1		; pressed buttons for controller 1
+v_Ctrl2Held	rs.w 1		; held buttons for controller 2
+v_Ctrl2Press	rs.w 1		; pressed buttons for controller 2
+v_Ctrl1State	rs.b 2		; ctrl 1 and 2 state (0 = 3-button, $FF = 6-button)
+	endif
+
+
 v_LZ_Waterline_Buffer: = $FFFF9890	; $300 bytes, dma buffer for lz waterline, used in LZ only
 v_minimap_buffer = v_LZ_Waterline_Buffer	;$200 bytes
 Kos_queue_ram =			$FFFF9B90	; formerly $FFFFF460
@@ -123,10 +157,11 @@ v_worldmap_Y	= $FFFFF49F		; current level's top boundary position in world map s
 v_worldmap	= $FFFFF4A0		; $160 bytes, 1 bit for each square of the 80x35 map that has been visited		
 
 v_gamemode:	= $FFFFF600		; game mode (00=Sega; 04=Title; 08=Demo; 0C=Level; 10=SS; 14=Cont; 18=End; 1C=Credit; +8C=PreLevel)
-v_jpadhold2:	= $FFFFF602		; joypad input - held, duplicate
-v_jpadpress2:	= $FFFFF603		; joypad input - pressed, duplicate
-v_jpadhold1:	= $FFFFF604		; joypad input - held
-v_jpadpress1:	= $FFFFF605		; joypad input - pressed
+v_PollChgCTRL =	$FFFFF601	; nonzero if we want to poll CTRL changes
+v_P1Held =	$FFFFF602	; held buttons for player 1
+v_P1Press =	$FFFFF604	; pressed buttons for player 1
+v_P2Held =	$FFFFF606	; held buttons for player 2
+v_P2Press =	$FFFFF608	; pressed buttons for player 2
 
 v_vdp_buffer1:	= $FFFFF60C		; VDP instruction buffer (2 bytes)
 
@@ -374,8 +409,9 @@ v_screenYstretch = $FFFFFFA0
 v_teleportin	= $FFFFFFA4			; set when sonic needs to beam into the new level
 v_waterline_difference = $FFFFFFA6  ; 2 bytes; The difference between the effective BG Y and the actual BG Y difference is what's used to calculate how the water line should be drawn
 v_HCZ_tileanim	=	$FFFFFFA8		; 4 bytes; some part of an animation array from s3???
-			; ^^^ can use values between here vvv
-
+v_title_dcount:	= $FFFFFFAC		; number of times the d-pad is pressed on title screen (2 bytes)
+v_title_ccount:	= $FFFFFFAE		; number of times C is pressed on title screen (2 bytes)
+f_dontstopmusic: = $FFFFFFB0    	; +++ let music continue from last act	
 v_lamp_xspeed:   = $FFFFFFB2    	; +++ saved x speed when moving between acts     (2 bytes)
 v_lamp_yspeed:   = $FFFFFFB4    	; +++ saved y speed when moving between acts     (2 bytes)
 v_lamp_inertia:  = $FFFFFFB6    	; +++ saved inertia when moving between acts     (2 bytes)
@@ -403,11 +439,8 @@ Slow_Motion_Flag      equ $FFFFFFE1
 f_debugcheat:	= $FFFFFFE2		; debug mode cheat flag
 Debug_Mode_Flag       equ $FFFFFFE2
 f_creditscheat:	= $FFFFFFE3		; hidden credits & press start cheat flag
-v_title_dcount:	= $FFFFFFE4		; number of times the d-pad is pressed on title screen (2 bytes)
-v_title_ccount:	= $FFFFFFE6		; number of times C is pressed on title screen (2 bytes)
-v_cpumeter	= $FFFFFFE7				; is the cpu meter enabled?
-f_dontstopmusic: = $FFFFFFE8    	; +++ let music continue from last act
 
+v_cpumeter	= $FFFFFFE4		; is the cpu meter enabled?
 			; ^^^ can use values between here vvv
 
 f_demo:			= $FFFFFFF0		; demo mode flag (0 = no			; 1 = yes			; $8001 = ending) (2 bytes)

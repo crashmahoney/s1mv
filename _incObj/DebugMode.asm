@@ -72,11 +72,11 @@ Debug_Action:	; Routine 2
 Debug_Control:
 		moveq	#0,d4
 		move.w	#1,d1
-		move.b	(v_jpadpress1).w,d4
+		move.w	(v_Ctrl1Press).w,d4
 		andi.w	#btnDir,d4	; is up/down/left/right	pressed?
 		bne.s	@dirpressed	; if yes, branch
 
-		move.b	(v_jpadhold1).w,d0
+		move.w	(v_Ctrl1Held).w,d0
 		andi.w	#btnDir,d0	; is up/down/left/right	held?
 		bne.s	@dirheld	; if yes, branch
 
@@ -94,7 +94,7 @@ Debug_Control:
 		move.b	#-1,(v_debugyspeed).w
 
 @dirpressed:
-		move.b	(v_jpadhold1).w,d4
+		move.w	(v_Ctrl1Held).w,d4
 
 loc_1D01C:
 		moveq	#0,d1
@@ -135,9 +135,9 @@ loc_1D066:
 		move.l	d3,obX(a0)
 
 Debug_ChgItem:
-		btst	#bitA,(v_jpadhold1).w ; is button A pressed?
+		btst	#bitA,(v_Ctrl1Held+1).w ; is button A pressed?
 		beq.s	@createitem	; if not, branch
-		btst	#bitC,(v_jpadpress1).w ; is button C pressed?
+		btst	#bitC,(v_Ctrl1Press+1).w ; is button C pressed?
 		beq.s	@nextitem	; if not, branch
 		subq.b	#1,(v_debugitem).w ; go back 1 item
 		bcc.s	@display
@@ -146,7 +146,7 @@ Debug_ChgItem:
 ; ===========================================================================
 
 @nextitem:
-		btst	#bitA,(v_jpadpress1).w ; is button A pressed?
+		btst	#bitA,(v_Ctrl1Press+1).w ; is button A pressed?
 		beq.s	@createitem	; if not, branch
 		addq.b	#1,(v_debugitem).w ; go forwards 1 item
 		cmp.b	(v_debugitem).w,d6
@@ -158,7 +158,7 @@ Debug_ChgItem:
 ; ===========================================================================
 
 @createitem:
-		btst	#bitC,(v_jpadpress1).w ; is button C pressed?
+		btst	#bitC,(v_Ctrl1Press+1).w ; is button C pressed?
 		beq.s	@backtonormal	; if not, branch
 		jsr	FindFreeObj
 		bne.s	@backtonormal
@@ -176,7 +176,7 @@ Debug_ChgItem:
 ; ===========================================================================
 
 @backtonormal:
-		btst	#bitB,(v_jpadpress1).w ; is button B pressed?
+		btst	#bitB,(v_Ctrl1Press+1).w ; is button B pressed?
 		beq.s	@stayindebug	; if not, branch
 		moveq	#0,d0
 		move.w	d0,(v_debuguse).w ; deactivate debug mode

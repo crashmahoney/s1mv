@@ -16,10 +16,10 @@ Sonic_DownAttack:
  @chkbuttons:               
         tst.b   (v_abil_down).w                 ; do you have this ability?
         beq.s   @rts
-	move.b	(v_jpadhold2).w,d1
+	move.w	(v_P1Held).w,d1
 	andi.b	#btnDn,d1	              ; is down held?
 	beq.s	@rts
-	move.b	(v_jpadpress2).w,d1
+	move.w	(v_P1Press).w,d1
 	andi.b	#btnABC,d1	              ; is AB or C pressed?
 	bne.s	@doattack
 @rts:
