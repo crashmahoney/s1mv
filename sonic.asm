@@ -748,6 +748,7 @@ InitPads:
 	ctrl_delay			; delay
 
 		move.b	(a1),d0		; 6-BUTTON
+		move.b	d3,(a1)		; Pull TH line high
 		and.b	#$f,d0
 		seq	d1		; if 6-button, set d1
 		add.b	d1,(a0)+	; (a0) = $FF if 6-button
