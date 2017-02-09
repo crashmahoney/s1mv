@@ -18,7 +18,6 @@ StartupSoundtest= 1      ; enable cheat, hold a b or c before the sega screen ap
 SkipChecksum    = 1      ; skip checksum check at startup
 DebugPathSwappers: = 0
 VladDebug 		= 0		; 0 for flamewing debugger. 1 for vladikcomper
-CTRL_ENABLE_MULTI =	0; enable multitap (Team Player) and EA 4-way play.
 ; --------------------------------------------------------------------------
 
 	include	"Variables.asm"
