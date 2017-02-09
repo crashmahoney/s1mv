@@ -71,6 +71,44 @@ bitL:		equ 2
 bitDn:		equ 1
 bitUp:		equ 0
 
+
+	rsset 0
+JbU		rs.b 1	; bit Up
+JbD		rs.b 1	; bit Down
+JbL		rs.b 1	; bit Left
+JbR		rs.b 1	; bit Right
+JbB		rs.b 1	; bit B
+JbC		rs.b 1	; bit C
+JbA		rs.b 1	; bit A
+JbS		rs.b 1	; bit Start
+JbZ		rs.b 1	; bit Z
+JbY		rs.b 1	; bit Y
+JbX		rs.b 1	; bit X
+JbM		rs.b 1	; bit Mode
+
+J_U =	(1<<JbU)	; Up
+J_D =	(1<<JbD)	; Down
+J_L =	(1<<JbL)	; Left
+J_R =	(1<<JbR)	; Right
+J_P =	J_U|J_D|J_L|J_R	; UDLR
+J_B =	(1<<JbB)	; B
+J_C =	(1<<JbC)	; C
+J_A =	(1<<JbA)	; A
+J_ABC =	J_A|J_B|J_C	; ABC
+J_S =	(1<<JbS)	; Start
+J_Z =	(1<<JbZ)	; Z
+J_Y =	(1<<JbY)	; Y
+J_X =	(1<<JbX)	; X
+J_XYZ =	J_X|J_Y|J_Z	; XYZ
+J_M =	(1<<JbM)	; Mode
+
+CTRLbTH =	6		; TH pin bit
+CTRLbTR =	5		; TR pin bit
+CTRLbTL =	4		; TL pin bit
+CTRL_TH =	1<<CTRLbTH	; TH pin
+CTRL_TR =	1<<CTRLbTR	; TR pin
+CTRL_TL =	1<<CTRLbTL	; TL pin
+
 ; Object variables
 obRender:	equ 1	; bitfield for x/y flip, display mode
 obGfx:		equ 2	; palette line & VRAM setting (2 bytes)

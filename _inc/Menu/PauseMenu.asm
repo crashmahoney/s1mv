@@ -193,7 +193,7 @@ PauseMenu_Main_Loop:
 		bsr.w   PauseMenu_DeformLayers
 		jsr	(Process_Kos_Module_Queue).l
 
-		move.b  (v_jpadpress1).w, D0
+		move.w  (v_Ctrl1Press).w, D0
 		andi.b	#btnStart,d0	              ; is start pressed?
 		bne.s   @startpressed
 		bra     PauseMenu_Main_Loop
