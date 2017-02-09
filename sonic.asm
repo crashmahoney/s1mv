@@ -757,10 +757,10 @@ InitPads:
 
 ReadJoypads:
 		tst.b	v_PollChgCTRL.w		; are we polling for controller changes?
-		beq.s	.noinit			; if we aren't, skip this code
-		move.b	$FFFFFE0C+3.w,d0	; and the low byte of VBlank global timer (in Github, it is v_vbla_count+3)
-		andi.b	#$7,d0			; we want to run once in 8 frames
-		beq.w	InitPads		; if counter&7 = 0, re-initialize controllers
+		beq.s	.noinit				; if we aren't, skip this code
+		moveq	#$7,d0				; we want to run once in 8 frames
+		and.b	$FFFFFE0C+3.w,d0	; and the low byte of VBlank global timer (in Github, it is v_vbla_count+3)
+		beq.s	InitPads			; if counter&7 = 0, re-initialize controllers
 
 .noinit		lea	$A10003,a1
 		lea	v_Ctrl1Held.w,a0
