@@ -95,7 +95,7 @@ SSRGScreen_Loop:
 		bsr	SRG_ScrollFG				; scroll the FG plane correctly
 		bsr	SRG_DrawFG				; draw the FG plane correctly
 		jsr	BuildSprites				; present all object sprites on screen
-		tst.w	(v_Ctrl1Press).w			; has player 1 pressed start button?
+		tst.b	(v_Ctrl1Press+1).w			; has player 1 pressed start button?
 		bmi	SSRGScreen_Finish			; if so, branch
 		cmpi.w	#$0200,($FFFF7800).l			; has timer finished?
 		blt	SSRGScreen_Loop				; if not, loop
