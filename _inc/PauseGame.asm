@@ -11,16 +11,25 @@ PauseGame:				; XREF: Level_MainLoop; et al
 		beq.w	Unpause				; if not, branch
 		tst.w	(f_pause).w			; is game already paused?
 		bne.s	Pause_StopGame			; if yes, branch
-
-		btst	#7,(v_Ctrl1Press).w		; is Start button pressed?
-		beq.s	@testmode			; if not, branch	
-		sfx	$3C
-
-@testmode:		
-
+	@chkMode:
 		btst	#JbM,(v_Ctrl1Press).w		; is mode button pressed?
 		bne.s	Pause_StopGame			; if so, pause
-
+	@chkX:
+		btst	#JbX,(v_Ctrl1Press).w
+		beq.s	@chkY
+		move.b  #0,(v_levselpage).w  		; choose status menu
+		bra.s   Pause_StartPressed              ; go to menu			
+	@chkY:
+		btst	#JbY,(v_Ctrl1Press).w
+		beq.s	@chkZ
+		move.b  #1,(v_levselpage).w  		; choose status menu
+		bra.s   Pause_StartPressed              ; go to menu
+	@chkZ:
+		btst	#JbZ,(v_Ctrl1Press).w
+		beq.s	@chkStart
+		move.b  #2,(v_levselpage).w  		; choose status menu
+		bra.s   Pause_StartPressed              ; go to menu
+	@chkStart:
 		btst	#bitStart,(v_Ctrl1Press+1).w	; is Start button pressed?
 		beq.s	Pause_DoNothing			; if not, branch
 
