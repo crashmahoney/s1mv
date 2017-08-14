@@ -18,4 +18,5 @@ ShakeScreen:
 		sub.w	d0,(v_bgposy_dup).w
 
 @rts:
+		move.w	(v_scrposy_dup).w,(v_scrposy_dup2).w
 		rts

@@ -273,6 +273,8 @@ loc_1BBCE:
 		sub.w	d2,d0
 		sub.w	d0,(v_screenposy).w
 
+		move.w	(v_screenposy).w,(v_scrposy_dup2).w
+
 locret_1BBDE:
 		rts	
 ; End of function SS_FixCamera

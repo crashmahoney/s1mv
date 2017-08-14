@@ -20,6 +20,7 @@ loc_628E:
 		bsr.w	ScrollVertical
 		bsr.w	DynamicLevelEvents
 		move.w	(v_screenposy).w,(v_scrposy_dup).w
+		move.w	(v_screenposy).w,(v_scrposy_dup2).w
 		move.w	($FFFFF70C).w,(v_bgposy_dup).w
 		bsr.w	ShakeScreen
 ;                 cmpi.w  #0,(f_pause).w

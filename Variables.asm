@@ -168,7 +168,6 @@ v_screenposy:	= $FFFFF704		; screen position y (2 bytes)   (Plane A)
 
 v_bgposx:	= $FFFFF708		; background position x (2 bytes)   (Plane B)
 v_bgposy:	= $FFFFF70C		; background position y (2 bytes)   (Plane B)
-
 v_limitleft1:	= $FFFFF720		; left level boundary (2 bytes)
 v_limitright1:	= $FFFFF722		; right level boundary (2 bytes)
 v_limittop1:	= $FFFFF724		; top level boundary (2 bytes)
@@ -180,6 +179,7 @@ v_limitbtm2:	= $FFFFF72E		; bottom level boundary (2 bytes)
 
 v_limitleft3:	= $FFFFF732		; left level boundary, at the end of an act (2 bytes)
 
+v_scrposy_dup2	= $FFFFF734		; another copy of screen y pos, used for sprite drawing
 v_scrshiftx:	= $FFFFF73A		; screen shift as Sonic moves horizontally
 
 v_lookshift:	= $FFFFF73E		; screen shift when Sonic looks up/down (2 bytes)

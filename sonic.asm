@@ -6696,7 +6696,7 @@ BuildSprites_ObjLoop:
 		moveq	#0,d0
 		move.b	obWidth(a0),d0           ; this actually checks height but the cleverpants who made this disassembly got the names mixed up!!!
 		move.w	obY(a0),d2
-		sub.w	-$EA(a1),d2				; +++ TESTING was sub.w	4(a1),d2
+		sub.w	v_scrposy_dup2-v_screenposx(a1),d2	; +++ TESTING was sub.w	4(a1),d2
 		move.w	d2,d1
 		add.w	d0,d1
 		bmi.s	BuildSprites_NextObj     ; if the object is above the screen
@@ -6716,7 +6716,7 @@ BuildSprites_ScreenSpaceObj:
 
 BuildSprites_ApproxYCheck:
 		move.w	obY(a0),d2
-		sub.w	-$EA(a1),d2
+		sub.w	v_scrposy_dup2-v_screenposx(a1),d2
 		addi.w	#$80,d2
 		cmpi.w	#$60,d2                  ; assume Y radius to be 32 pixels
 		bcs.s	BuildSprites_NextObj
@@ -6786,7 +6786,7 @@ BuildSprites_MultiDraw:
 	moveq	#0,d0
 	move.b	mainspr_height(a0),d0	         ; load pixel height
 	move.w	obY(a0),d2
-	sub.w	-$EA(a4),d2
+	sub.w	v_scrposy_dup2-v_screenposx(a4),d2
 	move.w	d2,d1
 	add.w	d0,d1
 	bmi.w	BuildSprites_MultiDraw_NextObj  ; if the object is above the screen
@@ -6798,7 +6798,7 @@ BuildSprites_MultiDraw:
 	bra.s	BuildSpritesMulti_DrawSprite
 BuildSpritesMulti_ApproxYCheck:
 	move.w	obY(a0),d2
-	sub.w	-$EA(a4),d2
+	sub.w	v_scrposy_dup2-v_screenposx(a4),d2
 	addi.w	#128,d2
 	andi.w	#$7FF,d2
 	cmpi.w	#-32+128,d2
@@ -6833,7 +6833,7 @@ BuildSpritesMulti_DrawSprite:
 	sub.w	(a4),d3                          ; subtract the screen's x position
 	addi.w	#128,d3
 	move.w	(a6)+,d2	                 ; get Y pos
-	sub.w	-$EA(a4),d2                         ; subtract the screen's y position
+	sub.w	v_scrposy_dup2-v_screenposx(a4),d2   ; subtract the screen's y position
 	addi.w	#128,d2
 	andi.w	#$7FF,d2
 	addq.w	#1,a6
@@ -8772,7 +8772,8 @@ SS_LayoutIndex:
 ; ---------------------------------------------------------------------------
 ; Special stage	start locations
 ; ---------------------------------------------------------------------------
-SS_StartLoc:	incbin	"misc\Start Location Array - Special Stages.bin"
+SS_StartLoc:	include	"_inc\Start Location Array - Special Stages.asm"
+
 		even
 
 ; ---------------------------------------------------------------------------
