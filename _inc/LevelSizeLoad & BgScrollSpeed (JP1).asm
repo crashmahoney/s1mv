@@ -160,9 +160,9 @@ LoopTileNums:
 BgScrollSpeed:				; XREF: LevelSizeLoad
 		tst.b	(v_lastlamp).w
 		bne.s	loc_6206
-		move.w	d0,($FFFFF70C).w
+		move.w	d0,(v_bgposy).w
 		move.w	d0,($FFFFF714).w
-		move.w	d1,($FFFFF708).w
+		move.w	d1,(v_bgposx).w
 		move.w	d1,($FFFFF710).w
 		move.w	d1,($FFFFF718).w
 
@@ -183,8 +183,8 @@ BgScroll_Index:	dc.w BgScroll_GHZ-BgScroll_Index, BgScroll_LZ-BgScroll_Index
 ; ===========================================================================
 
 BgScroll_GHZ:				; XREF: BgScroll_Index
-		clr.l	($FFFFF708).w
-		clr.l	($FFFFF70C).w
+		clr.l	(v_bgposx).w
+		clr.l	(v_bgposy).w
 		clr.l	($FFFFF714).w
 		clr.l	($FFFFF71C).w
 		lea	($FFFFA800).w,a2
@@ -196,10 +196,10 @@ BgScroll_GHZ:				; XREF: BgScroll_Index
 
 BgScroll_LZ:				; XREF: BgScroll_Index
 ; 		asr.l	#1,d0
-; 		move.w	d0,($FFFFF70C).w
+; 		move.w	d0,(v_bgposy).w
 ; 		rts	
-		clr.l	($FFFFF708).w
-		clr.l	($FFFFF70C).w
+		clr.l	(v_bgposx).w
+		clr.l	(v_bgposy).w
 		clr.l	($FFFFF714).w
 		clr.l	($FFFFF71C).w
 		lea	($FFFFA800).w,a2
@@ -210,17 +210,18 @@ BgScroll_LZ:				; XREF: BgScroll_Index
 ; ===========================================================================
 
 BgScroll_MZ:				; XREF: BgScroll_Index
-		move.w	#$80,($FFFFF708).w		; force X position to 2nd chunk's position (So redraw always occurs at beginning correctly...)
-		asr.w	#$03,d0					; divide by 8
-		move.w	d0,($FFFFF70C).w		; save as BG Y position
+		move.w	#$80,(v_bgposx).w		; force X position to 2nd chunk's position (So redraw always occurs at beginning correctly...)
+		asr.w	#$04,d0					; divide by 16
+		addq	#1,d0					; 1 pixel of the bottom of the bg was appearing when at the top of the level
+		move.w	d0,(v_bgposy).w		; save as BG Y position
 		rts	
 ; ===========================================================================
 
 BgScroll_SLZ:				; XREF: BgScroll_Index
 		asr.l	#1,d0
 		addi.w	#$C0,d0
-		move.w	d0,($FFFFF70C).w
-		clr.l	($FFFFF708).w
+		move.w	d0,(v_bgposy).w
+		clr.l	(v_bgposx).w
 		rts	
 ; ===========================================================================
 
@@ -231,8 +232,8 @@ BgScroll_SYZ:				; XREF: BgScroll_Index
 		add.l	d2,d0
 		asr.l	#8,d0
 		addq.w	#1,d0
-		move.w	d0,($FFFFF70C).w
-		clr.l	($FFFFF708).w
+		move.w	d0,(v_bgposy).w
+		clr.l	(v_bgposx).w
 		rts	
 ; ===========================================================================
 
@@ -240,21 +241,21 @@ BgScroll_SBZ:				; XREF: BgScroll_Index
 		andi.w	#$7F8,d0
 		asr.w	#3,d0
 		addq.w	#1,d0
-		move.w	d0,($FFFFF70C).w
+		move.w	d0,(v_bgposy).w
 		rts
 ; ===========================================================================
 
 BgScroll_End:				; XREF: BgScroll_Index
 		move.w	(v_screenposx).w,d0
 		asr.w	#1,d0
-		move.w	d0,($FFFFF708).w
+		move.w	d0,(v_bgposx).w
 		move.w	d0,($FFFFF710).w
 		asr.w	#2,d0
 		move.w	d0,d1
 		add.w	d0,d0
 		add.w	d1,d0
 		move.w	d0,($FFFFF718).w
-		clr.l	($FFFFF70C).w
+		clr.l	(v_bgposy).w
 		clr.l	($FFFFF714).w
 		clr.l	($FFFFF71C).w
 		lea	($FFFFA800).w,a2
@@ -265,8 +266,8 @@ BgScroll_End:				; XREF: BgScroll_Index
 ; ===========================================================================
 
 BgScroll_HUBZ:				; XREF: BgScroll_Index
-		clr.l	($FFFFF708).w
-		clr.l	($FFFFF70C).w
+		clr.l	(v_bgposx).w
+		clr.l	(v_bgposy).w
 		clr.l	($FFFFF714).w
 		clr.l	($FFFFF71C).w
 		lea	($FFFFA800).w,a2
@@ -274,18 +275,18 @@ BgScroll_HUBZ:				; XREF: BgScroll_Index
 		clr.l	(a2)+
 		clr.l	(a2)+
 ; 		asr.l	#1,d0
-; 		move.w	d0,($FFFFF70C).w
+; 		move.w	d0,(v_bgposy).w
 		rts
 ; ===========================================================================
 
 BgScroll_IntroZ:				; XREF: BgScroll_Index
 ; 		asr.l	#1,d0
-; 		move.w	d0,($FFFFF70C).w
+; 		move.w	d0,(v_bgposy).w
 		rts
 ; ===========================================================================
 BgScroll_Tropic:				; XREF: BgScroll_Index
-		clr.l	($FFFFF708).w
-		clr.l	($FFFFF70C).w
+		clr.l	(v_bgposx).w
+		clr.l	(v_bgposy).w
 		clr.l	($FFFFF714).w
 		clr.l	($FFFFF71C).w
 		lea	($FFFFA800).w,a2

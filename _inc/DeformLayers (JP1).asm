@@ -371,7 +371,7 @@ Deform_Mz_Outside:
 		moveq	#$00,d4				; set no X movement redraw
 		move.w	($FFFFF73C).w,d5		; load Y movement
 		ext.l	d5				; extend to long-word
-		asl.l	#$08-3,d5			; multiply by 100, then divide by 8
+		asl.l	#$08-4,d5			; multiply by 100, then divide by 16
 	;	bsr.w	ScrollBlock2_Rev00		; perform redraw for Y
 		bsr.w	Bg_Scroll_Y			; perform redraw for Y
 		move.w	(v_bgposy).w,(v_bgposy_dup).w	; save as VSRAM BG scroll position
@@ -1288,10 +1288,10 @@ loc_6B2C:
 
 
 Bg_Scroll_Y:
-		move.l	($FFFFF70C).w,d3
+		move.l	(v_bgposy).w,d3
 		move.l	d3,d0
 		add.l	d5,d0
-		move.l	d0,($FFFFF70C).w
+		move.l	d0,(v_bgposy).w
 		move.l	d0,d1
 		swap.w	d1
 		andi.w	#$10,d1
