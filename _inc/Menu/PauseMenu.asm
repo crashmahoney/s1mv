@@ -6,6 +6,7 @@ Pause_Menu:
 		jsr     PaletteFadeOutFast
 		moveq   #0,d0
 		move    #$2700, sr              ; interrupt mask level 7
+	; turn off display	
 		move.w  (v_vdp_buffer1).w, D0
 		andi.b  #$BF, D0
 		move.w  D0, ($00C00004)
@@ -68,9 +69,7 @@ Pause_Menu:
 
 		move.b  #$18, (v_vbla_routine).w
 		jsr     WaitForVBla
-		move.w  (v_vdp_buffer1).w, D0
-		ori.b   #$40, D0
-		move.w  D0, ($00C00004)
+
 WaitForPLC:
 		move.b	#$C,(v_vbla_routine).w
 		jsr		WaitForVBla
@@ -166,6 +165,11 @@ WaitForPLC:
 		jsr     WaitForVBla
 
 		bsr.w   RedrawFullMenu           	; Draw the menu
+	; turn on display
+		move.w  (v_vdp_buffer1).w, D0
+		ori.b   #$40, D0
+		move.w  D0, ($00C00004)
+
 		jsr     PaletteFadeInFast
 
 ;========================================================================================================================

@@ -24,6 +24,7 @@ id_Continue:	equ ptr_GM_Cont-GameModeArray	; $14
 id_Ending:	equ ptr_GM_Ending-GameModeArray	; $18
 id_Credits:	equ ptr_GM_Credits-GameModeArray; $1C
 id_SSRG:	equ ptr_GM_SSRG-GameModeArray   ; $20
+id_Race:	equ ptr_GM_Race-GameModeArray   ; $24
 
 ; Levels
 id_GHZ:		equ 0

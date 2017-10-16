@@ -36,6 +36,8 @@ ptr_Pal_IntroZ:		palp	Pal_IntroZ,$FB20,$30		; $15 (21) - IntroZ
 ptr_Pal_Tropic:		palp	Pal_Tropic,$FB20, $30		; $16 (22) - Tropic
 ptr_Pal_Menu        	palp    Pal_Menu,$FB00,$40          	; $17 (23) - In Game Menu
 ptr_Pal_Black           palp    Pal_Black,$FB00,$40             ; $18 (24) - Pure Black
+ptr_Pal_Race	        palp    Pal_Race,$FB00,$40		; $19 (25) - Race Bonus Stage
+
 			even
 
 
@@ -64,4 +66,5 @@ palid_IntroZ:		equ (ptr_Pal_IntroZ-PalPointers)/8
 palid_Tropic:		equ (ptr_Pal_Tropic-PalPointers)/8
 palid_Menu:		equ (ptr_Pal_Menu-PalPointers)/8
 palid_Black:		equ (ptr_Pal_Black-PalPointers)/8
+palid_Race:		equ (ptr_Pal_Race-PalPointers)/8
 

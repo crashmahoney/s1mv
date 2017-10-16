@@ -277,7 +277,8 @@ GameInit:
         	bsr.w	VDPSetupGame
 		bsr.w	SoundDriverLoad
 ;		bsr.w	JoypadInit
-		move.b	#id_Sega,(v_gamemode).w ; set Game Mode to Sega Screen
+;		move.b	#id_Sega,(v_gamemode).w ; set Game Mode to Sega Screen
+		move.b	#id_Race,(v_gamemode).w ; set Game Mode to Sega Screen
 
 MainGameLoop:
 		move.b	(v_gamemode).w,d0 ; load Game Mode
@@ -307,7 +308,9 @@ ptr_GM_Ending:	bra.w	GM_Ending	; End of game sequence ($18)
 
 ptr_GM_Credits:	bra.w	GM_Credits	; Credits ($1C)
 
-ptr_GM_SSRG:    bra.w   GM_SSRGScreen   ; CreditsSSRG Screen ($20)
+ptr_GM_SSRG:    bra.w   GM_SSRGScreen   ; SSRG Screen ($20)
+
+ptr_GM_Race:    bra.w   GM_Race   ;  Race Bonus Stage ($24)
 
 		rts	
 ; ===========================================================================
@@ -337,7 +340,6 @@ Art_Text:	incbin	"artunc\menutext.bin" ; text used in level select and debug mod
 ; ---------------------------------------------------------------------------
 
 VBlank:					; XREF: Vectors
-
         movem.l	d0-a6,-(sp)                   ; save registers to stack
 		tst.b	(v_vbla_routine).w
 		beq		VBla_00
@@ -388,6 +390,7 @@ VBla_Index:	dc.w VBla_00-VBla_Index, VBla_02-VBla_Index
 		dc.w VBla_10-VBla_Index, VBla_12-VBla_Index
 		dc.w VBla_14-VBla_Index, VBla_16-VBla_Index
 		dc.w VBla_0C-VBla_Index, VBla_1A-VBla_Index
+		dc.w VBla_1C-VBla_Index
 ; ===========================================================================
 
 VBla_00:				; XREF: VBlank; VBla_Index
@@ -608,6 +611,18 @@ VBla_1A:
 		move.w	(v_hbla_hreg).w,(a5)
 		bra.w	sub_1642
 
+
+; ===========================================================================
+; Race Stage Vblank routine
+VBla_1C:
+		move.l	#$40000010,($C00004).l
+		move.w	#-96,($C00000).l ; send screen y-axis pos. to VSRAM
+		move.l	#HBlank_Road1,(H_int_addr).w  ; hblank code address to jump to
+		move.w	#$8A00+47,(v_hbla_hreg).w ; set hblank trigger scanline /2
+		move.w	(v_hbla_hreg).w,($C00004).l
+		bra.w	VBla_1A
+; ===========================================================================
+
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
 sub_106E:				; XREF: VBla_02; et al
@@ -716,6 +731,37 @@ HBlank2:        ; background colour gradient
 	;	tst.b	($FFFFF64F).w
 	;	bne.s	loc_119E
 		rte
+
+
+HBlank_Road1:
+		move.l	#$40000010,($C00004).l
+		move.w	#-0096,($C00000).l ; send screen y-axis pos. to VSRAM
+		move.w	#$8A00,(v_hbla_hreg).w
+		move.w	(v_hbla_hreg).w,($C00004).l	 ; set next hblank trigger
+		move.w	#HBlank_Road2,(H_int_addr+2).w  ; hblank code address to jump to
+		rte
+
+HBlank_Road2:
+		move.w	#HBlank_Road3,(H_int_addr+2).w  ; hblank code address to jump to
+		lea		($FFFF4100).l,a6
+		move.w	(v_framecount).w,d6
+		muls.w	#300,d6
+	;	and.w	#$FFF,d6
+		rte
+
+HBlank_Road3:
+		move.l	#$40000010,($C00004).l
+		move.w	-(a6),d0
+		add.w	d6,d0
+		btst	#12,d0
+		beq.s	@road2
+	@road1:
+		move.w	#32,($C00000).l ; send screen y-axis pos. to VSRAM
+		rte		
+
+	@road2:
+		move.w	#-0096,($C00000).l ; send screen y-axis pos. to VSRAM
+		rte	
 ; ---------------------------------------------------------------------------
 ; Subroutine to	initialise joypads
 ; ---------------------------------------------------------------------------
@@ -2405,7 +2451,7 @@ Sega_WaitEnd:
 		beq.s	Sega_WaitEnd	; if not, branch
 		
 Sega_GotoTitle:
-		move.b	#id_Title,(v_gamemode).w ; go to title screen
+		move.b	#id_Race,(v_gamemode).w ; go to title screen
 		rts
 
 Sega_GotoSSRG:
@@ -4490,6 +4536,9 @@ TryAg_Exit:
 		include	"_incObj\8C Try Again Emeralds.asm"
 		include	"_maps\Try Again & End Eggman.asm"
 
+				include	"_inc\Race Stage.asm"
+				even
+
 ; ---------------------------------------------------------------------------
 ; Ending sequence demos
 ; ---------------------------------------------------------------------------
@@ -5452,7 +5501,7 @@ LoadZoneTiles:
 		andi.l	#$FFFFFF,d0    		; Filter out the first byte, which contains the first PLC ID, leaving the address of the zone's art in d0
 		movea.l	d0,a0				; Load the address of the zone's art into a0 (source)
 		lea		($FF0000).l,a1		; Load v_256x256/StartOfRAM (in this context, an art buffer) into a1 (destination)
-		bsr.w	KosDec				; Decompress a0 to a1 (Kosinski compression)
+		jsr	KosDec				; Decompress a0 to a1 (Kosinski compression)
  
 		move.w	a1,d3				; Move a word of a1 to d3, note that a1 doesn't exactly contain the address of v_256x256/StartOfRAM anymore, after KosDec, a1 now contains v_256x256/StartOfRAM + the size of the file decompressed to it, d3 now contains the length of the file that was decompressed
 		move.w	d3,d7				; Move d3 to d7, for use in seperate calculations
@@ -5505,7 +5554,7 @@ LevelDataLoad:				; XREF: GM_Level; GM_Ending
 		jsr	EniDec
 		movea.l	(a2)+,a0
 		lea	(v_256x256).l,a1 ; RAM address for 256x256 mappings
-		bsr.w	KosDec
+		jsr	KosDec
 		bsr.w	LevelLayoutLoad
 		move.w	(a2)+,d0
 		move.w	(a2),d0
@@ -10263,6 +10312,13 @@ Art_MapTiles:	incbin "artunc\maptiles.bin"
                 even
 Art_PowerUps:	incbin "artunc\Power Ups.bin"					; floating pickup icons
 				even
+
+
+KosM_RaceRoad:
+				incbin "artkosm\Road.kosm"
+				even
+Eni_RaceRoad:	incbin "tilemaps\Road.eni"
+                even        
 
 
 	if VladDebug = 0
