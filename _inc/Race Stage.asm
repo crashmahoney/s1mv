@@ -108,7 +108,7 @@ Race_MainLoop:
 		cmpi.b	#id_Race,(v_gamemode).w
 		beq	Race_MainLoop
 @startpressed:
-		move.b	#id_Sega,(v_gamemode).w ; set Game Mode to Sega Screen
+		move.b	#id_Title,(v_gamemode).w ; set Game Mode to Sega Screen
 		rts	; return to game mode select code
 
 
