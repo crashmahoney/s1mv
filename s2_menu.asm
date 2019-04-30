@@ -206,11 +206,11 @@ Menu_Main_Loop:
                 move    #$2300, SR
                 jsr     Dynamic_Menu
                 bsr     Menu_RunPLC
-                btst    #$04, (v_Ctrl1Held+1).w           ; is B button held?
+                btst    #$04, (v_jpadhold1).w           ; is B button held?
                 beq.s   Offset_0x026CC6                 ; if not, branch
                 move.w  #$0001, ($FFFFFFD8).w
 Offset_0x026CC6:
-                move.w  (v_Ctrl1Press).w, D0
+                move.b  (v_jpadpress1).w, D0
                 or.b    ($FFFFF607).w, D0
                 andi.b  #$80, D0
                 bne.s   Offset_0x026CD8
@@ -287,14 +287,14 @@ Menu_Load_Level:
                 clr.w   (v_levselitem).w
                 rts
 Offset_0x026DEC:
-                move.w  (v_Ctrl1Press).w, D1
+                move.b  (v_jpadpress1).w, D1
                 andi.b  #$03, D1
                 bne.s   Offset_0x026DFC
                 subq.w  #$01, (v_levseldelay).w
                 bpl.s   Offset_0x026E32
 Offset_0x026DFC:
                 move.w  #$000B, (v_levseldelay).w
-                move.b  (v_Ctrl1Held+1).w, D1
+                move.b  (v_jpadhold1).w, D1
                 andi.b  #$03, D1
                 beq.s   Offset_0x026E32
                 move.w  (v_levselitem).w, D0
@@ -317,7 +317,7 @@ Offset_0x026E32:
                 cmpi.w  #$0015, (v_levselitem).w ; if the item is equal to changing the roles of left and right
                 bne.s   Offset_0x026E9C
                 move.w  (v_levselsound).w, D0
-                move.w  (v_Ctrl1Press).w, D1
+                move.b  (v_jpadpress1).w, D1
                 btst    #$02, D1
                 beq.s   Offset_0x026E4E
                 subq.b  #$01, D0
@@ -350,7 +350,7 @@ Offset_0x026E6C:
 Offset_0x026E9A:
                 rts
 Offset_0x026E9C:
-                move.w  (v_Ctrl1Press).w, D1
+                move.b  (v_jpadpress1).w, D1
                 andi.b  #$0C, D1
                 beq.s   Offset_0x026EB2
                 move.w  (v_levselitem).w, D0

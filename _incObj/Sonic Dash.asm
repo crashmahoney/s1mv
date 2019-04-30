@@ -14,7 +14,7 @@ Sonic_Dash:
 		bne.s	@return
                 tst.b   (v_abil_peelout).w         ; is peelout allowed?
 		beq.s   @return                    ; +++ if you can't spin dash, return
-		move.w	(v_P1Press).w,d0
+		move.b	(v_jpadpress2).w,d0
 		andi.b	#btnABC,d0
 		beq.w	@return
 		move.b	#id_Run,obAnim(a0)
@@ -34,7 +34,7 @@ Sonic_Dash:
  
 Sonic_DashLaunch:
 		move.b	#id_DashCharge,obAnim(a0)
-		move.w	(v_P1Held).w,d0
+		move.b	(v_jpadhold2).w,d0
 		btst	#bitUp,d0
 		bne.w	Sonic_DashCharge
 		bclr	#staDash,obStatus2(a0)	; stop Dashing

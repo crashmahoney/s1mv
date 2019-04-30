@@ -13,7 +13,7 @@
 CheckAbility:
 		moveq	#0,d1
 		moveq	#0,d2
-		move.w	(v_P1Press).w,d1
+		move.b	(v_jpadpress2).w,d1
 	@chka:
                 move.b  d1,d2
         	andi.b	#btnA,d2	              ; is A pressed?

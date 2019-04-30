@@ -36,7 +36,7 @@ Obj09_Main:	; Routine 0
 Obj09_ChkDebug:	; Routine 2
 		tst.w	(f_debugmode).w	; is debug mode	cheat enabled?
 		beq.s	Obj09_NoDebug	; if not, branch
-		btst	#bitB,(v_Ctrl1Press+1).w ; is button B pressed?
+		btst	#bitB,(v_jpadpress1).w ; is button B pressed?
 		beq.s	Obj09_NoDebug	; if not, branch
 		move.w	#1,(v_debuguse).w ; change Sonic into a ring
 
@@ -81,17 +81,17 @@ Obj09_Display:				; XREF: Obj09_OnWall
 
 
 Obj09_Move:				; XREF: Obj09_OnWall; Obj09_InAir
-		btst	#bitL,(v_P1Held+1).w ; is left being pressed?
+		btst	#bitL,(v_jpadhold2).w ; is left being pressed?
 		beq.s	Obj09_ChkRight	; if not, branch
 		bsr.w	Obj09_MoveLeft
 
 Obj09_ChkRight:
-		btst	#bitR,(v_P1Held+1).w ; is right being pressed?
+		btst	#bitR,(v_jpadhold2).w ; is right being pressed?
 		beq.s	loc_1BA78	; if not, branch
 		bsr.w	Obj09_MoveRight
 
 loc_1BA78:
-		move.w	(v_P1Held).w,d0
+		move.b	(v_jpadhold2).w,d0
 		andi.b	#btnL+btnR,d0
 		bne.s	loc_1BAA8
 		move.w	obInertia(a0),d0
@@ -207,7 +207,7 @@ locret_1BB54:
 
 
 Obj09_Jump:				; XREF: Obj09_OnWall
-		move.w	(v_P1Press).w,d0
+		move.b	(v_jpadpress2).w,d0
 		andi.b	#btnABC,d0	; is A,	B or C pressed?
 		beq.s	Obj09_NoJump	; if not, branch
 		move.b	(v_ssangle).w,d0
@@ -243,7 +243,7 @@ nullsub_2:				; XREF: Obj09_InAir
 		move.w	#-$400,d1
 		cmp.w	obVelY(a0),d1
 		ble.s	locret_1BBB4
-		move.w	(v_P1Held).w,d0
+		move.b	(v_jpadhold2).w,d0
 		andi.b	#btnABC,d0
 		bne.s	locret_1BBB4
 		move.w	d1,obVelY(a0)

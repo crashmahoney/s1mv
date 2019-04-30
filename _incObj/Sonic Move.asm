@@ -13,12 +13,12 @@ Sonic_Move:				; XREF: Obj01_MdNormal
 		bne.w	loc_12FEE
 		tst.w	$3E(a0)
 		bne.w	Sonic_ResetScr
-		btst	#bitL,(v_P1Held+1).w ; is left being pressed?
+		btst	#bitL,(v_jpadhold2).w ; is left being pressed?
 		beq.s	@notleft	; if not, branch
 		bsr.w	Sonic_MoveLeft
 
 	@notleft:
-		btst	#bitR,(v_P1Held+1).w ; is right being pressed?
+		btst	#bitR,(v_jpadhold2).w ; is right being pressed?
 		beq.s	@notright	; if not, branch
 		bsr.w	Sonic_MoveRight
 
@@ -182,7 +182,7 @@ loc_1A57C:
 ; ---------------------------------------------------------------------------
 ; ===========================================================================
 Sonic_LookUp:
-		btst	#bitUp,(v_P1Held+1).w  ; is up being pressed?
+		btst	#bitUp,(v_jpadhold2).w  ; is up being pressed?
 		beq.s	Sonic_Duck	        ; if not, branch
 		move.b	#id_LookUp,obAnim(a0)	; use "looking up" animation
 		addq.b	#1,(v_vscrolldelay).w
@@ -196,7 +196,7 @@ Sonic_LookUp:
 ; ===========================================================================
  
 Sonic_Duck:
-		btst	#bitDn,(v_P1Held+1).w  ; is down being pressed?
+		btst	#bitDn,(v_jpadhold2).w  ; is down being pressed?
 		beq.s	Sonic_ResetScr	        ; if not, branch
 		cmpi.b	#id_Crouch,obAnim(a0) 
 		beq.s	@stomping		
@@ -227,7 +227,7 @@ loc_12FBE:
 ; updates Sonic's speed on the ground
 ; ---------------------------------------------------------------------------
 loc_12FC2:
-		move.w	(v_P1Held).w,d0
+		move.b	(v_jpadhold2).w,d0
 		andi.b	#btnL+btnR,d0	; is left/right	pressed?
 		bne.s	loc_12FEE	; if yes, branch
 		move.w	obInertia(a0),d0

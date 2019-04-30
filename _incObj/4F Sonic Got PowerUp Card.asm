@@ -131,7 +131,7 @@ loc_PowUpC610:				; XREF: loc_PowUpC61A
 GotPowUp_Wait:	; Routine 4
 		tst.w	obTimeFrame(a0)	; is time remaining zero?
 		bne.w	@countdown	; if no, branch
-                move.w  (v_Ctrl1Press).w, d1
+                move.b  (v_jpadpress1).w, d1
                 andi.b  #btnABCStart,d1      ; is a button pressed?
                 beq.s   @displaysprite  ; if not, wait for button press
                 addq.b  #2,obRoutine(a0)

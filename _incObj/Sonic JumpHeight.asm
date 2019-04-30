@@ -10,7 +10,7 @@ Sonic_JumpHeight:			; XREF: Obj01_MdJump; Obj01_MdJump2
 ;Mercury Wall Jump
 		tst.b	obWallJump(a0)	; on wall?
 		beq.s	@skip
-		move.w	(v_P1Press).w,d0
+		move.b	(v_jpadpress2).w,d0
 		andi.b	#btnABC,d0	; is A, B or C pressed?
 		beq.s	@skip	; if yes, branch
 		move.b	#0,obWallJump(a0)	; clear Wall Jump data
@@ -18,7 +18,7 @@ Sonic_JumpHeight:			; XREF: Obj01_MdJump; Obj01_MdJump2
 		move.b  #1,(v_justwalljumped).w ; set flag to stop double jump code running straight away
 		move.b	#id_Roll,obAnim(a0) ; use "jumping" animation
 		move.w	#-$600,d0
-		btst	#bitUp,(v_P1Held+1).w
+		btst	#bitUp,(v_jpadhold2).w
 		bne.s	@uponly
 		move.w	#-$580,d0
 		move.w	#-$400,obVelX(a0)
@@ -49,7 +49,7 @@ Sonic_JumpHeight:			; XREF: Obj01_MdJump; Obj01_MdJump2
 loc_134AE:
 		cmp.w	obVelY(a0),d1
 		ble.s	locret_134C2
-		move.w	(v_P1Held).w,d0
+		move.b	(v_jpadhold2).w,d0
 		andi.b	#btnABC,d0	; is A, B or C pressed?
 		bne.s	locret_134C2	; if yes, branch
 		move.w	d1,obVelY(a0)

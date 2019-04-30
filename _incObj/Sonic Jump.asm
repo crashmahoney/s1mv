@@ -6,7 +6,7 @@
 
 
 Sonic_Jump:				; XREF: Obj01_MdNormal; Obj01_MdRoll
-		move.w	(v_P1Press).w,d0
+		move.b	(v_jpadpress2).w,d0
 		andi.b	#btnABC,d0	; is A, B or C pressed?
 		beq.w	locret_1348E	; if not, branch
 		moveq	#aLightDash,d0  ; check for light dash

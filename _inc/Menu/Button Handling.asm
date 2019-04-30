@@ -31,7 +31,7 @@ PageStates:
 
 SelectPage:
 		moveq   #$00, D0
-		move.w  (v_Ctrl1Press).w, D1
+		move.b  (v_jpadpress1).w, D1
 
 		moveq   #3,d2                      ; only go up to page 2
 		tst.b   (f_debugcheat).w           ; is debug is active?
@@ -65,7 +65,7 @@ SelectPage:
 
        ; if A or B is pressed, go to next page mode (slot select)
 @CheckAB:
-		move.w	(v_Ctrl1Press).w,d0
+		move.b	(v_jpadpress1).w,d0
 		andi.b	#btnAB,d0	              ; is A or B pressed?
 		beq.w	@CheckC	              ; if not, branch
 ;                sfx     sfx_Lamppost
@@ -79,7 +79,7 @@ SelectPage:
 		bsr.w   RedrawFullMenu
 @CheckC:
        ; if C is pressed, exit menu             ?????? WHY DOES THIS CRASH???????
-;                 move.w	(v_Ctrl1Press).w,d0
+;                 move.b	(v_jpadpress1).w,d0
 ; 		andi.b	#btnC,d0	              ; is C pressed?
 ; 		beq.w	@donothing	              ; if not, branch
 ;         ;        tst.b   (f_inmenu).w
@@ -100,14 +100,14 @@ SelectPage:
 
 SelectSlot:
 		moveq   #$00, D0
-		move.w  (v_Ctrl1Press).w, D1
+		move.b  (v_jpadpress1).w, D1
 		andi.b  #$03, D1                   ; are dpad up or down pressed?
 		bne.s   @DpadUpDown                ; if so?, branch
 		subq.w  #$01, (v_levseldelay).w    ; sub 1 from time until change
 		bpl.s   @CheckAB                   ; if time is positive, branch
 @DpadUpDown:
 		move.w  #$000B, (v_levseldelay).w  ; set delay to 14? frames?
-		move.w  (v_Ctrl1Held).w, D1
+		move.b  (v_jpadhold1).w, D1
 		andi.b  #$03, D1                   ; are dpad up or down held?
 		beq.s   @CheckAB                   ; if not, branch
 		move.w  (v_levselitem).w, D0
@@ -155,7 +155,7 @@ SelectSlot:
 		cmpi.w  #$0004, (v_levselitem).w   ; is drum kit selected?
 		beq.w   DrumKitSelected            ; if so, branch
        @notsndtest:
-		move.w	(v_Ctrl1Press).w,d0
+		move.b	(v_jpadpress1).w,d0
 		andi.b	#btnAB,d0	              ; is A or B pressed?
 		beq.w	@CheckC	                      ; if not, branch
 		cmpi.b  #2,(v_levselpage)             ; on the equip page?
@@ -169,7 +169,7 @@ SelectSlot:
 		jsr     ButtonPress_Debug
 @CheckC:
        ; if C is pressed, go back to previous state
-		move.w	(v_Ctrl1Press).w,d0
+		move.b	(v_jpadpress1).w,d0
 		andi.b	#btnC,d0	              ; is C pressed?
 		beq.w	@donothing	              ; if not, branch
 ;                sfx     sfx_SSItem
@@ -188,14 +188,14 @@ SelectSlot:
 ;========================================================================================================================
 
 SelectInventory:
-		move.w  (v_Ctrl1Press).w, D1
+		move.b  (v_jpadpress1).w, D1
 		andi.b  #$03, D1                   ; are dpad up or down pressed?
 		bne.s   @DpadUpDown                ; if so?, branch
 		subq.w  #$01, (v_levseldelay).w    ; sub 1 from time until change
 		bpl.w   @SkipDpadUpDown            ; if time is positive, branch
 @DpadUpDown:
 		move.w  #$000B, (v_levseldelay).w  ; set delay to 14? frames?
-		move.w  (v_Ctrl1Held).w, D1
+		move.b  (v_jpadhold1).w, D1
 		andi.b  #$03, D1                   ; are dpad up or down held?
 		beq.w   @SkipDpadUpDown            ; if not, branch
 		move.w  (v_levselitem).w, D0
@@ -245,7 +245,7 @@ SelectInventory:
 @SkipDpadUpDown:
 @DpadLR:
 		moveq   #$00, D0
-		move.w  (v_Ctrl1Press).w, D1
+		move.b  (v_jpadpress1).w, D1
 	@DpadRight:
 		btst    #$03, D1                   ; is dpad right held?
 		beq.s   @DpadLeft                  ; if not, branch
@@ -277,7 +277,7 @@ SelectInventory:
 		rts
        ; if A or B is pressed, run selected item's code
 @CheckAB:
-		move.w	(v_Ctrl1Press).w,d0
+		move.b	(v_jpadpress1).w,d0
 		andi.b	#btnAB,d0	               ; is A or B pressed?
 		beq.w	@CheckC	                       ; if not, branch
 		lea     (CurrentInventoryArray).l,a4   ; First slot (of 10, each slot 2 bytes)
@@ -326,7 +326,7 @@ SelectInventory:
 		rts
 @CheckC:
        ; if C is pressed, go back to previous state
-		move.w	(v_Ctrl1Press).w,d0
+		move.b	(v_jpadpress1).w,d0
 		andi.b	#btnC,d0	              ; is C pressed?
 		beq.w	@donothing	              ; if not, branch
 		sfx     sfx_SSItem
@@ -595,7 +595,7 @@ ButtonPress_Debug_Select:
 
 SndTstSelected:
 		move.w  (v_levselsound).w, D0
-		move.w  (v_Ctrl1Press).w, D1
+		move.b  (v_jpadpress1).w, D1
 		btst    #$02, D1                   ; is dpad left pressed?
 		beq.s   @ChkSndTstRight            ; if not, branch
 		subq.b  #$01, D0                   ; subtract sound test counter
@@ -655,7 +655,7 @@ SndTstSelected:
 
 MusicPitchSelected:
 		move.b  (v_musicpitch).w, D0
-		move.w  (v_Ctrl1Press).w, D1
+		move.b  (v_jpadpress1).w, D1
 		btst    #$02, D1                   ; is dpad left pressed?
 		beq.s   @ChkSndTstRight            ; if not, branch
 		subq.b  #$01, D0                   ; subtract sound test counter
@@ -674,7 +674,7 @@ MusicPitchSelected:
 ; ===========================================================================
 DrumKitSelected:
 		move.b  (v_drumkit).w, D0
-		move.w  (v_Ctrl1Press).w, D1
+		move.b  (v_jpadpress1).w, D1
 		btst    #$02, D1                   ; is dpad left pressed?
 		beq.s   @ChkDrumKitRight           ; if not, branch
 		sub.b   #$01, D0                   ; subtract sound test counter
@@ -713,7 +713,7 @@ DrumKitSelected:
 
 TempoDivSelected:
 ;                 move.b  (v_tempo_time).w, D2
-;                 move.w  (v_Ctrl1Press).w, D1
+;                 move.b  (v_jpadpress1).w, D1
 ;                 btst    #$02, D1                   ; is dpad left pressed?
 ;                 beq.s   @ChkSndTstRight            ; if not, branch
 ;                 subq.b  #$01, D2                   ; subtract tempo div counter
@@ -750,7 +750,7 @@ TempoModSelected:
 		waitz80
 		move.b  ($A01C24).l,d0
       endif
-		move.w  (v_Ctrl1Press).w, D1
+		move.b  (v_jpadpress1).w, D1
 		btst    #$02, D1                   ; is dpad left pressed?
 		beq.s   @ChkSndTstRight            ; if not, branch
 		subq.b  #$01, D0                   ; subtract sound test counter
@@ -784,14 +784,14 @@ TempoModSelected:
 ; =========================================================================
 VRAMviewButtons:
 		moveq   #$00, D0
-		move.w  (v_Ctrl1Press).w, D1
+		move.b  (v_jpadpress1).w, D1
 		andi.b  #$03, D1                   ; are dpad up or down pressed?
 		bne.s   @DpadUpDown                ; if so?, branch
 		subq.w  #$01, (v_levseldelay).w    ; sub 1 from time until change
 		bpl.s   @CheckAB                   ; if time is positive, branch
 @DpadUpDown:
 		move.w  #$0003, (v_levseldelay).w  ; set delay to 14 frames
-		move.w  (v_Ctrl1Held).w, D1
+		move.b  (v_jpadhold1).w, D1
 		andi.b  #$03, D1                   ; are dpad up or down held?
 		beq.s   @CheckAB                   ; if not, branch
 		btst    #$00, D1                   ; is dpad up held?
@@ -811,7 +811,7 @@ VRAMviewButtons:
 		rts
 
 @CheckAB:
-		move.w	(v_Ctrl1Press).w,d0
+		move.b	(v_jpadpress1).w,d0
 		andi.b	#btnA,d0	              ; is A pressed?
 		beq.w	@CheckB	                      ; if not, branch
 		sfx     sfx_Door
@@ -819,7 +819,7 @@ VRAMviewButtons:
 		bsr.w   RedrawFullMenu
 		rts
 @CheckB:
-		move.w	(v_Ctrl1Press).w,d0
+		move.b	(v_jpadpress1).w,d0
 		andi.b	#btnB,d0	              ; is B pressed?
 		beq.w	@CheckC	                      ; if not, branch
 		sfx     sfx_Door
@@ -827,7 +827,7 @@ VRAMviewButtons:
 		bsr.w   RedrawFullMenu
 		rts
 @CheckC:
-		move.w	(v_Ctrl1Press).w,d0
+		move.b	(v_jpadpress1).w,d0
 		andi.b	#btnC,d0	              ; is C pressed?
 		beq.w	@CheckR                	      ; if not, branch
 		sfx     sfx_SSItem
@@ -836,7 +836,7 @@ VRAMviewButtons:
 		bsr.w   RedrawFullMenu
 		rts
 @CheckR:
-		move.w	(v_Ctrl1Press).w,d0
+		move.b	(v_jpadpress1).w,d0
 		andi.b	#btnR,d0	              ; is R pressed?
 		beq.w	@donothing	              ; if not, branch
 		sfx     sfx_Door

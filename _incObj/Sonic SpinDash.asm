@@ -13,11 +13,11 @@ Sonic_SpinDash:
 		beq.s	@ckhbuttons		        ; if so, continue
 		cmpi.b	#id_Crouch,obAnim(a0)	; is anim crouch
 		bne.s   @end                    ; if not, branch
-		move.w	(v_P1Held).w,d0		; read controller
+		move.b	(v_jpadhold2).w,d0		; read controller
 		andi.b	#btnDn,d0				; pressing down ?
 		beq.w	@end        			; if not, return
 	@ckhbuttons:
-		move.w	(v_P1Press).w,d0	; read controller
+		move.b	(v_jpadpress2).w,d0	; read controller
 		andi.b	#btnABC,d0		; pressing A/B/C ?
 		beq.w	@end        		; if not, return
 		move.b	#id_SpinDash,obAnim(a0)	; set Spin Dash anim
@@ -37,7 +37,7 @@ Sonic_SpinDash:
  
 loc2_1AC8E:
 		move.b	#id_SpinDash,obAnim(a0)
-		move.w	(v_P1Held).w,d0	; read controller
+		move.b	(v_jpadhold2).w,d0	; read controller
 		btst	#1,d0			; check down button
 		bne.w	loc2_1AD30		; if set, branch
 		move.b	#$E,$16(a0)		; $16(a0) is height/2
@@ -119,7 +119,7 @@ loc2_1AD30:				; If still charging the dash...
 		move.w	#0,SpinDashCount(a0)	; set charge count to 0
  
 loc2_1AD48:
-		move.w	(v_P1Press).w,d0	; read controller
+		move.b	(v_jpadpress2).w,d0	; read controller
 		andi.b	#btnABC,d0		; pressing A/B/C?
 		beq.w	loc2_1AD78		; if not, branch
 		move.w	#(id_SpinDash<<8),obAnim(a0)	; reset sonic spdsh animation

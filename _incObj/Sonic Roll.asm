@@ -38,20 +38,20 @@ Sonic_Roll:				; XREF: Obj01_MdNormal
 	@ispositive:
 		cmpi.w	#$100,d0		; is Sonic moving at $80 speed or faster?    ; +++ changed
 		bcs.s	@noroll			; if not, branch
-		move.w	(v_P1Held).w,d0
+		move.b	(v_jpadhold2).w,d0
 		andi.b	#btnL+btnR,d0		; is left/right	being pressed?
 		bne.s	@noroll			; if yes, branch
-		btst	#bitDn,(v_P1Held+1).w 	; is down being pressed?
+		btst	#bitDn,(v_jpadhold2).w 	; is down being pressed?
 		bne.s	Sonic_ChkRoll		; if yes, branch
 
 
 	@noroll:
 		cmpi.b	#id_Crouch,obAnim(a0) 
 		beq.s	@noduck	
-		move.w	(v_P1Held).w,d0
+		move.b	(v_jpadhold2).w,d0
 		andi.b	#btnL+btnR,d0		; is left/right	being pressed?
 		bne.s	@noduck			; if yes, branch
-		btst	#bitDn,(v_P1Held+1).w 	; is down being pressed?
+		btst	#bitDn,(v_jpadhold2).w 	; is down being pressed?
 		bne.s	@duck			; if yes, branch
 	@noduck:
 		cmpi.b  #$FF,(v_lastlamp).w   	; was last lamp no.FF (did we switch acts)

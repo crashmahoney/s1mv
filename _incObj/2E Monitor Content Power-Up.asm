@@ -110,7 +110,7 @@ Pow_Goggles: ;The Goggles monitor changes depending on the zone.
 ;		bra.s   @showcard
 @showcard:
 ; 		move.b	#1,(f_lockctrl).w	; lock controls
-;		move.w	#btnNone<<8,(v_P1Held+1).w ; make Sonic stop
+;		move.w	#btnNone<<8,(v_jpadhold2).w ; make Sonic stop
 		music   bgm_extralife
 		move.b	#id_GotPowUpCard,(v_objspace+$5C0).w   ; load PowerUp Card
 		move.b	#$04,obRender(a0)		; put powerup behind card

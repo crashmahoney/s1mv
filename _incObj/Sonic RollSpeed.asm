@@ -20,12 +20,12 @@ Sonic_RollSpeed:			; XREF: Obj01_MdRoll
 		bne.w	loc_131CC
 		tst.w	$3E(a0)
 		bne.s	@notright
-		btst	#bitL,(v_P1Held+1).w ; is left being pressed?
+		btst	#bitL,(v_jpadhold2).w ; is left being pressed?
 		beq.s	@notleft	; if not, branch
 		bsr.w	Sonic_RollLeft
 
 	@notleft:
-		btst	#bitR,(v_P1Held+1).w ; is right being pressed?
+		btst	#bitR,(v_jpadhold2).w ; is right being pressed?
 		beq.s	@notright	; if not, branch
 		bsr.w	Sonic_RollRight
 

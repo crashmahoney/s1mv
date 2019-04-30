@@ -26,7 +26,7 @@ Hang_Main:
 	tst.b	(a2)					; is sonic hanging on already?
 	beq.s	@chk_timer				; if not, branch
 
-	move.w	(v_Ctrl1Held).w,d0
+	move.w	(v_jpadhold1).w,d0
 	andi.b	#btnABC,d0				; is a, b, or c pressed?
 	beq.w	@rts					; if not, branch
 

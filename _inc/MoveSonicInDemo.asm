@@ -17,7 +17,7 @@ DemoRecorder:
 		lea	($80000).l,a1
 		move.w	(v_btnpushtime1).w,d0
 		adda.w	d0,a1
-		move.w	(v_Ctrl1Held).w,d0
+		move.b	(v_jpadhold1).w,d0
 		cmp.b	(a1),d0
 		bne.s	@next
 		addq.b	#1,1(a1)
@@ -34,7 +34,7 @@ DemoRecorder:
 ; ===========================================================================
 
 MDemo_On:				; XREF: MoveSonicInDemo
-		tst.w	(v_Ctrl1Held).w	; is start button pressed?
+		tst.b	(v_jpadhold1).w	; is start button pressed?
 		bpl.s	@dontquit	; if not, branch
 		tst.w	(f_demo).w	; is this an ending sequence demo?
 		bmi.s	@dontquit	; if yes, branch
@@ -63,7 +63,7 @@ MDemo_On:				; XREF: MoveSonicInDemo
 		move.w	(v_btnpushtime1).w,d0
 		adda.w	d0,a1
 		move.b	(a1),d0
-		lea	(v_Ctrl1Held).w,a0
+		lea	(v_jpadhold1).w,a0
 		move.b	d0,d1
 ; 		if Revision=0
 		move.b	-2(a0),d2
@@ -71,7 +71,6 @@ MDemo_On:				; XREF: MoveSonicInDemo
 ; 			moveq	#0,d2
 ; 		endc
 		eor.b	d2,d0
-		clr.b	(a0)+
 		move.b	d1,(a0)+
 		and.b	d1,d0
 		move.b	d0,(a0)+
