@@ -28,7 +28,7 @@ GM_Race:
 
 		move.w	#0,(f_hbla_pal).w
 		bsr.w	ClearScreen
-		andi.w	#btnABC,(v_Ctrl1Held).w ; is a button being held?
+		andi.w	#J_ABC,(v_Ctrl1Held).w ; is a button being held?
 		beq.s	@nosoundtest	; if not, branch
 	@soundtest:
                 move.b  #$04, (v_levselpage).w  ; choose sound test menu

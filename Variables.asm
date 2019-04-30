@@ -10,6 +10,7 @@ v_256x256:	=   $FF0000		; 256x256 tile mappings ($A400 bytes)
 
 
 	rsset $FFFF9600
+CTRL_STORE_REGS REG d0-d3/a0-a2
 v_Ctrl1Held	rs.w 1		; held buttons for controller 1
 v_Ctrl1Press	rs.w 1		; pressed buttons for controller 1
 v_Ctrl2Held	rs.w 1		; held buttons for controller 2
