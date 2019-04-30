@@ -369,7 +369,7 @@ loc_1A142:
 		bne.s	loc_1A15C
 		addq.b	#2,$34(a0)
 		move.w	#-$180,obVelY(a0)
-		move.b	#1,obColProp(a0)
+		move.b	#3,obColProp(a0)				; no of hits for fleeing eggman
 
 loc_1A15C:
 		lea	Ani_SEgg(pc),a1

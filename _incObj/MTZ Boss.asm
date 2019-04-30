@@ -889,6 +889,7 @@ loc_32BC2:
 	bgt.s	return_32BDA
 	move.b	#$14,obFrame(a0)
 	move.b	#6,obAnim(a0)
+	jsr	MTZBoss_MakeEplosion
 	addq.b	#2,obRoutine(a0)
 
 return_32BDA:
@@ -954,12 +955,14 @@ loc_32C66:
 ; loc_32C76:
 	move.b	#$14,obFrame(a0)
 	move.b	#6,obAnim(a0)
+	jsr	MTZBoss_MakeEplosion
 
 loc_32C82:
 	cmpi.b	#-1,obColProp(a0)
 	bgt.s	return_32C96
 	move.b	#$14,obFrame(a0)
 	move.b	#6,obAnim(a0)
+	jsr	MTZBoss_MakeEplosion
 
 return_32C96:
 	rts
@@ -971,6 +974,14 @@ MTZBossOrb_8_Destroy:
 	movea.l	MtzBoss_parent(a0),a1 ; a1=object
 	subi.b	#1,bouncing_orb_count(a1)
 	bra.w	JmpTo61_DeleteObject
+; ===========================================================================
+MTZBoss_MakeEplosion:
+	jsr	FindNextFreeObj
+	move.b	#$3f,(a1);explosion
+	move.w	$8(a0),$8(a1);x
+	move.w	$C(a0),$C(a1);y
+	ori.b	#4,obRender(a1)
+	rts
 ; ===========================================================================
 
 MTZBoss_LazerObject:           ; Main boss object Routine $4
