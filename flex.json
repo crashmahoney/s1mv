@@ -1,0 +1,162 @@
+{
+    "description": "Flex 2 Project File",
+    "name": "s1mv",
+    "objects": [
+        {
+            "name": "Turtroll",
+            "palettes": [
+                {
+                    "path": "palette\\Green Hill Zone.bin",
+                    "length": 1
+                }
+            ],
+            "art": {
+                "path": "artnem\\Enemy Turtroll.bin",
+                "compression": "Nemesis"
+            },
+            "mappings": {
+                "path": "_maps\\Turtroll.asm",
+                "format": "Sonic 1",
+                "customDefinition": "",
+                "label": ""
+            },
+            "dplcs": {
+                "enabled": false,
+                "path": "",
+                "format": "Sonic 1",
+                "customDefinition": "",
+                "label": ""
+            }
+        },
+        {
+            "name": "Gunstar Explosion",
+            "palettes": [
+                {
+                    "path": "palette\\Green Hill Zone.bin",
+                    "length": 2
+                }
+            ],
+            "art": {
+                "path": "artkosm\\Gunstar Explosion.kosm",
+                "compression": "Kosinski-M"
+            },
+            "mappings": {
+                "path": "_maps\\Gunstar Explosion.asm",
+                "format": "Sonic 1",
+                "customDefinition": "",
+                "label": ""
+            },
+            "dplcs": {
+                "enabled": false,
+                "path": "",
+                "format": "Sonic 1",
+                "customDefinition": "",
+                "label": ""
+            }
+        },
+        {
+            "name": "Teleporter",
+            "palettes": [
+                {
+                    "path": "palette\\Green Hill Zone.bin",
+                    "length": 2
+                }
+            ],
+            "art": {
+                "path": "artkosm\\Teleporter.kosm",
+                "compression": "Kosinski-M"
+            },
+            "mappings": {
+                "path": "_maps\\Teleporter.asm",
+                "format": "Sonic 1",
+                "customDefinition": "",
+                "label": ""
+            },
+            "dplcs": {
+                "enabled": false,
+                "path": "",
+                "format": "Sonic 1",
+                "customDefinition": "",
+                "label": ""
+            }
+        },
+        {
+            "name": "Homing Target",
+            "palettes": [
+                {
+                    "path": "palette\\Green Hill Zone.bin",
+                    "length": 3
+                }
+            ],
+            "art": {
+                "path": "artnem\\HomingTarget.bin",
+                "compression": "Nemesis"
+            },
+            "mappings": {
+                "path": "_maps\\HomingTarget.asm",
+                "format": "Sonic 1",
+                "customDefinition": "",
+                "label": ""
+            },
+            "dplcs": {
+                "enabled": false,
+                "path": "",
+                "format": "Sonic 1",
+                "customDefinition": "",
+                "label": ""
+            }
+        },
+        {
+            "name": "Island",
+            "palettes": [
+                {
+                    "path": "palette\\Green Hill Zone.bin",
+                    "length": 2
+                }
+            ],
+            "art": {
+                "path": "artnem\\Island.bin",
+                "compression": "Nemesis"
+            },
+            "mappings": {
+                "path": "_maps\\Island.asm",
+                "format": "Sonic 1",
+                "customDefinition": "",
+                "label": ""
+            },
+            "dplcs": {
+                "enabled": false,
+                "path": "",
+                "format": "Sonic 1",
+                "customDefinition": "",
+                "label": ""
+            }
+        },
+        {
+            "name": "Splats",
+            "palettes": [
+                {
+                    "path": "palette\\Green Hill Zone.bin",
+                    "length": 1
+                }
+            ],
+            "art": {
+                "path": "artnem\\Enemy Splats.bin",
+                "compression": "Nemesis"
+            },
+            "mappings": {
+                "path": "_maps\\Splats.asm",
+                "format": "Sonic 1",
+                "customDefinition": "",
+                "label": ""
+            },
+            "dplcs": {
+                "enabled": false,
+                "path": "",
+                "format": "Sonic 1",
+                "customDefinition": "",
+                "label": ""
+            }
+        }
+    ]
+}

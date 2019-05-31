@@ -8,28 +8,6 @@ v_errortype:	= $FFFFFC48		; error type
 
 v_256x256:	=   $FF0000		; 256x256 tile mappings ($A400 bytes)
 
-Ring_status_table	= $FFFF9400		; $400 bytes ; 1 word per ring
-Ring_consumption_table	= $FFFF9800	; $80 bytes ; stores the addresses of all rings currently being consumed
-Ring_consumption_count	= $FFFF9800	; word ; the number of rings being consumed currently
-Ring_consumption_list	= $FFFF9802	; $7E bytes ; the remaining part of the ring consumption table
-Ring_start_addr_ROM	= $FFFF9880		; long ; address in the ring layout of the first ring whose X position is >= camera X position - 8
-Ring_end_addr_ROM	= $FFFF9884		; long ; address in the ring layout of the first ring whose X position is >= camera X position + 328
-Ring_start_addr_RAM = $FFFF9888		; word ; address in the ring status table of the first ring whose X position is >= camera X position - 8
-Rings_manager_routine	= $FFFF9889	; byte
-
-<<<<<<< HEAD
-	rsset $FFFF9600
-CTRL_STORE_REGS REG d0-d3/a0-a2
-v_Ctrl1Held	rs.w 1		; held buttons for controller 1
-v_Ctrl1Press	rs.w 1		; pressed buttons for controller 1
-v_Ctrl2Held	rs.w 1		; held buttons for controller 2
-v_Ctrl2Press	rs.w 1		; pressed buttons for controller 2
-v_Ctrl1State	rs.b 2		; ctrl 1 and 2 state (0 = 3-button, $FF = 6-button)
-
-
-v_minimap_buffer = $FFFF9690	;$200 bytes
-=======
->>>>>>> parent of e836cf1... Merge pull request #1 from crashmahoney/six_button
 v_LZ_Waterline_Buffer: = $FFFF9890	; $300 bytes, dma buffer for lz waterline, used in LZ only
 v_minimap_buffer = v_LZ_Waterline_Buffer	;$200 bytes
 Kos_queue_ram =			$FFFF9B90	; formerly $FFFFF460

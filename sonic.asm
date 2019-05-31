@@ -276,14 +276,8 @@ GameInit:
 	        jsr	(InitDMAQueue).l
         	bsr.w	VDPSetupGame
 		bsr.w	SoundDriverLoad
-<<<<<<< HEAD
-;		bsr.w	JoypadInit
-;		move.b	#id_Sega,(v_gamemode).w ; set Game Mode to Sega Screen
-		move.b	#id_Race,(v_gamemode).w ; set Game Mode to Sega Screen
-=======
 		bsr.w	JoypadInit
 		move.b	#id_Sega,(v_gamemode).w ; set Game Mode to Sega Screen
->>>>>>> parent of e836cf1... Merge pull request #1 from crashmahoney/six_button
 
 MainGameLoop:
 		move.b	(v_gamemode).w,d0 ; load Game Mode

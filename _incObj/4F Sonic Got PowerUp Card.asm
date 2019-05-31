@@ -177,7 +177,6 @@ locret_PowUpC748:
 
 
 GotPowUp_Delete:
-		clr.b	(f_lockctrl).w	; unlock controls
                 bsr.w	DeleteObject
 FindCardObj:                                  ; check to see if the card is left onscreen
 		lea	(v_objspace).w,a1 ; start address for object RAM
@@ -191,9 +190,17 @@ FindCardObj:                                  ; check to see if the card is left
 		dbf	d0,FCard_Loop	; repeat $80 times
 GotPowUp_ChangeArt:
 		jsr	(LoadAnimalExplosion).l ; load animal patterns
+	; part of LoadTilesFromStart, only does the foreground	
 		move.w	#$2700,sr
-		jsr     LoadTilesFromStart
+		lea	($C00004).l,a5
+		lea	($C00000).l,a6
+		lea	(v_screenposx).w,a3
+		movea.l	(v_lvllayout).w,a4
+		move.w	#$4000,d2
+		jsr	DrawChunks
 		move.w	#$2300,sr
+		
+		clr.b	(f_lockctrl).w	; unlock controls
 
 dontloadgfx:
                 rts

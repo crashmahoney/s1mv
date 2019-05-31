@@ -28,7 +28,7 @@ GM_Race:
 
 		move.w	#0,(f_hbla_pal).w
 		bsr.w	ClearScreen
-		andi.w	#J_ABC,(v_Ctrl1Held).w ; is a button being held?
+		andi.b	#btnABC,(v_jpadhold1).w ; is a button being held?
 		beq.s	@nosoundtest	; if not, branch
 	@soundtest:
                 move.b  #$04, (v_levselpage).w  ; choose sound test menu
@@ -101,7 +101,7 @@ Race_MainLoop:
 		addq.w	#1,(v_framecount).w		; add 1 to level timer
 		jsr	(Process_Kos_Module_Queue).l
 
-		move.w  (v_Ctrl1Press).w, D0
+		move.b  (v_jpadhold1).w, D0
 		andi.b	#btnStart,d0	              ; is start pressed?
 		bne.s   @startpressed
 
