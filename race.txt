@@ -1,0 +1,10 @@
+Palette File: palette/Race Stage.bin
+Mapping File: tilemaps/sky.eni
+Art File: artkosm/race_sky.unc
+Mapping Compression: Enigma
+Art Compression: None
+x-Size: 40
+y-Size: 16
+Tile Offset: 0x00
+Letter Offset: 0x0E
+Number Offset: 0x00

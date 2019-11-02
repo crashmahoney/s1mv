@@ -1,7 +1,7 @@
 WorldMapTopLeft: ; x, y positions for top left of each act
 ;		 act0		act1	act2	act3
 	dc.b 9, 18,		20, 14, 	0, 0, 	0, 0	;ghz
-	dc.b 0, 0,		0, 0,	0, 0,	0, 0	;lz
+	dc.b 40, 0,		0, 0,	0, 0,	0, 0	;lz
 	dc.b 28, 17,	0, 0,	0, 0,	0, 0	;mz
 	dc.b 0, 0,		0, 0,	0, 0,	0, 0	;slz
 	dc.b 0, 0,		0, 0,	0, 0,	0, 0	;syz

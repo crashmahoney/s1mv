@@ -606,7 +606,7 @@ VBla_1A:
 		writeCRAM	v_pal1_wat,$80,0
 		writeVRAM	v_scrolltable,$380,vram_hscroll
 		writeVRAM	v_sprites,$280,vram_sprites
-                jsr	(ProcessDMAQueue).l
+		jsr	(ProcessDMAQueue).l
 		move.w	(v_hbla_hreg).w,(a5)
 		bra.w	sub_1642
 
@@ -614,8 +614,6 @@ VBla_1A:
 ; ===========================================================================
 ; Race Stage Vblank routine
 VBla_1C:
-		move.l	#$40000010,($C00004).l
-		move.w	#-96,($C00000).l ; send screen y-axis pos. to VSRAM
 		move.l	#HBlank_Road1,(H_int_addr).w  ; hblank code address to jump to
 		move.w	#$8A00+47,(v_hbla_hreg).w ; set hblank trigger scanline /2
 		move.w	(v_hbla_hreg).w,($C00004).l
@@ -732,35 +730,6 @@ HBlank2:        ; background colour gradient
 		rte
 
 
-HBlank_Road1:
-		move.l	#$40000010,($C00004).l
-		move.w	#-0096,($C00000).l ; send screen y-axis pos. to VSRAM
-		move.w	#$8A00,(v_hbla_hreg).w
-		move.w	(v_hbla_hreg).w,($C00004).l	 ; set next hblank trigger
-		move.w	#HBlank_Road2,(H_int_addr+2).w  ; hblank code address to jump to
-		rte
-
-HBlank_Road2:
-		move.w	#HBlank_Road3,(H_int_addr+2).w  ; hblank code address to jump to
-		lea		($FFFF4100).l,a6
-		move.w	(v_framecount).w,d6
-		muls.w	#300,d6
-	;	and.w	#$FFF,d6
-		rte
-
-HBlank_Road3:
-		move.l	#$40000010,($C00004).l
-		move.w	-(a6),d0
-		add.w	d6,d0
-		btst	#12,d0
-		beq.s	@road2
-	@road1:
-		move.w	#32,($C00000).l ; send screen y-axis pos. to VSRAM
-		rte		
-
-	@road2:
-		move.w	#-0096,($C00000).l ; send screen y-axis pos. to VSRAM
-		rte	
 ; ---------------------------------------------------------------------------
 ; Subroutine to	initialise joypads
 ; ---------------------------------------------------------------------------
@@ -2324,14 +2293,21 @@ GM_Sega:				; XREF: GameModeArray
 		bsr.w	ClearScreen
 
        ; test for button held, go to sound test
-       if StartupSoundtest=1
-		andi.b	#btnABC,(v_jpadhold1).w ; is a button being held?
-		beq.s	@nosoundtest	; if not, branch
-                move.b  #$04, (v_levselpage).w  ; choose sound test menu
-                move.b  #$01, (v_menupagestate).l  ; go straight to menu
-                jmp     Pause_Menu               ; go to menu
-       @nosoundtest:
-                endif
+	if StartupSoundtest=1
+		move.b	(v_jpadhold1).w,d0
+		andi.b	#btnAB,d0 					; is a button being held?
+		beq.s	@nosoundtest				; if not, branch
+		move.b  #$04, (v_levselpage).w  	; choose sound test menu
+		move.b  #$01, (v_menupagestate).l  	; go straight to menu
+		jmp     Pause_Menu               	; go to menu
+    @nosoundtest:
+		move.b	(v_jpadhold1).w,d0
+		andi.b	#btnC,d0 					; is a button being held?
+		beq.s	@noracemode				; if not, branch
+		move.b	#id_Race,(v_gamemode).w 	; go to race mode
+		rts		
+	@noracemode:
+	endif
 		locVRAM	0
 		lea	(Nem_SegaLogo).l,a0 ; load Sega	logo patterns
 		bsr.w	NemDec
@@ -2382,11 +2358,11 @@ Sega_WaitEnd:
 		beq.s	Sega_WaitEnd	; if not, branch
 		
 Sega_GotoTitle:
-		move.b	#id_Race,(v_gamemode).w ; go to title screen
+		move.b	#id_Title,(v_gamemode).w ; go to title screen
 		rts
 
 Sega_GotoSSRG:
-		move.b	#id_SSRG,(v_gamemode).w ; go to SSRG screen
+		move.b	#id_Race,(v_gamemode).w ; go to SSRG screen
 		rts
 
 
@@ -5240,15 +5216,11 @@ locret_6C1E:
 
 
 Calc_VRAM_Pos:				; XREF: LoadTilesAsYouMove; et al
-		if Revision=0
-		add.w	4(a3),d4
-		add.w	(a3),d5
-		else
-			add.w	(a3),d5
-	Calc_VRAM_Pos_2:
-			add.w	4(a3),d4
-		endc
-		andi.w	#$F0,d4
+
+		add.w	(a3),d5				; add screen x pos to 0
+Calc_VRAM_Pos_2:
+		add.w	4(a3),d4			; add screen y pos to y drawin position
+		andi.w	#$F0,d4				; round to 16 px increments
 		andi.w	#$1F0,d5
 		lsl.w	#4,d4
 		lsr.w	#2,d5
@@ -5315,20 +5287,20 @@ LoadTilesFromStart:			; XREF: GM_Level; GM_Ending
 
 
 DrawChunks:				; XREF: LoadTilesFromStart
-		moveq	#-$10,d4
-		moveq	#$F,d6
+		moveq	#-$10,d4				; start drawing tiles at 16 px above screen y pos
+		moveq	#$F,d6					; loop to draw 16 rows of tiles
 
 	@loop:
 		movem.l	d4-d6,-(sp)
 		moveq	#0,d5
-		move.w	d4,d1
-		bsr.w	Calc_VRAM_Pos
-		move.w	d1,d4
+		move.w	d4,d1					; save y drawing position
+		bsr.w	Calc_VRAM_Pos			; leaves vram position to start drawing tiles to in d0
+		move.w	d1,d4					; restore y position
 		moveq	#0,d5
-		moveq	#$1F,d6
+		moveq	#$1F,d6					
 		bsr.w	DrawTiles_LR_2
 		movem.l	(sp)+,d4-d6
-		addi.w	#$10,d4
+		addi.w	#$10,d4					; increment y pos
 		dbf	d6,@loop
 		rts	
 ; End of function DrawChunks
@@ -10244,6 +10216,12 @@ KosM_RaceRoad:
 				even
 Eni_RaceRoad:	incbin "tilemaps\Road.eni"
                 even        
+
+KosM_RaceSky:
+				incbin "artkosm\race_sky.kosm"
+				even
+Eni_RaceSky:	incbin "tilemaps\sky.eni"
+                even  
 
 
 	if VladDebug = 0

@@ -244,10 +244,10 @@ v_sonicend:	= $FFFFF7D7		; routine counter for Sonic in the ending sequence
 f_switch:	= $FFFFF7E0		; flags set when Sonic stands on a switch ($10 bytes)
 
 v_sprites:	= $FFFFF800		; sprite table ($200 bytes)
-v_pal0_wat:	= $FFFFFA00		; duplicate palette data - underwater ($80 bytes)
-v_pal0_dry:	= $FFFFFA80		; duplicate palette data - main ($80 bytes)
-v_pal1_wat:	= $FFFFFB00		; palette data - underwater ($80 bytes)
-v_pal1_dry:	= $FFFFFB80		; palette data - main ($80 bytes)
+v_pal0_wat:	= $FFFFFA00		; duplicate underwater palette, used for transitions ($80 bytes)
+v_pal0_dry:	= $FFFFFA80		; main underwater palette ($80 bytes)
+v_pal1_wat:	= $FFFFFB00		; main palette ($80 bytes)
+v_pal1_dry:	= $FFFFFB80		; duplicate palette, used for transitions ($80 bytes)
 
 
 

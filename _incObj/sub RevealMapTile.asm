@@ -83,7 +83,17 @@ DrawMiniMap:
 		dbf	d1,@clearbuffer
 
 		lea	WorldMap,a1			; 4 x 4 tile mappings
-		sub.w	#323,d0				
+		moveq	#0,d6
+		move.w	#(16*4*4)+6,d6	; where to draw highhight later, in pixels
+		sub.w	#(80*4)+3,d0	; start	drawing from 4 rows up, 3 columns back		
+		bcc.s	@inbounds
+
+	@addrow:	
+		add.w	#80,d0			; change where to start drawing from
+		sub.w	#16*4,d6			; change where to draw highlight
+		bcc.s	@addrow
+
+@inbounds:			
 		lea	(a1,d0.l),a1			; first tile to draw
 		lea	(v_worldmap).w,a0
 		moveq	#0,d4
@@ -99,7 +109,7 @@ DrawMiniMap:
 @dorow:
 ; the most confusing way to do loop unrolling :P
 DoMapTile:	macro	
-		moveq	#0,d0
+		moveq	#0,d0		
 		move.b	(a1)+,d0			; get tile id to draw
 ;		beq.s	@\@nexttile			; if blank tile, skip
 
@@ -165,6 +175,17 @@ DoMapTile:	macro
 		lea	9(a0),a0		
 		dbf	d3,@dorow
 
+
+@map_pointer:
+		lea		(v_minimap_buffer).w,a3
+		adda.w	d6,a3				; add highlight position
+		moveq	#3,d1				; loop 4 times
+	@highlight:
+		move.w	(a3),d0				; get 4 pixels
+		eori.w	#$1111,d0			; invert colours
+		move.w	d0,(a3)				
+		adda.w	#16,a3				; advance to next row
+		dbf		d1,@highlight
 
 	;	move.l	#v_minimap_buffer,d1
 	;	move.l	#$DC00,d2

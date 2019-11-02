@@ -26,32 +26,6 @@ HUD_Update:
 		dbf	d1,@transfercolumn
 		clr.b	(v_minimap_update).w		; clear update flag 
 ; ---------------------------------------------------------------------------
-@map_pointer:
-
-		locVRAMread	$DCC2
-		move.w	(a6),d0				; get 4 pixels
-		eori.w	#$1111,d0			; invert colours
-		locVRAM	$DCC2
-		move.w	d0,(a6)
-
-		locVRAMread	$DCC6
-		move.w	(a6),d0				; get 4 pixels
-		eori.w	#$1111,d0			; invert colours
-		locVRAM	$DCC6
-		move.w	d0,(a6)
-
-		locVRAMread	$DCCA
-		move.w	(a6),d0				; get 4 pixels
-		eori.w	#$1111,d0			; invert colours
-		locVRAM	$DCCA
-		move.w	d0,(a6)
-
-		locVRAMread	$DCCE
-		move.w	(a6),d0				; get 4 pixels
-		eori.w	#$1111,d0			; invert colours
-		locVRAM	$DCCE
-		move.w	d0,(a6)
-
 
 	@chkscore:
 		tst.b	(f_scorecount).w ; does the score need updating?
