@@ -339,9 +339,12 @@ Art_Text:	incbin	"artunc\menutext.bin" ; text used in level select and debug mod
 ; ---------------------------------------------------------------------------
 
 VBlank:					; XREF: Vectors
-        movem.l	d0-a6,-(sp)                   ; save registers to stack
+        movem.l	d0-a6,-(sp)                   ; save registers to stack    
 		tst.b	(v_vbla_routine).w
 		beq		VBla_00
+
+		move.w	#$8004,($C00004).l	; disable H-interrupts
+
 
 		tst.b	(v_cpumeter).w
 		beq.s	@skipcpumeter
@@ -349,7 +352,7 @@ VBlank:					; XREF: Vectors
 		move.w	#$8004,(VDP_control_port).l	; turn sms vdp mode off
 	@skipcpumeter:	
 
-		move.w	($C00004).l,d0
+;		move.w	($C00004).l,d0
 		move.l	#$40000010,($C00004).l
 		move.l	(v_scrposy_dup).w,($C00000).l ; send screen y-axis pos. to VSRAM
 		move.l	(v_scrposy_dup).w,(v_screenYstretch).w ; send screen y-axis pos.
@@ -406,7 +409,11 @@ VBla_00:				; XREF: VBlank; VBla_Index
 		cmpi.b	#id_LZ,(v_zone).w ; is level LZ ?
 		bne.w	VBla_Music	; if not, branch
 
-		move.w	($C00004).l,d0
+	;	move.w	($C00004).l,d0
+
+		move.w	#$8004,($C00004).l	; disable H-interrupts
+		move.l	#$40000010,($C00004).l
+		move.l	(v_scrposy_dup).w,($C00000).l ; send screen y-axis pos. to VSRAM	
     if PALWait=1
 		btst	#6,(v_megadrive).w ; is Megadrive PAL?
 		beq.s	@notPAL		; if not, branch
