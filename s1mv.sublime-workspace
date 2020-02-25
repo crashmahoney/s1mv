@@ -4,6 +4,22 @@
 		"selected_items":
 		[
 			[
+				"v_roa",
+				"v_roadxpos"
+			],
+			[
+				"FF",
+				"FF0000"
+			],
+			[
+				"Hb",
+				"HBlank_Road2"
+			],
+			[
+				"stripe",
+				"v_stripetable"
+			],
+			[
 				"std",
 				"stdlib.h\tstandard header"
 			],
@@ -28,54 +44,10 @@
 	"buffers":
 	[
 		{
-			"file": "sonic.asm",
-			"settings":
-			{
-				"buffer_size": 287888,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "SSRG/SSRG.asm",
-			"settings":
-			{
-				"buffer_size": 30943,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "palette/Cycle - GHZ Night.bin",
-			"settings":
-			{
-				"buffer_size": 32,
-				"encoding": "Western (Windows 1252)",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "_incObj/sub RevealMapTile.asm",
-			"settings":
-			{
-				"buffer_size": 5821,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "/D/Games/Doom/crashwad/zscript/Dynamic Difficulty.zs",
-			"settings":
-			{
-				"buffer_size": 6073,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
 			"file": "SonPLN.ini",
 			"settings":
 			{
-				"buffer_size": 1332,
+				"buffer_size": 1533,
 				"line_ending": "Windows"
 			}
 		},
@@ -88,123 +60,154 @@
 			}
 		},
 		{
-			"file": "_inc/Palette Pointers.asm",
-			"settings":
-			{
-				"buffer_size": 3324,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"contents": "v_roadxpos\t=\t$FFFFF000\t; word\nv_roadxoffset\t=\t$FFFFF002\t; word\nv_roadspeed\t=\t$FFFFF004\t; long\nv_roadzpos\t=\t$FFFFF008\t; word\nv_skyxpos\t=\t$FFFFF00A\t; long\nv_roadscanline\t=\t$FFFFF00E\t; word\nGM_Race:\n\n\t;bra.s\t@soundtest\n\t\tmove.b\t#musFadeOut,d0\n\t;\tjsr\tPlaySound_Special \t\t; stop music\n\t\tbsr.w\tClearPLC\n\t\tbsr.w\tPaletteWhiteOut\n\n\t\tmusic\tbgm_MZ\n\n\t; turn off display\t\n\t\tmove.w\t(v_vdp_buffer1).w,d0\n\t\tandi.b\t#$BF,d0\n\t\tmove.w\td0,($C00004).l\n\n\t\tmove\t#$2700,sr\t\t\t; Mask all interrupts\n\t\tlea\t($C00004).l,a6\n\t\tmove.w\t#$8004,(a6)\t\t\t; use 8-colour mode\n\t\tmove.w\t#$8134,(a6)\t\t\t; enable vblank\n\t\tmove.w\t#$8200+(vram_fg>>10),(a6) \t; set foreground nametable address\n\t\tmove.w\t#$8400+($A000>>13),(a6) \t; set background nametable address\n\t\tmove.w\t#$8500+(vram_sprites>>9),(a6) \t; set sprite table address\n\t\tmove.w\t#$8700,(a6)\t\t\t; set background colour (palette entry 0)\n\t\tmove.w\t#$8B03,(a6)\t\t\t; line scroll mode\n\t\tmove.w\t#$9003,(a6)\t\t\t; 128 x 32-cell plane size\n\t\tclr.w\t(v_sgfx_buffer).w\t\t\t; +++ ProcessDMAQueue crap\n\t\tmove.w\t#v_sgfx_buffer,(v_vdp_buffer_slot).w   ; +++\n\t\tclr.b\t(f_wtr_state).w\n\n\t\tmove.w\t#0,(f_hbla_pal).w\n\t\tbsr.w\tClearScreen\n\n; set starting values\n\tmove.w\t#0,(v_roadxpos).l\t\t; starting x position\n\tmove.w\t#0,(v_roadxoffset).l\t\t; starting x offset\n\tmove.w\t#0,(v_roadspeed).l\t\t; starting speed\n\n\n\t\tjsr\tInitDMAQueue\n\n;load tile graphics\n\t\tlea\t(KosM_RaceRoad).l,a1\t\t; moduled art to load\n\t\tmoveq\t#$0000,d2\t\t\t; vram location to load to\n\t\tjsr\t(Queue_Kos_Module).l\t\t; add to queue\n\t\tlea\t(KosM_RaceSky).l,a1\t\t; moduled art to load\n\t;\tmove.l\t#$C0*$20,d2\t\t\t; vram location to load to\n\t\tjsr\t(Queue_Kos_Module).l\t\t; add to queue\n@loadgfx:\n\t\tmove.b  #$1C, (v_vbla_routine).w\n\t\tjsr\t(Process_Kos_Queue).l\n\t\tjsr     WaitForVBla\n\t\tjsr\t(Process_Kos_Module_Queue).l\n\t\ttst.b\t(Kos_modules_left).w\n\t\tbne.s\t@loadgfx\n\n\t\tmove\t#$2300,sr\t\t\t; interrupts on\n\n\t\tmove.b  #$1C, (v_vbla_routine).w\n\t\tjsr\t(Process_Kos_Queue).l\n\t\tjsr     WaitForVBla\n\t;\tmove\t#$2700,sr\t\t\t; interrupts off\n; load road mappings\t\t\n\t\tlea\t($FF0000).l,a1\n\t\tlea\t(Eni_RaceRoad).l,a0 \t\t; load road mappings\n\t\tmove.w\t#0,d0\n\t\tbsr.w\tEniDec\n\t\tcopyTilemap\t$FF0000,$A000,63,63\n; load sky mappings\n\t\tmove.b  #$1C, (v_vbla_routine).w\n\t\tjsr\t(Process_Kos_Queue).l\n\t\tjsr     WaitForVBla\n\t\tlea\t($FF0000).l,a1\n\t\tlea\t(Eni_RaceSky).l,a0 \t\t; load road mappings\n\t\tmove.w\t#4,d0\t\t\t\t; offset\n\t\tbsr.w\tEniDec\n\t\tcopyTilemap\t$FF0000,$C000,63,31\n\n\n; load palette\t\t\n\t\tmoveq\t#palid_Race,d0\n  \t\tbsr.w\tPalLoad2\t\t\t; load race stage palette\n\n; turn on display\t\t\t\n\t\tmove.w\t(v_vdp_buffer1).w,d0\n\t\tori.b\t#$40,d0\n\t\tmove.w\td0,($C00004).l\n\t\tmove.w\t#$8014,($C00004).l\t; enable H-interrupts\n\t\tmove.l\t#HBlank_Road1,(H_int_addr).w  ; hblank code address to jump to\n\t\tmove.w\t#$8A00+48,(v_hbla_hreg).w ; set hblank trigger scanline /2\n\t\tmove.w\t(v_hbla_hreg).w,($C00004).l\n\t\tmove.l\t#$40000010,($C00004).l\n\t\tmove.l\t#$00200020,($C00000).l\n\t;\tbsr.w\tPaletteWhiteIn\n; ---------------------------------------------------------------------------\n; Main Loop ;)\n\nRace_MainLoop:\n\tmove.b\t#$1C,(v_vbla_routine).w\n\tjsr\t(Process_Kos_Queue).l\n\tbsr.w\tWaitForVBla\n\tmove.w\t#$8014,($C00004).l\t; enable H-interrupts\n\n\t\t\n\n; add speed to road position\n\tmoveq\t#0,d0\n\tmove.w\t(v_roadzpos).w,d0\n\tadd.w\t(v_roadspeed).w,d0\n\tmove.w\td0,(v_roadzpos).w\n\tmove.w\td0,(v_roadscanline).w\n; reset screen y position\n\tmove.l\t#$001F0020,(v_scrposy_dup).w\n\tbsr.w\tDeformRoadLayers\n\n\taddq.w\t#1,(v_framecount).w\t\t; add 1 to level timer\n\n; joypad\n@move:\n\tmove.b\t(v_jpadhold1).w,d0\n\n\tbtst\t#bitL,d0\t\t\t; is left pressed?\n\tbeq.s\t@chkR\n\tcmpi.w\t#80,(v_roadxoffset).w\t\t\n\tbge.s\t@chkR\n\tadd.w\t#1,(v_roadxoffset).w\t\t; add to x position\n@chkR:\n\tbtst\t#bitR,d0\t\t\t; is left pressed?\n\tbeq.s\t@accel\n\tcmpi.w\t#-80,(v_roadxoffset).w\t\t\n\tble.s\t@accel\n\tsub.w\t#1,(v_roadxoffset).w\t\t; sub from x position\n@accel:\n\tbtst\t#bitUp,d0\t\t\t; is up pressed?\n\tbeq.s\t@decel\n\tsub.l\t#$00001000,(v_roadspeed).w\t; add to speed\n@decel:\n\tbtst\t#bitDn,d0\t\t\t; is down pressed?\n\tbeq.s\t@chkStart\n\tadd.l\t#$00001000,(v_roadspeed).w\t; sub from speed\n@chkStart:\n\tandi.b\t#btnStart,d0\t\t\t; is start pressed?\n\tbne.s   @startpressed\n\n\tjsr\t(Process_Kos_Module_Queue).l\n\tcmpi.b\t#id_Race,(v_gamemode).w\n\tbeq\tRace_MainLoop\n@startpressed:\n\tmove.b\t#id_Sega,(v_gamemode).w \t; set Game Mode to Sega Screen\n\trts\t\t\t\t\t; return to game mode select code\n\n\n; ---------------------------------------------------------------------------\n; generate line scroll list\n; ---------------------------------------------------------------------------\nDeformRoadLayers:\n\tlea\t(v_scrolltable).w,a1\t\t; ($FFFFCC00)\n\tmoveq\t#0,d0\n\tmove.l\t(v_skyxpos).l,d0\t\t; plane a x position\n\tadd.l\t#$00004000,(v_skyxpos).w\t; add 0.4\n\tmove.w\t#0,d0\t\t\t\t; clear for plane b\t\t\t\n\tmoveq\t#96,d2\t\t\t\t; # lines of sky\n@skyloop:\t\n\tmove.l\td0,(a1)+\t\t\t\n\tdbf\td2,@skyloop\n\n\tmoveq\t#127,d2\t\t\t\t; # lines of road\n\tmoveq\t#0,d1\t\t\t\t \n\tmoveq\t#0,d3\n\tmove.w\t(v_roadxpos).w,d0\t\t\t\n\tmove.w\t(v_roadxoffset).w,d3\t\t; distance offset\n\tswap\td3\t\t\t\t; extend to fixed point\n\tlsr.l\t#4,d3\t\t\t\t; divide it\n\tmove.w\td0,d1\t\t\t\t; copy of main x position\n\tsub.w\t#352,d1\t\t\t\t; centre on screen by subtracting (half of plane width - half of screen width) \n\n@roadloop:\t\n\n\tmove.w\td0,(a1)+\t\t\t; plane a\n\tmove.w\td1,(a1)+\t\t\t; plane b\n\n\tswap\td1\t\t\t\t; make fixed point\n\tadd.l\td3,d1\t\t\t\t; add offset\n\tswap\td1\t\t\t\t; make integer again\n\n\tdbf\td2,@roadloop\n\n; curve\n\n\n\n\n\n\tmoveq\t#1,d0\n\tmoveq\t#0,d1\n\tlea\tZ_map,a0\n@roadloop2:\n\tmove.w\t(a0)+,d1\n\tlsr.w\t#4,d1\n\n@roadloop3:\t\n\tadd.l\td0,-(a1)\t\n\tdbf\td1,@roadloop3\n\n\taddq\t#1,d0\n\n\tcmpa.l\t#v_scrolltable+96*4,a1\n\tbhi.s\t@roadloop2\n\n\trts\n\n; ---------------------------------------------------------------------------\n; hblank routine\n; ---------------------------------------------------------------------------\nHBlank_Road1:\n\t\tmove.w\t#$8A00,(v_hbla_hreg).w\t\t; trigger hblank every line now\n\t\tmove.w\t(v_hbla_hreg).w,($C00004).l\t; set next hblank trigger\n\t\tmove.w\t#HBlank_Road2,(H_int_addr+2).w\t; hblank code address to jump to\n\t\tlea\tZ_Map,a5\n; a5 register should not be touched outside of this code / hblank code\n\t\trte\n\nHBlank_Road2:\n\t\tmove.w\t(v_roadscanline).w,d0\n\t\tadd.w\t(a5)+,d0\n\t\tmove.w\td0,(v_roadscanline).w\n\t\tandi.w\t#$40,d0\n\t\tbne.s\t@stripe2\n\n\t\tmove.l\t#$40000010,($C00004).l\n\t\tmove.l\t#$001F0020,($C00000).l\t\t; send screen y-axis pos. to VSRAM\n\t\trte\t\t\n\t@stripe2:\n\t\tmove.l\t#$40000010,($C00004).l\n\t\tmove.l\t#$001F00A0,($C00000).l\t\t; send screen y-axis pos. to VSRAM\n\t\trte\t\n\n; ---------------------------------------------------------------------------\n\nPal_Race:\n\t\tincbin\t\"palette\\Race Stage.bin\"\n\t\teven\n\nZ_map:\n    dc.w    256, 128, 85, 64, 51, 42, 36, 32, 28, 25, 23, 21, 19, 18, 17, 16\n    dc.w    15, 14, 13, 12, 12, 11, 11, 10, 10, 9, 9, 9, 8, 8, 8, 8\n    dc.w    7, 7, 7, 7, 6, 6, 6, 6, 6, 6, 5, 5, 5, 5, 5, 5\n    dc.w    5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4\n    dc.w    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3\n    dc.w    3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2\n    dc.w    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2\n    dc.w    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2\n\n    even\n\n",
 			"file": "_inc/Race Stage.asm",
-			"file_size": 7183,
-			"file_write_time": 132173241645838306,
 			"settings":
 			{
-				"buffer_size": 6932,
+				"buffer_size": 13724,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "_inc/Enigma Decompression.asm",
+			"file": "/D/Games/Doom/crashwad/models/contain1.mtl",
 			"settings":
 			{
-				"buffer_size": 4985,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "/D/Sonic/Tools/Bitmap MD/Example ROM/_Source.asm",
-			"settings":
-			{
-				"buffer_size": 5053,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "_inc/Menu/Deform Layers.asm",
-			"settings":
-			{
-				"buffer_size": 1048,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "_inc/WorldMap.asm",
-			"settings":
-			{
-				"buffer_size": 6294,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "_inc/HUD_Update.asm",
-			"settings":
-			{
-				"buffer_size": 10639,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"contents": "0000000000000000\n1111111111111111\n0000000000000000\n1111111111111111\n0000000000000000\n1111111111111111\n0000000000000000\n1111111111111111\n0000000000000000\n1111111111111111\n0000000000000000\n1111111111111111\n0000000000000000\n1111111111111111\n0000000000000000\n1111111111111111\n0000000000000000\n1111111111111111\n0000000000000000\n1111111111111111\n0000000000000000\n1111111111111111\n0000000000000000\n1111111111111111\n0000000000000000\n1111111111111111\n\n\n\n\n\n0\n1\n0\n1\n0\n1\n\n\n\n",
-			"settings":
-			{
-				"buffer_size": 462,
-				"line_ending": "Windows",
-				"name": "0000000000000000"
-			}
-		},
-		{
-			"file": "_incObj/18 Platforms.asm",
-			"settings":
-			{
-				"buffer_size": 8080,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"contents": "/******************************************************************************\n\n                            Online C Compiler.\n                Code, Compile, Run and Debug C program online.\nWrite your code in this editor and press \"Run\" button to compile and execute it.\n\n*******************************************************************************/\n\n#include <stdio.h>\n#include <stdlib.h>\n\nint main()\n{\n// create list    \n    const float H_RESOLUTION = 192;\n    const float Y_WORLD   =   -256;\n   \n    float Z[128];\n    float Y_screen = 96;\n\n    for ( int i = 0; i < H_RESOLUTION ; i ++)\n        {\n            \n            float a = Y_screen - (H_RESOLUTION / 2);\n            if (a == 0) { a = 1; }    // prevent divide by 0\n            Z[i] = 0 - ( Y_WORLD / a );\n            Y_screen ++;\n        }\n// print list   \n    const int NUM_PER_ROW   =   16;   \n    const int NUM_ROWS      =   128 / NUM_PER_ROW;\n\n\n    int arraypos = 1;    \n\n        printf(\"Z_map:\\n\");\n   \n        for (int j = 0; j < NUM_ROWS; j++)\n            {\n                printf(\"    dc.w    \");\n            \n                for (int k = 0; k < NUM_PER_ROW; k++)\n                    {\n                        printf(\"%f\", Z[arraypos]);\n                        arraypos ++;\n                        if (k < (NUM_PER_ROW - 1)) printf(\", \");\n                    }\n                    \n                printf(\"\\n\");   \n            \n            }\n\n/*          \n// write file\n    FILE * fptr;                           // file pointer\n    fptr = fopen(\".\\\\zmap.bin\",\"wb\");     // open file in write binary mode\n\n    if (fptr == NULL)\n    {\n        printf(\"Error opening file\");\n        exit(1);\n    }\n\n    fwrite(Z, sizeof(Z), 1, fptr);      // write array to file\n    fclose(fptr);                       // close file\n*/\n    return 0;\n}\n\n\n",
-			"file": "tools/race stage zmap generator.c",
-			"file_size": 1877,
-			"file_write_time": 132173239739859477,
-			"settings":
-			{
-				"buffer_size": 1807,
-				"encoding": "UTF-8",
-				"line_ending": "Windows",
-				"name": "/*************************************************"
-			}
-		},
-		{
-			"contents": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<plist version=\"1.0\">\n<dict>\n\t<key>name</key>\n\t<string>Comments</string>\n\t<key>scope</key>\n\t<string>source.m68k</string>\n\t<key>settings</key>\n\t<dict>\n\t\t<key>shellVariables</key>\n\t\t<array>\n\t\t\t<dict>\n\t\t\t\t<key>name</key>\n\t\t\t\t<string>TM_COMMENT_START</string>\n\t\t\t\t<key>value</key>\n\t\t\t\t<string>; </string>\n\t\t\t</dict>\n\t\t\t<dict>\n\t\t\t\t<key>name</key>\n\t\t\t\t<string>TM_COMMENT_START_2</string>\n\t\t\t\t<key>value</key>\n\t\t\t\t<string>/*</string>\n\t\t\t</dict>\n\t\t\t<dict>\n\t\t\t\t<key>name</key>\n\t\t\t\t<string>TM_COMMENT_END_2</string>\n\t\t\t\t<key>value</key>\n\t\t\t\t<string>*/</string>\n\t\t\t</dict>\n\t\t\t<dict>\n\t\t\t\t<key>name</key>\n\t\t\t\t<string>TM_COMMENT_DISABLE_INDENT_2</string>\n\t\t\t\t<key>value</key>\n\t\t\t\t<string>yes</string>\n\t\t\t</dict>\n\t\t</array>\n\t</dict>\n</dict>\n</plist>\n",
-			"file": "/C/Users/crash/AppData/Roaming/Sublime Text 3/Packages/User/Comments.tmPreferences",
-			"file_size": 813,
-			"file_write_time": 132173249937926675,
-			"settings":
-			{
-				"buffer_size": 774,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "/D/Games/Doom/crashwad/CVarInfo.txt",
-			"settings":
-			{
-				"buffer_size": 184,
+				"buffer_size": 240,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "/D/Sonic/s1disasm-master/_inc/DeformLayers (JP1).asm",
+			"file": "_incObj/Springboard.asm",
 			"settings":
 			{
-				"buffer_size": 22143,
+				"buffer_size": 5413,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "_incObj/Splats.asm",
+			"settings":
+			{
+				"buffer_size": 3863,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/D/Sonic/SonED2/Backups/s1h - 121016/s1h/sound/Invincible.asm",
+			"settings":
+			{
+				"buffer_size": 6445,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/D/Games/Doom/crashwad/shaders/enviromap.fp",
+			"settings":
+			{
+				"buffer_size": 804,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/D/Libraries/Dropbox/Public/Block thingy from CNZ that disappears after 3 hits (S2).asm",
+			"settings":
+			{
+				"buffer_size": 6908,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/D/Sonic/asm_svn/Mega Drive Disassemblies/Sonic 1 Disassembly - Copy/sonic.asm",
+			"settings":
+			{
+				"buffer_size": 231950,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "_incObj/sub ReactToItem.asm",
+			"settings":
+			{
+				"buffer_size": 18688,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/D/Games/Doom/crashwad/shaders/Water.frag",
+			"settings":
+			{
+				"buffer_size": 651,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/D/Games/Doom/crashwad/gldefs/Materials.txt",
+			"settings":
+			{
+				"buffer_size": 11790,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/D/Games/Doom/crashwad/acs/Crash.acs",
+			"settings":
+			{
+				"buffer_size": 6617,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/D/Sonic/SonED2/Backups/s1h - 121016/s1h/sonic.lst",
+			"settings":
+			{
+				"buffer_size": 5871619,
+				"encoding": "Western (Windows 1252)",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/D/Libraries/Dropbox/mid2smps/pp2.asm",
+			"settings":
+			{
+				"buffer_size": 67130,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/D/Sonic/asm_svn/Mega Drive Disassemblies/Sonic 2 Split Disassembly/s2.asm",
+			"settings":
+			{
+				"buffer_size": 2492392,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/D/Sonic/asm_svn/Mega Drive Disassemblies/Sonic 2 Split Disassembly/s2.constants.asm",
+			"settings":
+			{
+				"buffer_size": 91665,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"contents": "; ----------------------------------------------------------------------------\n; Object D8 - Block thingy from CNZ that disappears after 3 hits (UFO saucer-shaped)\n; ----------------------------------------------------------------------------\nObjD8:\n\tmoveq\t#0,d0\n\tmove.b\troutine(a0),d0\n\tmove.w\tObjD8_Index(pc,d0.w),d1\n\tjmp\tObjD8_Index(pc,d1.w)\n; ===========================================================================\nObjD8_Index:\toffsetTable\n\t\toffsetTableEntry.w ObjD8_Init\t; 0\n\t\toffsetTableEntry.w loc_2C6FC\t; 2\n\t\toffsetTableEntry.w loc_2C884\t; 4\n; ===========================================================================\nObjD8_Init:\n\taddq.b\t#2,routine(a0)\n\tmove.l\t#ObjD8_MapUnc_2C8C4,mappings(a0)\n\tmove.w\t#make_art_tile(ArtTile_ArtNem_CNZMiniBumper,2,0),art_tile(a0)\n\tbsr.w\tJmpTo56_Adjust2PArtPointer\n\tmove.b\t#4,render_flags(a0)\n\tmove.b\t#$10,width_pixels(a0)\n\tmove.b\t#1,priority(a0)\n\tmove.b\t#$D7,collision_flags(a0)\n\tmove.b\tsubtype(a0),d0\n\trol.b\t#2,d0\n\tandi.b\t#3,d0\n\tmove.b\td0,anim(a0)\n\nloc_2C6FC:\n\tmove.b\tcollision_property(a0),d0\n\tbne.w\tloc_2C70A\n\ttst.w\tobjoff_30(a0)\n\tbeq.s\tloc_2C740\n\nloc_2C70A:\n\tlea\tobjoff_30(a0),a4\n\ttst.b\t(a4)\n\tbeq.s\tloc_2C716\n\tsubq.b\t#1,(a4)\n\tbra.s\tloc_2C724\n; ===========================================================================\n\nloc_2C716:\n\tlea\t(MainCharacter).w,a1 ; a1=character\n\tbclr\t#0,collision_property(a0)\n\tbeq.s\tloc_2C724\n\tbsr.s\tloc_2C74E\n\nloc_2C724:\n\taddq.w\t#1,a4\n\ttst.b\t(a4)\n\tbeq.s\tloc_2C72E\n\tsubq.b\t#1,(a4)\n\tbra.s\tloc_2C73C\n; ===========================================================================\n\nloc_2C72E:\n\tlea\t(Sidekick).w,a1 ; a1=character\n\tbclr\t#1,collision_property(a0)\n\tbeq.s\tloc_2C73C\n\tbsr.s\tloc_2C74E\n\nloc_2C73C:\n\tclr.b\tcollision_property(a0)\n\nloc_2C740:\n\tlea\t(Ani_objD8).l,a1\n\tbsr.w\tJmpTo12_AnimateSprite\n\tbra.w\tJmpTo31_MarkObjGone\n; ===========================================================================\n\nloc_2C74E:\n\tmove.b\tmapping_frame(a0),d0\n\tsubq.b\t#3,d0\n\tbeq.s\tloc_2C75C\n\tbcc.s\tloc_2C77A\n\taddq.b\t#3,d0\n\tbne.s\tloc_2C77A\n\nloc_2C75C:\n\tmove.b\t#3,anim(a0)\n\tmove.w\t#-$700,y_vel(a1)\n\tmove.w\ty_pos(a0),d2\n\tsub.w\ty_pos(a1),d2\n\tbpl.s\tBranchTo_loc_2C806\n\tneg.w\ty_vel(a1)\n\nBranchTo_loc_2C806 \n\tbra.w\tloc_2C806\n; ===========================================================================\n\nloc_2C77A:\n\tsubq.b\t#1,d0\n\tbne.s\tloc_2C7EC\n\tmove.b\t#4,anim(a0)\n\tmove.w\t#$20,d3\n\tbtst\t#0,status(a0)\n\tbne.s\tloc_2C794\n\tmove.w\t#$60,d3\n\nloc_2C794:\n\tmove.w\tx_vel(a1),d1\n\tmove.w\ty_vel(a1),d2\n\tjsr\t(CalcAngle).l\n\tsub.w\td3,d0\n\tmvabs.w\td0,d1\n\tneg.w\td0\n\tadd.w\td3,d0\n\tcmpi.b\t#$40,d1\n\tbhs.s\tloc_2C7BE\n\tcmpi.b\t#$38,d1\n\tblo.s\tloc_2C7D0\n\tmove.w\td3,d0\n\tbra.s\tloc_2C7D0\n; ===========================================================================\n\nloc_2C7BE:\n\tsubi.w\t#$80,d1\n\tneg.w\td1\n\tcmpi.b\t#$38,d1\n\tblo.s\tloc_2C7D0\n\tmove.w\td3,d0\n\taddi.w\t#$80,d0\n\nloc_2C7D0:\n\tjsr\t(CalcSine).l\n\tmuls.w\t#-$700,d1\n\tasr.l\t#8,d1\n\tmove.w\td1,x_vel(a1)\n\tmuls.w\t#-$700,d0\n\tasr.l\t#8,d0\n\tmove.w\td0,y_vel(a1)\n\tbra.s\tloc_2C806\n; ===========================================================================\n\nloc_2C7EC:\n\tmove.b\t#5,anim(a0)\n\tmove.w\t#-$700,x_vel(a1)\n\tmove.w\tx_pos(a0),d2\n\tsub.w\tx_pos(a1),d2\n\tbpl.s\tloc_2C806\n\tneg.w\tx_vel(a1)\n\nloc_2C806:\n\tbset\t#1,status(a1)\n\tbclr\t#4,status(a1)\n\tbclr\t#5,status(a1)\n\tclr.b\tjumping(a1)\n\tmove.w\t#SndID_BonusBumper,d0\n\tjsr\t(PlaySound).l\n\tmovea.w\ta1,a3\n\tmoveq\t#4,d3\n\tmoveq\t#1,d0\n\tsubi.w\t#palette_line_1,art_tile(a0)\n\tbcc.s\tloc_2C85C\n\taddi.w\t#palette_line_1,art_tile(a0)\n\tmove.b\t#4,routine(a0)\n\tlea\t(CNZ_saucer_data).w,a1\n\tmove.b\tsubtype(a0),d1\n\tandi.w\t#$3F,d1\n\tlea\t(a1,d1.w),a1\n\taddq.b\t#1,(a1)\n\tcmpi.b\t#3,(a1)\n\tblo.s\tloc_2C85C\n\tmoveq\t#2,d3\n\tmoveq\t#50,d0\n\nloc_2C85C:\n\tjsr\t(AddPoints2).l\n\tbsr.w\tJmpTo11_SingleObjLoad\n\tbne.s\tloc_2C87E\n\t_move.b\t#ObjID_Points,id(a1) ; load obj29\n\tmove.w\tx_pos(a0),x_pos(a1)\n\tmove.w\ty_pos(a0),y_pos(a1)\n\tmove.b\td3,mapping_frame(a1)\n\nloc_2C87E:\n\tmove.b\t#4,(a4)\n\trts\n; ===========================================================================\n\nloc_2C884:\n\tlea\t(Ani_objD8).l,a1\n\tbsr.w\tJmpTo12_AnimateSprite\n\tcmpi.b\t#3,anim(a0)\n\tblo.w\tJmpTo46_DeleteObject\n\tbra.w\tJmpTo31_MarkObjGone\n; ===========================================================================\n; animation script\n; off_2C89C:\nAni_objD8:\toffsetTable\n\t\toffsetTableEntry.w byte_2C8A8\t; 0\n\t\toffsetTableEntry.w byte_2C8AB\t; 1\n\t\toffsetTableEntry.w byte_2C8AE\t; 2\n\t\toffsetTableEntry.w byte_2C8B1\t; 3\n\t\toffsetTableEntry.w byte_2C8B7\t; 4\n\t\toffsetTableEntry.w byte_2C8BD\t; 5\nbyte_2C8A8:\tdc.b  $F,  0,$FF\nbyte_2C8AB:\tdc.b  $F,  1,$FF\nbyte_2C8AE:\tdc.b  $F,  2,$FF\nbyte_2C8B1:\tdc.b   3,  3,  0,  3,$FD,  0\nbyte_2C8B7:\tdc.b   3,  4,  1,  4,$FD,  1\nbyte_2C8BD:\tdc.b   3,  5,  2,  5,$FD,  2\n\teven\n; ----------------------------------------------------------------------------\n; sprite mappings\n; ----------------------------------------------------------------------------\nObjD8_MapUnc_2C8C4:\tBINCLUDE \"mappings/sprite/objD8.bin\"\n; ===========================================================================\n\nJmpTo46_DeleteObject \n\tjmp\t(DeleteObject).l\n; ===========================================================================\n\nJmpTo11_SingleObjLoad \n\tjmp\t(SingleObjLoad).l\n; ===========================================================================\n\nJmpTo31_MarkObjGone \n\tjmp\t(MarkObjGone).l\n; ===========================================================================\n\nJmpTo12_AnimateSprite \n\tjmp\t(AnimateSprite).l\n; ===========================================================================\n\nJmpTo56_Adjust2PArtPointer \n\tjmp\t(Adjust2PArtPointer).l\n; ===========================================================================\n\talign 4\n\n\n",
+			"settings":
+			{
+				"buffer_size": 5577,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/D/Sonic/S3K flamewing/Sound/Music/Invincible.asm",
+			"settings":
+			{
+				"buffer_size": 6445,
 				"line_ending": "Unix"
 			}
 		},
@@ -217,11 +220,65 @@
 			}
 		},
 		{
+			"file": "_incObj/22 Buzz Bomber.asm",
+			"settings":
+			{
+				"buffer_size": 3848,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "tools/race stage zmap generator.c",
+			"settings":
+			{
+				"buffer_size": 1824,
+				"encoding": "UTF-8",
+				"line_ending": "Windows",
+				"name": "/*************************************************"
+			}
+		},
+		{
 			"file": "sonic.lst",
 			"settings":
 			{
-				"buffer_size": 4642756,
+				"buffer_size": 4659940,
 				"encoding": "Western (Windows 1252)",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/D/Sonic/asm_svn/Mega Drive Disassemblies/Sonic 1 Disassembly - Copy/_maps/PointsBlock_S2_map.asm",
+			"settings":
+			{
+				"buffer_size": 415,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/D/Sonic/asm_svn/Mega Drive Disassemblies/Sonic 1 Disassembly - Copy/_inc/Object Pointers.asm",
+			"settings":
+			{
+				"buffer_size": 11808,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "sonic.asm",
+			"settings":
+			{
+				"buffer_size": 287888,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/D/Sonic/SonED2/Backups/s1h - 121016/s1h/_inc/SMPS 68k Main.asm",
+			"settings":
+			{
+				"buffer_size": 77949,
+				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
@@ -247,6 +304,14 @@
 			{
 				"buffer_size": 26888,
 				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/D/Sonic/asm_svn/Mega Drive Disassemblies/Sonic 1 Disassembly/Variables.asm",
+			"settings":
+			{
+				"buffer_size": 34001,
 				"line_ending": "Windows"
 			}
 		}
@@ -279,12 +344,12 @@
 		"selected_items":
 		[
 			[
-				"view",
-				"View Package File"
-			],
-			[
 				"bui",
 				"Build With: C Single File - Run"
+			],
+			[
+				"view",
+				"View Package File"
 			],
 			[
 				"buil",
@@ -339,16 +404,41 @@
 	},
 	"expanded_folders":
 	[
-		"/D/Sonic/s1mv",
-		"/D/Sonic/s1mv/_inc",
-		"/D/Sonic/s1mv/_inc/Menu",
-		"/D/Sonic/s1mv/palette"
+		"/D/Sonic/s1mv"
 	],
 	"file_history":
 	[
+		"/D/Sonic/asm_svn/Mega Drive Disassemblies/Sonic 1 Disassembly - Copy/sonic.lst",
+		"/D/Sonic/asm_svn/Mega Drive Disassemblies/Sonic 1 Disassembly - Copy/_inc/Object Pointers.asm",
+		"/D/Sonic/s1mv/_incObj/19.asm",
+		"/D/Games/Doom/crashwad/gldefs/enviromap.fp",
+		"/D/Games/Doom/crashwad/shaders/WaterZoom.frag",
+		"/D/Sonic/S3K flamewing/Sound/Music/Invincible.asm",
+		"/D/Sonic/SonED2/Backups/s1h - 121016/s1h/sonic.asm",
+		"/C/Users/crash/AppData/Local/Temp/Temp1_splats.zip/Splats.asm",
+		"/D/Games/Doom/crashwad/models/cavelad1.mtl",
+		"/D/Games/Doom/crashwad/models/crane.mtl",
+		"/D/Games/PCExhumed_211119/SETUP.CFG",
+		"/D/Sonic/s1mv/_inc/Palette Pointers.asm",
+		"/D/Sonic/s1mv/_incObj/18 Platforms.asm",
+		"/D/Games/Doom/crashwad/CVarInfo.txt",
+		"/D/Sonic/s1disasm-master/_inc/DeformLayers (JP1).asm",
+		"/D/Sonic/SonLVL/Sonic 3K Git INIs/SonLVL.ini",
+		"/D/Sonic/s1mv/Sonic 1 SVN INIs/S1LVL.ini",
+		"/D/Sonic/s1mv/_inc/HUD_Update.asm",
+		"/D/Sonic/s1mv/_inc/WorldMap.asm",
+		"/D/Sonic/Tools/Bitmap MD/Example ROM/_Source.asm",
+		"/D/Sonic/s1mv/_inc/Enigma Decompression.asm",
+		"/D/Sonic/s1mv/SSRG/SSRG.asm",
+		"/D/Sonic/s1mv/palette/Cycle - GHZ Night.bin",
+		"/D/Games/Doom/crashwad/zscript/Dynamic Difficulty.zs",
+		"/D/Sonic/s1mv/_incObj/sub RevealMapTile.asm",
+		"/D/Sonic/s1mv/Sonic 1 SVN INIs/S1LVL.rev01.ini",
+		"/C/Users/crash/AppData/Roaming/Sublime Text 3/Packages/User/Comments.tmPreferences",
+		"/C/Users/crash/AppData/Roaming/Sublime Text 3/Packages/User/M68k-Assembly-master/Comments.tmPreferences",
+		"/C/Users/crash/AppData/Roaming/Sublime Text 3/Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage",
 		"/C/Users/crash/AppData/Roaming/Sublime Text 3/Packages/User/ASM68K highlighter/SymbolList-Section.tmPreferences",
 		"/C/Users/crash/AppData/Roaming/Sublime Text 3/Packages/User/ASM68K highlighter/SymbolList-Macro.tmPreferences",
-		"/C/Users/crash/AppData/Roaming/Sublime Text 3/Packages/User/Comments.tmPreferences",
 		"/C/Users/crash/AppData/Roaming/Sublime Text 3/Packages/AppleScript/Comments.tmPreferences",
 		"/C/Users/crash/AppData/Roaming/Sublime Text 3/Packages/HTML/HTML.sublime-syntax",
 		"/D/Sonic/s1mv/s1mv.sublime-project",
@@ -374,7 +464,6 @@
 		"/C/Users/crash/AppData/Roaming/Sublime Text 3/Packages/HexViewer/Default (Windows).sublime-keymap",
 		"/D/Sonic/s1mv/errors.txt",
 		"/D/Sonic/s1mv/s1built.bin",
-		"/D/Sonic/s1mv/palette/Cycle - GHZ Night.bin",
 		"/D/Sonic/s1mv/_inc/Race Stage.asm",
 		"/C/Users/crash/AppData/Roaming/Sublime Text 3/Packages/User/Assemble SonicMV.sublime-build",
 		"/D/Sonic/AMPS-1.0.2/driver/code/smps2asm.asm",
@@ -460,6 +549,40 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"a4",
+			"collision_proper",
+			"collision_flags",
+			"31",
+			"30",
+			"a3",
+			"CNZ_saucer_data",
+			"colprop",
+			"cnz",
+			"obj33",
+			"24",
+			"03",
+			"06",
+			"09",
+			"0C",
+			"12",
+			"$18",
+			"temp",
+			"+",
+			"animat",
+			"obren",
+			"obsta",
+			"obren",
+			"skyx",
+			"8a",
+			"HBlank_",
+			"hblank_",
+			"SS_Load",
+			"ss_bg",
+			"stage",
+			"ss",
+			"movem.",
+			"VSRAM",
+			"hbla",
 			"    dc.w    0",
 			".000000",
 			".000000,",
@@ -486,6 +609,12 @@
 		"regex": false,
 		"replace_history":
 		[
+			"30",
+			"04",
+			"08",
+			"0C",
+			"10",
+			"18",
 			"    dc.w    1",
 			"",
 			",",
@@ -505,164 +634,19 @@
 			[
 				{
 					"buffer": 0,
-					"file": "sonic.asm",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 287888,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								13905,
-								13905
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 6950.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 8,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "SSRG/SSRG.asm",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 30943,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 1277.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 15,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "palette/Cycle - GHZ Night.bin",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 32,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"hex_no_auto_open": true,
-							"syntax": "Packages/Text/Plain text.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 24,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "_incObj/sub RevealMapTile.asm",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 5821,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								3256,
-								3257
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 23,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "/D/Games/Doom/crashwad/zscript/Dynamic Difficulty.zs",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 6073,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 1449.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 21,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
 					"file": "SonPLN.ini",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1332,
+						"buffer_size": 1533,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								376,
-								376
+								531,
+								531
 							]
 						],
 						"settings":
@@ -673,11 +657,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 9,
+					"stack_index": 27,
 					"type": "text"
 				},
 				{
-					"buffer": 6,
+					"buffer": 1,
 					"file": "_inc/Menu/PauseMenu.asm",
 					"semi_transient": false,
 					"settings":
@@ -702,16 +686,390 @@
 						"translation.y": 693.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 16,
+					"stack_index": 31,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "_inc/Race Stage.asm",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 13724,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4187,
+								4187
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage",
+							"tab_size": 8,
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 2344.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 25,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "/D/Games/Doom/crashwad/models/contain1.mtl",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 240,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 24,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "_incObj/Springboard.asm",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5413,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 2754.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 12,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "_incObj/Splats.asm",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3863,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3526,
+								3526
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 1799.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 19,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "/D/Sonic/SonED2/Backups/s1h - 121016/s1h/sound/Invincible.asm",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 6445,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								138,
+								138
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 2250.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 15,
 					"type": "text"
 				},
 				{
 					"buffer": 7,
-					"file": "_inc/Palette Pointers.asm",
+					"file": "/D/Games/Doom/crashwad/shaders/enviromap.fp",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3324,
+						"buffer_size": 804,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								792,
+								792
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 10,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "/D/Libraries/Dropbox/Public/Block thingy from CNZ that disappears after 3 hits (S2).asm",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 6908,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4285,
+								4285
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 3384.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "/D/Sonic/asm_svn/Mega Drive Disassemblies/Sonic 1 Disassembly - Copy/sonic.asm",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 231950,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								169030,
+								169030
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 120999.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "_incObj/sub ReactToItem.asm",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 18688,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								6195,
+								6202
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 9214.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 11,
+					"file": "/D/Games/Doom/crashwad/shaders/Water.frag",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 651,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 17,
+					"type": "text"
+				},
+				{
+					"buffer": 12,
+					"file": "/D/Games/Doom/crashwad/gldefs/Materials.txt",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 11790,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2864.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 14,
+					"type": "text"
+				},
+				{
+					"buffer": 13,
+					"file": "/D/Games/Doom/crashwad/acs/Crash.acs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 6617,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 1674.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 13,
+					"type": "text"
+				},
+				{
+					"buffer": 14,
+					"file": "/D/Sonic/SonED2/Backups/s1h - 121016/s1h/sonic.lst",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5871619,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4463650,
+								4463665
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 1364786.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 18,
+					"type": "text"
+				},
+				{
+					"buffer": 15,
+					"file": "/D/Libraries/Dropbox/mid2smps/pp2.asm",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 67130,
 						"regions":
 						{
 						},
@@ -727,57 +1085,89 @@
 							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 135.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 14,
+					"stack_index": 28,
 					"type": "text"
-				},
+				}
+			]
+		},
+		{
+			"selected": 1,
+			"sheets":
+			[
 				{
-					"buffer": 8,
-					"file": "_inc/Race Stage.asm",
+					"buffer": 16,
+					"file": "/D/Sonic/asm_svn/Mega Drive Disassemblies/Sonic 2 Split Disassembly/s2.asm",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 6932,
+						"buffer_size": 2492392,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								5271,
-								5246
+								2151260,
+								2151276
 							]
 						],
 						"settings":
 						{
 							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage",
-							"tab_size": 8,
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 3303.0,
+						"translation.y": 1438990.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 17,
+					"file": "/D/Sonic/asm_svn/Mega Drive Disassemblies/Sonic 2 Split Disassembly/s2.constants.asm",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 91665,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								25916,
+								25918
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 10618.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 9,
-					"file": "_inc/Enigma Decompression.asm",
+					"buffer": 18,
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4985,
+						"buffer_size": 5577,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								3451,
+								3466
 							]
 						],
 						"settings":
@@ -786,294 +1176,27 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 17,
-					"type": "text"
-				},
-				{
-					"buffer": 10,
-					"file": "/D/Sonic/Tools/Bitmap MD/Example ROM/_Source.asm",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 5053,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 1206.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 19,
-					"type": "text"
-				},
-				{
-					"buffer": 11,
-					"file": "_inc/Menu/Deform Layers.asm",
-					"semi_transient": true,
-					"settings":
-					{
-						"buffer_size": 1048,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								165,
-								165
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 20,
-					"type": "text"
-				},
-				{
-					"buffer": 12,
-					"file": "_inc/WorldMap.asm",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 6294,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								132,
-								132
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 22,
-					"type": "text"
-				},
-				{
-					"buffer": 13,
-					"file": "_inc/HUD_Update.asm",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 10639,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								921,
-								921
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 18,
-					"type": "text"
-				}
-			]
-		},
-		{
-			"selected": 3,
-			"sheets":
-			[
-				{
-					"buffer": 14,
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 462,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								462,
-								462
-							]
-						],
-						"settings":
-						{
-							"auto_name": "0000000000000000",
-							"syntax": "Packages/Text/Plain text.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 13,
-					"type": "text"
-				},
-				{
-					"buffer": 15,
-					"file": "_incObj/18 Platforms.asm",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 8080,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2605,
-								2605
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 54.0,
+						"translation.y": 162.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 5,
 					"type": "text"
 				},
 				{
-					"buffer": 16,
-					"file": "tools/race stage zmap generator.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1807,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								454,
-								454
-							]
-						],
-						"settings":
-						{
-							"auto_name": "/*************************************************",
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 27.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 17,
-					"file": "/C/Users/crash/AppData/Roaming/Sublime Text 3/Packages/User/Comments.tmPreferences",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 774,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								329,
-								329
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/XML/XML.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 18,
-					"file": "/D/Games/Doom/crashwad/CVarInfo.txt",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 184,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Text/Plain text.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 12,
-					"type": "text"
-				},
-				{
 					"buffer": 19,
-					"file": "/D/Sonic/s1disasm-master/_inc/DeformLayers (JP1).asm",
+					"file": "/D/Sonic/S3K flamewing/Sound/Music/Invincible.asm",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 22143,
+						"buffer_size": 6445,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								1087,
+								1087
 							]
 						],
 						"settings":
@@ -1082,10 +1205,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1022.0,
+						"translation.y": 1188.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 7,
+					"stack_index": 16,
 					"type": "text"
 				},
 				{
@@ -1114,24 +1237,84 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 22,
 					"type": "text"
 				},
 				{
 					"buffer": 21,
-					"file": "sonic.lst",
+					"file": "_incObj/22 Buzz Bomber.asm",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4642756,
+						"buffer_size": 3848,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								639514,
-								639521
+								854,
+								859
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 270.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 23,
+					"type": "text"
+				},
+				{
+					"buffer": 22,
+					"file": "tools/race stage zmap generator.c",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1824,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								869,
+								869
+							]
+						],
+						"settings":
+						{
+							"auto_name": "/*************************************************",
+							"syntax": "Packages/C++/C.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 216.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 29,
+					"type": "text"
+				},
+				{
+					"buffer": 23,
+					"file": "sonic.lst",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4659940,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								322891,
+								322891
 							]
 						],
 						"settings":
@@ -1139,19 +1322,19 @@
 							"syntax": "Packages/Text/Plain text.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 226844.0,
+						"translation.y": 356495.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 30,
 					"type": "text"
 				},
 				{
-					"buffer": 22,
-					"file": "Macros.asm",
+					"buffer": 24,
+					"file": "/D/Sonic/asm_svn/Mega Drive Disassemblies/Sonic 1 Disassembly - Copy/_maps/PointsBlock_S2_map.asm",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 9366,
+						"buffer_size": 415,
 						"regions":
 						{
 						},
@@ -1164,18 +1347,131 @@
 						],
 						"settings":
 						{
+							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 25,
+					"file": "/D/Sonic/asm_svn/Mega Drive Disassemblies/Sonic 1 Disassembly - Copy/_inc/Object Pointers.asm",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 11808,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								5812,
+								5812
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 2610.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 26,
+					"file": "sonic.asm",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 287888,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								649,
+								649
+							]
+						],
+						"settings":
+						{
 							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage",
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 3798.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 11,
+					"stack_index": 21,
 					"type": "text"
 				},
 				{
-					"buffer": 23,
+					"buffer": 27,
+					"file": "/D/Sonic/SonED2/Backups/s1h - 121016/s1h/_inc/SMPS 68k Main.asm",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 77949,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								49579,
+								49583
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 39592.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 20,
+					"type": "text"
+				},
+				{
+					"buffer": 28,
+					"file": "Macros.asm",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 9366,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3392,
+								3392
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1278.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 26,
+					"type": "text"
+				},
+				{
+					"buffer": 29,
 					"file": "Constants.asm",
 					"semi_transient": false,
 					"settings":
@@ -1196,14 +1492,14 @@
 							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 2859.0,
+						"translation.y": 1080.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 10,
+					"stack_index": 11,
 					"type": "text"
 				},
 				{
-					"buffer": 24,
+					"buffer": 30,
 					"file": "Variables.asm",
 					"semi_transient": false,
 					"settings":
@@ -1215,8 +1511,8 @@
 						"selection":
 						[
 							[
-								3270,
-								3270
+								7098,
+								7101
 							]
 						],
 						"settings":
@@ -1227,7 +1523,35 @@
 						"translation.y": 511.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 9,
+					"type": "text"
+				},
+				{
+					"buffer": 31,
+					"file": "/D/Sonic/asm_svn/Mega Drive Disassemblies/Sonic 1 Disassembly/Variables.asm",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 34001,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/User/M68k-Assembly-master/M68k-Assembly.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
 					"type": "text"
 				}
 			]
@@ -1261,7 +1585,7 @@
 		"cols":
 		[
 			0.0,
-			0.621874728815,
+			0.627442628431,
 			1.0
 		],
 		"rows":
@@ -1301,6 +1625,10 @@
 		"selected_items":
 		[
 			[
+				"pal",
+				"_inc\\Palette Pointers.asm"
+			],
+			[
 				"platforms",
 				"_incObj\\18 Platforms.asm"
 			],
@@ -1337,7 +1665,7 @@
 	"show_open_files": true,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 55.0,
+	"side_bar_width": 50.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{

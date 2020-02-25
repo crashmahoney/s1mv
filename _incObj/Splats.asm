@@ -83,7 +83,7 @@ Splats_ActIndex:	dc.w @move-Splats_ActIndex
 		addq.b	#2,ob2ndRout(a0)
 		move.w	#-$B0,obVelX(a0) 	; move object to the left
 		move.w	#-1300,splats_jump_height(a0)	; allow to jump
-		bchg	#0,obRender(a0)
+		bchg	#0,obStatus(a0)
 		bne.s	@wait
 		neg.w	obVelX(a0)			; change direction
 	@wait:
@@ -98,7 +98,7 @@ Splats_ActIndex:	dc.w @move-Splats_ActIndex
 
 		move.w	obX(a0),d3
 		add.w	#16,d3					; check 16px to the right of centre
-		btst	#0,obRender(a0)			; check direction
+		btst	#0,obStatus(a0)			; check direction
 		bne.s	@ok						; branch if facing right
 		sub.w	#32,d3					; check 16px to the left of centre
 	@ok:
@@ -121,6 +121,11 @@ Splats_ActIndex:	dc.w @move-Splats_ActIndex
 ; ===========================================================================
 
 Splats_Animate:	; Routine 4
+		bclr	#0,obRender
+		btst	#0,obStatus
+		bne.s	@noflip
+		bset	#0,obRender
+	@noflip:
 		jsr		DisplaySprite
 ; ===========================================================================
 

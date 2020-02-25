@@ -15,10 +15,10 @@ int main()
     const float H_RESOLUTION = 192;
     const float Y_WORLD   =   -256;
    
-    float Z[128];
+    float Z[256];
     float Y_screen = 96;
 
-    for ( int i = 0; i < H_RESOLUTION ; i ++)
+    for ( int i = 0; i < (H_RESOLUTION * 2) ; i ++)
         {
             
             float a = Y_screen - (H_RESOLUTION / 2);
@@ -28,7 +28,7 @@ int main()
         }
 // print list   
     const int NUM_PER_ROW   =   16;   
-    const int NUM_ROWS      =   128 / NUM_PER_ROW;
+    const int NUM_ROWS      =   sizeof(Z) / NUM_PER_ROW;
 
 
     int arraypos = 1;    

@@ -622,7 +622,7 @@ VBla_1A:
 ; Race Stage Vblank routine
 VBla_1C:
 		move.l	#HBlank_Road1,(H_int_addr).w  ; hblank code address to jump to
-		move.w	#$8A00+47,(v_hbla_hreg).w ; set hblank trigger scanline /2
+		move.w	#$8A00+95,(v_hbla_hreg).w ; set hblank trigger scanline /2
 		move.w	(v_hbla_hreg).w,($C00004).l
 		bra.w	VBla_1A
 ; ===========================================================================

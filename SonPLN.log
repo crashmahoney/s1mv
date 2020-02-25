@@ -1,0 +1,114 @@
+Operating system: Microsoft Windows NT 6.2.9200.0
+Opening INI file "D:\Sonic\s1mv\SonPLN.ini"...
+Game type is S1.
+Loading Road...
+Loading plane mappings from file "tilemaps/road.eni", using compression Enigma...
+Loading palette file "palette/Race Stage.bin"...
+Source: 0 Destination: 0 Length: 64
+Loading 8x8 tiles from file "artkosm/Road.kosm", using compression KosinskiM...
+Loading 8x8 tiles from file "artkosm/race_sky.kosm", using compression KosinskiM...
+Load completed.
+Opening INI file "D:\Sonic\s1mv\SonPLN.ini"...
+Game type is S1.
+Loading Road...
+Loading palette file "./palette/Sonic.bin"...
+Source: 0 Destination: 0 Length: 16
+Loading 8x8 tiles from file "artkosm/Road.kosm", using compression KosinskiM...
+Loading plane mappings from file "tilemaps/road.eni", using compression Enigma...
+Loading palette file "./palette/Race Stage.bin"...
+Source: 0 Destination: 16 Length: 48
+Loading 8x8 tiles from file "artkosm/race_sky.kosm", using compression KosinskiM...
+Loading palette file "palette/Sonic.bin"...
+Source: 0 Destination: 0 Length: 16
+Loading palette file "palette/Race Stage.bin"...
+Source: 0 Destination: 16 Length: 48
+Load completed.
+Loading Sky...
+Loading palette file "./palette/Sonic.bin"...
+Source: 0 Destination: 0 Length: 16
+Loading plane mappings from file "tilemaps/sky.eni", using compression Enigma...
+Loading 8x8 tiles from file "artkosm/Road.kosm", using compression KosinskiM...
+Loading palette file "./palette/Race Stage.bin"...
+Source: 0 Destination: 16 Length: 48
+Loading palette file "palette/Sonic.bin"...
+Source: 0 Destination: 0 Length: 16
+Loading 8x8 tiles from file "artkosm/race_sky.kosm", using compression KosinskiM...
+Loading palette file "palette/Race Stage.bin"...
+Source: 0 Destination: 16 Length: 48
+Load completed.
+Opening INI file "D:\Sonic\s1mv\SonPLN.ini"...
+Game type is S1.
+Loading Sky...
+Loading palette file "./palette/Sonic.bin"...
+Source: 0 Destination: 0 Length: 16
+Loading dummy tile data.
+Loading plane mappings from file "tilemaps/sky.eni", using compression Enigma...
+Loading 8x8 tiles from file "artkosm/Road.kosm", using compression KosinskiM...
+Loading palette file "./palette/Race Stage.bin"...
+Source: 0 Destination: 16 Length: 48
+Loading palette file "palette/Sonic.bin"...
+Source: 0 Destination: 0 Length: 16
+Loading palette file "palette/Race Stage.bin"...
+Source: 0 Destination: 16 Length: 48
+Loading 8x8 tiles from file "artkosm/race_sky.kosm", using compression KosinskiM...
+Load completed.
+System.NullReferenceException: Object reference not set to an instance of an object.
+   at SonicRetro.SonLVL.PatternIndexSearchControl.UpdateStuff() in E:\Programs\SonLVL\SonPLN\PatternIndexSearchControl.cs:line 22
+   at SonicRetro.SonLVL.ReplaceTilesDialog.ReplaceBlockTilesDialog_VisibleChanged(Object sender, EventArgs e) in E:\Programs\SonLVL\SonPLN\ReplaceTilesDialog.cs:line 17
+   at System.Windows.Forms.Control.OnVisibleChanged(EventArgs e)
+   at System.Windows.Forms.ScrollableControl.OnVisibleChanged(EventArgs e)
+   at System.Windows.Forms.Form.OnVisibleChanged(EventArgs e)
+   at System.Windows.Forms.Control.WmShowWindow(Message& m)
+   at System.Windows.Forms.Control.WndProc(Message& m)
+   at System.Windows.Forms.ScrollableControl.WndProc(Message& m)
+   at System.Windows.Forms.Form.WmShowWindow(Message& m)
+   at System.Windows.Forms.Form.WndProc(Message& m)
+   at System.Windows.Forms.Control.ControlNativeWindow.OnMessage(Message& m)
+   at System.Windows.Forms.Control.ControlNativeWindow.WndProc(Message& m)
+   at System.Windows.Forms.NativeWindow.Callback(IntPtr hWnd, Int32 msg, IntPtr wparam, IntPtr lparam)
+System.NullReferenceException: Object reference not set to an instance of an object.
+   at SonicRetro.SonLVL.PatternIndexSearchControl.UpdateStuff() in E:\Programs\SonLVL\SonPLN\PatternIndexSearchControl.cs:line 22
+   at SonicRetro.SonLVL.ReplaceTilesDialog.ReplaceBlockTilesDialog_VisibleChanged(Object sender, EventArgs e) in E:\Programs\SonLVL\SonPLN\ReplaceTilesDialog.cs:line 17
+   at System.Windows.Forms.Control.OnVisibleChanged(EventArgs e)
+   at System.Windows.Forms.ScrollableControl.OnVisibleChanged(EventArgs e)
+   at System.Windows.Forms.Form.OnVisibleChanged(EventArgs e)
+   at System.Windows.Forms.Control.SetVisibleCore(Boolean value)
+   at System.Windows.Forms.Form.SetVisibleCore(Boolean value)
+   at System.Windows.Forms.Control.set_Visible(Boolean value)
+   at System.Windows.Forms.Application.ThreadContext.RunMessageLoopInner(Int32 reason, ApplicationContext context)
+   at System.Windows.Forms.Application.ThreadContext.RunMessageLoop(Int32 reason, ApplicationContext context)
+   at System.Windows.Forms.Application.RunDialog(Form form)
+   at System.Windows.Forms.Form.ShowDialog(IWin32Window owner)
+   at SonicRetro.SonLVL.SonPLN.MainForm.replaceForegroundToolStripButton_Click(Object sender, EventArgs e) in E:\Programs\SonLVL\SonPLN\MainForm.cs:line 2280
+   at System.Windows.Forms.ToolStripItem.RaiseEvent(Object key, EventArgs e)
+   at System.Windows.Forms.ToolStripButton.OnClick(EventArgs e)
+   at System.Windows.Forms.ToolStripItem.HandleClick(EventArgs e)
+   at System.Windows.Forms.ToolStripItem.HandleMouseUp(MouseEventArgs e)
+   at System.Windows.Forms.ToolStripItem.FireEventInteractive(EventArgs e, ToolStripItemEventType met)
+   at System.Windows.Forms.ToolStripItem.FireEvent(EventArgs e, ToolStripItemEventType met)
+   at System.Windows.Forms.ToolStrip.OnMouseUp(MouseEventArgs mea)
+   at System.Windows.Forms.Control.WmMouseUp(Message& m, MouseButtons button, Int32 clicks)
+   at System.Windows.Forms.Control.WndProc(Message& m)
+   at System.Windows.Forms.ScrollableControl.WndProc(Message& m)
+   at System.Windows.Forms.ToolStrip.WndProc(Message& m)
+   at System.Windows.Forms.Control.ControlNativeWindow.OnMessage(Message& m)
+   at System.Windows.Forms.Control.ControlNativeWindow.WndProc(Message& m)
+   at System.Windows.Forms.NativeWindow.Callback(IntPtr hWnd, Int32 msg, IntPtr wparam, IntPtr lparam)
+System.ObjectDisposedException: Cannot access a disposed object.
+Object name: 'MainForm'.
+   at System.Windows.Forms.Control.CreateHandle()
+   at System.Windows.Forms.Form.CreateHandle()
+   at System.Windows.Forms.Control.get_Handle()
+   at System.Windows.Forms.Control.GetSafeHandle(IWin32Window window)
+   at System.Windows.Forms.Form.ShowDialog(IWin32Window owner)
+   at SonicRetro.SonLVL.SonPLN.MainForm.Application_ThreadException(Object sender, ThreadExceptionEventArgs e) in E:\Programs\SonLVL\SonPLN\MainForm.cs:line 59
+   at System.Windows.Forms.Application.ThreadContext.OnThreadException(Exception t)
+   at System.Windows.Forms.Control.WndProcException(Exception e)
+   at System.Windows.Forms.Control.ControlNativeWindow.OnThreadException(Exception e)
+   at System.Windows.Forms.NativeWindow.Callback(IntPtr hWnd, Int32 msg, IntPtr wparam, IntPtr lparam)
+   at System.Windows.Forms.UnsafeNativeMethods.DispatchMessageW(MSG& msg)
+   at System.Windows.Forms.Application.ComponentManager.System.Windows.Forms.UnsafeNativeMethods.IMsoComponentManager.FPushMessageLoop(IntPtr dwComponentID, Int32 reason, Int32 pvLoopData)
+   at System.Windows.Forms.Application.ThreadContext.RunMessageLoopInner(Int32 reason, ApplicationContext context)
+   at System.Windows.Forms.Application.ThreadContext.RunMessageLoop(Int32 reason, ApplicationContext context)
+   at System.Windows.Forms.Application.Run(Form mainForm)
+   at SonicRetro.SonLVL.SonPLN.Program.Main(String[] args) in E:\Programs\SonLVL\SonPLN\Program.cs:line 31
